@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SpeakButton } from "@/components/SpeakButton";
 import { validateStep } from "@/lib/questEngine";
 import { speak } from "@/lib/speak";
+import { resolveWordIdFromStep } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
 import { Quest, QuestStep } from "@/types";
 
@@ -21,6 +22,7 @@ type FeedbackState = {
 
 export function QuestRunner({ quest, practiceMode, onComplete }: QuestRunnerProps) {
   const recordCorrectAnswer = useGameStore((state) => state.recordCorrectAnswer);
+  const recordWrongWord = useGameStore((state) => state.recordWrongWord);
   const completeQuest = useGameStore((state) => state.completeQuest);
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -45,6 +47,8 @@ export function QuestRunner({ quest, practiceMode, onComplete }: QuestRunnerProp
       recordCorrectAnswer();
       setFeedback({ message: "Great! 答对了！", isCorrect: true });
     } else {
+      const wordId = resolveWordIdFromStep(currentStep);
+      if (wordId) recordWrongWord(wordId);
       setFeedback({
         message: `Almost! 正确答案是：${currentStep.answer}`,
         isCorrect: false,

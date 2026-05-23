@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { getBuildIdeaById } from "@/data/buildIdeas";
 import { getQuestById } from "@/data/quests";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
 import { buildRewardResult } from "@/lib/questEngine";
@@ -8,7 +9,9 @@ import {
   DailyStats,
   GameState,
   ResourceType,
+  Reward,
   RewardResult,
+  DailyAdventurePlan,
 } from "@/types";
 
 const defaultResources: Record<ResourceType, number> = {
@@ -31,6 +34,8 @@ function createDailyStats(): DailyStats {
     completedQuests: 0,
     correctAnswers: 0,
     learnedWords: 0,
+    dailyAdventureCompleted: false,
+    dailyAdventureId: "",
   };
 }
 
@@ -48,6 +53,12 @@ const initialState: GameState = {
   completedQuestIds: [],
   unlockedIds: [],
   masteredWordIds: [],
+  discoveredWordIds: [],
+  learnedWordIds: [],
+  completedGuideIds: [],
+  completedBuildIdeaIds: [],
+  wrongWordCounts: {},
+  defeatedMonsterIds: [],
   dailyStats: createDailyStats(),
 };
 
@@ -55,12 +66,36 @@ type GameStore = GameState & {
   addXp: (amount: number) => void;
   addResource: (resource: ResourceType, amount: number) => void;
   unlockItem: (unlockId: string) => void;
+  discoverWord: (wordId: string) => void;
+  markWordLearned: (wordId: string) => void;
   markWordMastered: (wordId: string) => void;
   completeQuest: (questId: string) => RewardResult | null;
+  completeGuide: (guideId: string, keywordIds?: string[]) => boolean;
+  claimBuildIdea: (ideaId: string) => boolean;
+  completeDailyAdventure: (plan: DailyAdventurePlan) => boolean;
+  recordWrongWord: (wordId: string) => void;
+  defeatMonster: (wordId: string) => boolean;
+  completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
   recordDailyAnswer: (correct: boolean) => void;
   recordCorrectAnswer: () => void;
   resetProgress: () => void;
 };
+
+function applyRewardList(state: GameState, rewards: Reward[]): Partial<GameState> {
+  const nextResources = { ...state.resources };
+  let xp = state.xp;
+
+  for (const reward of rewards) {
+    if (reward.type === "resource" && reward.resource && reward.amount) {
+      nextResources[reward.resource] += reward.amount;
+    }
+    if (reward.type === "xp" && reward.xp) {
+      xp += reward.xp;
+    }
+  }
+
+  return { xp, resources: nextResources };
+}
 
 function applyRewards(
   state: GameState,
@@ -68,13 +103,14 @@ function applyRewards(
 ): Partial<GameState> {
   const nextResources = { ...state.resources };
   const nextUnlockedIds = [...state.unlockedIds];
+  let xp = state.xp;
 
   for (const reward of rewards.rewards) {
     if (reward.type === "resource" && reward.resource && reward.amount) {
       nextResources[reward.resource] += reward.amount;
     }
     if (reward.type === "xp" && reward.xp) {
-      state = { ...state, xp: state.xp + reward.xp };
+      xp += reward.xp;
     }
     if (reward.type === "unlock" && reward.unlockId) {
       if (!nextUnlockedIds.includes(reward.unlockId)) {
@@ -90,10 +126,18 @@ function applyRewards(
   }
 
   return {
-    xp: state.xp,
+    xp,
     resources: nextResources,
     unlockedIds: nextUnlockedIds,
   };
+}
+
+function mergeWordIds(existing: string[], incoming: string[]): string[] {
+  const set = new Set(existing);
+  for (const id of incoming) {
+    set.add(id);
+  }
+  return [...set];
 }
 
 export const useGameStore = create<GameStore>()(
@@ -121,8 +165,25 @@ export const useGameStore = create<GameStore>()(
             : [...state.unlockedIds, unlockId],
         })),
 
+      discoverWord: (wordId) =>
+        set((state) => ({
+          discoveredWordIds: state.discoveredWordIds.includes(wordId)
+            ? state.discoveredWordIds
+            : [...state.discoveredWordIds, wordId],
+        })),
+
+      markWordLearned: (wordId) =>
+        set((state) => ({
+          discoveredWordIds: mergeWordIds(state.discoveredWordIds, [wordId]),
+          learnedWordIds: state.learnedWordIds.includes(wordId)
+            ? state.learnedWordIds
+            : [...state.learnedWordIds, wordId],
+        })),
+
       markWordMastered: (wordId) =>
         set((state) => ({
+          discoveredWordIds: mergeWordIds(state.discoveredWordIds, [wordId]),
+          learnedWordIds: mergeWordIds(state.learnedWordIds, [wordId]),
           masteredWordIds: state.masteredWordIds.includes(wordId)
             ? state.masteredWordIds
             : [...state.masteredWordIds, wordId],
@@ -182,6 +243,127 @@ export const useGameStore = create<GameStore>()(
         return rewardResult;
       },
 
+      completeGuide: (guideId, keywordIds = []) => {
+        if (get().completedGuideIds.includes(guideId)) {
+          return false;
+        }
+
+        set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          return {
+            completedGuideIds: [...state.completedGuideIds, guideId],
+            discoveredWordIds: mergeWordIds(state.discoveredWordIds, keywordIds),
+            learnedWordIds: mergeWordIds(state.learnedWordIds, keywordIds),
+            xp: state.xp + 5,
+            dailyStats: {
+              ...dailyStats,
+              correctAnswers: dailyStats.correctAnswers + 1,
+            },
+          };
+        });
+
+        return true;
+      },
+
+      claimBuildIdea: (ideaId) => {
+        if (get().completedBuildIdeaIds.includes(ideaId)) {
+          return false;
+        }
+
+        const idea = getBuildIdeaById(ideaId);
+        if (!idea) return false;
+
+        set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          const applied = applyRewardList(state, idea.rewards);
+          const keywordIds = idea.keywords.map((k) => k.wordId);
+
+          return {
+            ...applied,
+            completedBuildIdeaIds: [...state.completedBuildIdeaIds, ideaId],
+            discoveredWordIds: mergeWordIds(state.discoveredWordIds, keywordIds),
+            learnedWordIds: mergeWordIds(state.learnedWordIds, keywordIds),
+            dailyStats: {
+              ...dailyStats,
+              completedQuests: dailyStats.completedQuests + 1,
+            },
+          };
+        });
+
+        return true;
+      },
+
+      completeDailyAdventure: (plan) => {
+        const dailyStats = normalizeDailyStats(get().dailyStats);
+        if (
+          dailyStats.dailyAdventureCompleted &&
+          dailyStats.dailyAdventureId === plan.id
+        ) {
+          return false;
+        }
+
+        set((state) => {
+          const stats = normalizeDailyStats(state.dailyStats);
+          const applied = applyRewardList(state, plan.rewards);
+
+          return {
+            ...applied,
+            discoveredWordIds: mergeWordIds(state.discoveredWordIds, plan.wordIds),
+            learnedWordIds: mergeWordIds(state.learnedWordIds, plan.wordIds),
+            dailyStats: {
+              ...stats,
+              dailyAdventureCompleted: true,
+              dailyAdventureId: plan.id,
+              completedQuests: stats.completedQuests + 1,
+            },
+          };
+        });
+
+        return true;
+      },
+
+      recordWrongWord: (wordId) =>
+        set((state) => ({
+          wrongWordCounts: {
+            ...state.wrongWordCounts,
+            [wordId]: (state.wrongWordCounts[wordId] ?? 0) + 1,
+          },
+        })),
+
+      defeatMonster: (wordId) => {
+        if (get().defeatedMonsterIds.includes(wordId)) {
+          return false;
+        }
+        set((state) => ({
+          defeatedMonsterIds: [...state.defeatedMonsterIds, wordId],
+          wrongWordCounts: {
+            ...state.wrongWordCounts,
+            [wordId]: 0,
+          },
+          masteredWordIds: state.masteredWordIds.includes(wordId)
+            ? state.masteredWordIds
+            : [...state.masteredWordIds, wordId],
+          xp: state.xp + 10,
+        }));
+        return true;
+      },
+
+      completeSpeakScenario: (scenarioId, xp) => {
+        const key = `speak-${scenarioId}`;
+        if (get().completedBuildIdeaIds.includes(key)) {
+          return false;
+        }
+        set((state) => ({
+          completedBuildIdeaIds: [...state.completedBuildIdeaIds, key],
+          xp: state.xp + xp,
+          dailyStats: {
+            ...normalizeDailyStats(state.dailyStats),
+            correctAnswers: normalizeDailyStats(state.dailyStats).correctAnswers + 1,
+          },
+        }));
+        return true;
+      },
+
       resetProgress: () =>
         set({
           ...initialState,
@@ -190,6 +372,26 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: "minewords-game-state",
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<GameState>;
+        return {
+          ...current,
+          ...saved,
+          resources: { ...defaultResources, ...saved.resources },
+          discoveredWordIds: saved.discoveredWordIds ?? [],
+          learnedWordIds: saved.learnedWordIds ?? [],
+          completedGuideIds: saved.completedGuideIds ?? [],
+          completedBuildIdeaIds: saved.completedBuildIdeaIds ?? [],
+          wrongWordCounts: saved.wrongWordCounts ?? {},
+          defeatedMonsterIds: saved.defeatedMonsterIds ?? [],
+          dailyStats: normalizeDailyStats({
+            ...createDailyStats(),
+            ...saved.dailyStats,
+            dailyAdventureCompleted: saved.dailyStats?.dailyAdventureCompleted ?? false,
+            dailyAdventureId: saved.dailyStats?.dailyAdventureId ?? "",
+          }),
+        };
+      },
       partialize: (state) => ({
         playerName: state.playerName,
         xp: state.xp,
@@ -197,6 +399,12 @@ export const useGameStore = create<GameStore>()(
         completedQuestIds: state.completedQuestIds,
         unlockedIds: state.unlockedIds,
         masteredWordIds: state.masteredWordIds,
+        discoveredWordIds: state.discoveredWordIds,
+        learnedWordIds: state.learnedWordIds,
+        completedGuideIds: state.completedGuideIds,
+        completedBuildIdeaIds: state.completedBuildIdeaIds,
+        wrongWordCounts: state.wrongWordCounts,
+        defeatedMonsterIds: state.defeatedMonsterIds,
         dailyStats: state.dailyStats,
       }),
     },

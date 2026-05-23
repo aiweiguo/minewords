@@ -16,7 +16,11 @@ export function SpeakButton({
   return (
     <button
       type="button"
-      onClick={() => speak(text)}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        speak(text);
+      }}
       className={`mw-btn mw-btn-accent ${className}`}
       aria-label={`Play pronunciation for ${text}`}
     >

@@ -1,4 +1,5 @@
 import { Unlockable } from "@/types";
+import { assetMap, backgroundMap, getUnlockableImage } from "@/lib/assets";
 
 export const unlockables: Unlockable[] = [
   {
@@ -7,7 +8,8 @@ export const unlockables: Unlockable[] = [
     name: "Wooden Axe",
     nameCn: "木斧",
     description: "Your first tool for chopping wood.",
-    icon: "🪓",
+    icon: assetMap.axe,
+    rarity: "common",
     questId: "collect-wood",
   },
   {
@@ -16,7 +18,8 @@ export const unlockables: Unlockable[] = [
     name: "Stone Pickaxe",
     nameCn: "石镐",
     description: "Use it to mine stone in caves.",
-    icon: "⛏️",
+    icon: assetMap.pickaxe,
+    rarity: "uncommon",
     questId: "mine-stone",
   },
   {
@@ -25,7 +28,8 @@ export const unlockables: Unlockable[] = [
     name: "Iron Sword",
     nameCn: "铁剑",
     description: "A stronger weapon for battle.",
-    icon: "🗡️",
+    icon: assetMap.sword,
+    rarity: "rare",
     questId: "find-iron",
   },
   {
@@ -34,7 +38,9 @@ export const unlockables: Unlockable[] = [
     name: "Diamond Sword",
     nameCn: "钻石剑",
     description: "A strong weapon made of diamond.",
-    icon: "⚔️",
+    icon: assetMap.sword,
+    image: assetMap.diamond,
+    rarity: "legendary",
     questId: "craft-diamond-sword",
   },
   {
@@ -43,7 +49,8 @@ export const unlockables: Unlockable[] = [
     name: "Word Miner",
     nameCn: "单词矿工",
     description: "Learn 20 Minecraft words.",
-    icon: "🏅",
+    icon: assetMap.pickaxe,
+    rarity: "uncommon",
     questId: "make-planks",
   },
   {
@@ -52,7 +59,8 @@ export const unlockables: Unlockable[] = [
     name: "Diamond Speaker",
     nameCn: "钻石口语者",
     description: "Complete the diamond sword quest.",
-    icon: "💎",
+    icon: assetMap.diamond,
+    rarity: "epic",
     questId: "craft-diamond-sword",
   },
   {
@@ -61,7 +69,8 @@ export const unlockables: Unlockable[] = [
     name: "Forest",
     nameCn: "森林",
     description: "Explore the green forest area.",
-    icon: "🌲",
+    icon: backgroundMap.forest,
+    rarity: "common",
     questId: "collect-wood",
   },
   {
@@ -70,7 +79,8 @@ export const unlockables: Unlockable[] = [
     name: "Cave",
     nameCn: "洞穴",
     description: "Mine deep inside the cave.",
-    icon: "🕳️",
+    icon: backgroundMap.cave,
+    rarity: "uncommon",
     questId: "mine-stone",
   },
   {
@@ -79,7 +89,8 @@ export const unlockables: Unlockable[] = [
     name: "Village",
     nameCn: "村庄",
     description: "Visit the friendly village.",
-    icon: "🏘️",
+    icon: backgroundMap.village,
+    rarity: "uncommon",
     questId: "build-a-bed",
   },
   {
@@ -88,7 +99,8 @@ export const unlockables: Unlockable[] = [
     name: "Bed Builder",
     nameCn: "床铺建造师",
     description: "Learn how to build a bed.",
-    icon: "🛏️",
+    icon: assetMap.chest,
+    rarity: "common",
     questId: "build-a-bed",
   },
   {
@@ -97,7 +109,8 @@ export const unlockables: Unlockable[] = [
     name: "Zombie Fighter",
     nameCn: "僵尸战士",
     description: "Defeat zombies in battle.",
-    icon: "🧟",
+    icon: assetMap.zombie,
+    rarity: "rare",
     questId: "fight-a-zombie",
   },
   {
@@ -106,10 +119,14 @@ export const unlockables: Unlockable[] = [
     name: "Wooden Sword",
     nameCn: "木剑",
     description: "A basic sword for beginners.",
-    icon: "🗡️",
+    icon: assetMap.sword,
+    rarity: "common",
     questId: "fight-a-zombie",
   },
-];
+].map((item) => ({
+  ...item,
+  image: item.image ?? getUnlockableImage(item.id),
+})) as Unlockable[];
 
 export function getUnlockableById(id: string): Unlockable | undefined {
   return unlockables.find((item) => item.id === id);

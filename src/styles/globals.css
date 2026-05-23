@@ -1,14 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7ef;
-  --foreground: #1f2937;
+  --background: #1a1f16;
+  --foreground: #f0f4e8;
   --primary: #4f8a10;
   --secondary: #8b5e34;
   --accent: #2563eb;
   --diamond: #22d3ee;
-  --card: #ffffff;
-  --muted: #6b7280;
+  --card: #2a3224;
+  --muted: #9ca88e;
+  --rarity-common: #9ca3af;
+  --rarity-uncommon: #22c55e;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f59e0b;
+  --slot-bg: #3a3a48;
+  --slot-border: #606070;
+  --panel-wood: #8b6914;
 }
 
 @theme inline {
@@ -26,15 +34,30 @@
 
 body {
   background: var(--background);
+  background-image:
+    linear-gradient(rgba(26, 31, 22, 0.92), rgba(26, 31, 22, 0.92)),
+    url("/assets/backgrounds/base.svg");
+  background-size: cover;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  image-rendering: pixelated;
 }
 
 .mw-card {
   background: var(--card);
-  border: 2px solid #d9e2cc;
-  border-radius: 1rem;
-  box-shadow: 0 4px 0 #c7d4b4;
+  border: 3px solid var(--panel-wood);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 4px 0 #4a3728,
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.mw-game-panel {
+  background: var(--card);
+  border: 3px solid var(--panel-wood);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 0 #4a3728;
 }
 
 .mw-btn {
@@ -42,34 +65,123 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 0.875rem;
+  border-radius: 0.375rem;
   padding: 0.875rem 1.25rem;
   font-size: 1rem;
   font-weight: 700;
-  transition: transform 0.1s ease, opacity 0.1s ease;
+  transition: transform 0.1s ease, opacity 0.1s ease, filter 0.1s ease;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
 }
 
 .mw-btn:active {
-  transform: translateY(1px);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 .mw-btn-primary {
-  background: var(--primary);
+  background: linear-gradient(180deg, #6baf18 0%, var(--primary) 100%);
   color: white;
 }
 
 .mw-btn-secondary {
-  background: var(--secondary);
+  background: linear-gradient(180deg, #a67c52 0%, var(--secondary) 100%);
   color: white;
 }
 
 .mw-btn-accent {
-  background: var(--accent);
+  background: linear-gradient(180deg, #3b82f6 0%, var(--accent) 100%);
   color: white;
 }
 
 .mw-btn-outline {
-  background: white;
+  background: var(--card);
   color: var(--foreground);
-  border: 2px solid #d1d5db;
+  border: 2px solid var(--panel-wood);
+}
+
+.mw-btn-glow {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #f59e0b 100%);
+  color: white;
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.mw-inventory-slot {
+  background-color: var(--slot-bg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 2px solid var(--slot-border);
+  border-radius: 0.25rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.mw-inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.375rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 3px solid var(--panel-wood);
+  border-radius: 0.375rem;
+}
+
+.mw-pixel-icon {
+  image-rendering: pixelated;
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
+
+.mw-rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.mw-rarity-uncommon {
+  border-color: var(--rarity-uncommon);
+}
+
+.mw-rarity-rare {
+  border-color: var(--rarity-rare);
+}
+
+.mw-rarity-epic {
+  border-color: var(--rarity-epic);
+}
+
+.mw-rarity-legendary {
+  border-color: var(--rarity-legendary);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+}
+
+.mw-quest-cover {
+  background-size: cover;
+  background-position: center;
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.mw-glow-text {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.mw-resource-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--panel-wood);
+  border-radius: 0.375rem;
+}
+
+.mw-rarity-glow {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--rarity-color, #f59e0b) 50%, transparent);
+}
+
+.mw-reward-glow {
+  background: linear-gradient(135deg, rgba(79, 138, 16, 0.25), rgba(34, 211, 238, 0.15));
+  box-shadow:
+    0 0 24px rgba(107, 175, 24, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { GameIcon } from "@/components/GameIcon";
+import { RarityBadge } from "@/components/RarityBadge";
+import { DiscoverWordOnMount } from "@/components/DiscoverWordOnMount";
 import { SpeakButton } from "@/components/SpeakButton";
 import { getVocabularyById, vocabulary } from "@/data/vocabulary";
 import { getRelatedWords } from "@/lib/search";
@@ -23,19 +26,30 @@ export default async function DictionaryDetailPage({
 
   return (
     <main className="space-y-6">
-      <Link href="/dictionary" className="text-sm font-bold text-primary">
-        ← 返回词典
+      <DiscoverWordOnMount wordId={word.id} />
+      <Link href="/minedex" className="text-sm font-bold text-primary">
+        ← 返回图鉴 MineDex
       </Link>
 
-      <section className="mw-card p-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-secondary">
-          {word.category}
-        </p>
-        <h1 className="mt-2 text-4xl font-black text-primary">{word.english}</h1>
-        {word.phonetic ? (
-          <p className="mt-2 text-lg text-muted">{word.phonetic}</p>
-        ) : null}
-        <p className="mt-3 text-2xl font-black">{word.chinese}</p>
+      <section className="mw-card overflow-hidden p-6">
+        <div className="flex items-start gap-4">
+          {word.icon ? (
+            <GameIcon src={word.icon} alt={word.english} size="xl" />
+          ) : null}
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-bold uppercase tracking-wide text-secondary">
+                {word.category}
+              </p>
+              {word.rarity ? <RarityBadge rarity={word.rarity} compact /> : null}
+            </div>
+            <h1 className="mt-2 text-4xl font-black text-primary">{word.english}</h1>
+            {word.phonetic ? (
+              <p className="mt-2 text-lg text-muted">{word.phonetic}</p>
+            ) : null}
+            <p className="mt-3 text-2xl font-black">{word.chinese}</p>
+          </div>
+        </div>
 
         {word.words?.length ? (
           <div className="mt-6">

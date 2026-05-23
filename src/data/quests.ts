@@ -1,6 +1,53 @@
 import { Quest } from "@/types";
+import { assetMap, backgroundMap } from "@/lib/assets";
 
-export const quests: Quest[] = [
+const questVisuals: Record<
+  string,
+  { coverImage: string; icon: string; themeColor: string }
+> = {
+  "collect-wood": {
+    coverImage: backgroundMap.forest,
+    icon: assetMap.wood,
+    themeColor: "#4F8A10",
+  },
+  "make-planks": {
+    coverImage: backgroundMap.forest,
+    icon: assetMap.axe,
+    themeColor: "#6B8E23",
+  },
+  "build-a-bed": {
+    coverImage: backgroundMap.village,
+    icon: assetMap.chest,
+    themeColor: "#8B5E34",
+  },
+  "mine-stone": {
+    coverImage: backgroundMap.cave,
+    icon: assetMap.pickaxe,
+    themeColor: "#64748B",
+  },
+  "find-iron": {
+    coverImage: backgroundMap.cave,
+    icon: assetMap.iron,
+    themeColor: "#475569",
+  },
+  "find-diamond": {
+    coverImage: backgroundMap.cave,
+    icon: assetMap.diamond,
+    themeColor: "#0891B2",
+  },
+  "fight-a-zombie": {
+    coverImage: backgroundMap.battle,
+    icon: assetMap.zombie,
+    themeColor: "#B91C1C",
+  },
+  "craft-diamond-sword": {
+    coverImage: backgroundMap.battle,
+    icon: assetMap.sword,
+    themeColor: "#7C3AED",
+  },
+};
+
+const questData: Quest[] = [
   {
     id: "collect-wood",
     title: "Collect Wood",
@@ -9,6 +56,9 @@ export const quests: Quest[] = [
     mapArea: "forest",
     difficulty: 1,
     requiredLevel: 1,
+    coverImage: "/assets/backgrounds/forest.svg",
+    icon: "/assets/icons/resources/wood.svg",
+    themeColor: "#4F8A10",
     steps: [
       {
         id: "collect-wood-q1",
@@ -49,6 +99,9 @@ export const quests: Quest[] = [
     mapArea: "forest",
     difficulty: 1,
     requiredLevel: 1,
+    coverImage: "/assets/backgrounds/forest.svg",
+    icon: "/assets/icons/resources/wood.svg",
+    themeColor: "#6B8E4E",
     steps: [
       {
         id: "make-planks-q1",
@@ -88,6 +141,9 @@ export const quests: Quest[] = [
     mapArea: "forest",
     difficulty: 1,
     requiredLevel: 1,
+    coverImage: "/assets/backgrounds/village.svg",
+    icon: "/assets/icons/ui/chest.svg",
+    themeColor: "#8B5E34",
     steps: [
       {
         id: "build-a-bed-q1",
@@ -126,6 +182,9 @@ export const quests: Quest[] = [
     mapArea: "cave",
     difficulty: 1,
     requiredLevel: 1,
+    coverImage: "/assets/backgrounds/cave.svg",
+    icon: "/assets/icons/resources/stone.svg",
+    themeColor: "#6B7280",
     steps: [
       {
         id: "mine-stone-q1",
@@ -165,6 +224,9 @@ export const quests: Quest[] = [
     mapArea: "cave",
     difficulty: 2,
     requiredLevel: 2,
+    coverImage: "/assets/backgrounds/cave.svg",
+    icon: "/assets/icons/resources/iron.svg",
+    themeColor: "#64748B",
     steps: [
       {
         id: "find-iron-q1",
@@ -204,6 +266,9 @@ export const quests: Quest[] = [
     mapArea: "cave",
     difficulty: 2,
     requiredLevel: 2,
+    coverImage: "/assets/backgrounds/cave.svg",
+    icon: "/assets/icons/resources/diamond.svg",
+    themeColor: "#22D3EE",
     steps: [
       {
         id: "find-diamond-q1",
@@ -243,6 +308,9 @@ export const quests: Quest[] = [
     mapArea: "battle",
     difficulty: 2,
     requiredLevel: 2,
+    coverImage: "/assets/backgrounds/battle.svg",
+    icon: "/assets/icons/mobs/zombie.svg",
+    themeColor: "#DC2626",
     steps: [
       {
         id: "fight-a-zombie-q1",
@@ -282,6 +350,9 @@ export const quests: Quest[] = [
     mapArea: "battle",
     difficulty: 3,
     requiredLevel: 3,
+    coverImage: "/assets/backgrounds/battle.svg",
+    icon: "/assets/icons/equipment/sword.svg",
+    themeColor: "#F59E0B",
     steps: [
       {
         id: "craft-diamond-sword-q1",
@@ -322,6 +393,11 @@ export const quests: Quest[] = [
     unlocks: ["diamond-sword", "diamond-speaker"],
   },
 ];
+
+export const quests: Quest[] = questData.map((quest) => ({
+  ...quest,
+  ...questVisuals[quest.id],
+}));
 
 export function getQuestById(id: string): Quest | undefined {
   return quests.find((quest) => quest.id === id);

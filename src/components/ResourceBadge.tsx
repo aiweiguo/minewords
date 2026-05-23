@@ -1,16 +1,18 @@
+import { GameIcon } from "@/components/GameIcon";
+import { getResourceIcon } from "@/lib/assets";
 import { ResourceType } from "@/types";
 
 const resourceMeta: Record<
   ResourceType,
-  { label: string; emoji: string; color: string }
+  { label: string; color: string }
 > = {
-  wood: { label: "Wood", emoji: "🪵", color: "bg-amber-100 text-amber-900" },
-  stone: { label: "Stone", emoji: "🪨", color: "bg-gray-100 text-gray-800" },
-  iron: { label: "Iron", emoji: "⚙️", color: "bg-slate-100 text-slate-800" },
-  gold: { label: "Gold", emoji: "🥇", color: "bg-yellow-100 text-yellow-900" },
-  emerald: { label: "Emerald", emoji: "💚", color: "bg-green-100 text-green-900" },
-  diamond: { label: "Diamond", emoji: "💎", color: "bg-cyan-100 text-cyan-900" },
-  netherite: { label: "Netherite", emoji: "🖤", color: "bg-zinc-200 text-zinc-900" },
+  wood: { label: "Wood", color: "bg-amber-900/40 text-amber-100 border-amber-700" },
+  stone: { label: "Stone", color: "bg-gray-900/40 text-gray-100 border-gray-600" },
+  iron: { label: "Iron", color: "bg-slate-900/40 text-slate-100 border-slate-600" },
+  gold: { label: "Gold", color: "bg-yellow-900/40 text-yellow-100 border-yellow-600" },
+  emerald: { label: "Emerald", color: "bg-green-900/40 text-green-100 border-green-700" },
+  diamond: { label: "Diamond", color: "bg-cyan-900/40 text-cyan-100 border-cyan-600" },
+  netherite: { label: "Netherite", color: "bg-zinc-900/40 text-zinc-100 border-zinc-600" },
 };
 
 type ResourceBadgeProps = {
@@ -28,13 +30,13 @@ export function ResourceBadge({
 
   return (
     <div
-      className={`inline-flex items-center gap-2 rounded-xl border-2 border-[#d9e2cc] px-3 py-2 font-bold ${meta.color} ${
+      className={`inline-flex items-center gap-2 rounded-md border-2 px-3 py-2 font-bold ${meta.color} ${
         compact ? "text-sm" : "text-base"
       }`}
     >
-      <span>{meta.emoji}</span>
+      <GameIcon src={getResourceIcon(resource)} alt={meta.label} size="xs" />
       <span>{meta.label}</span>
-      <span className="rounded-md bg-white/70 px-2 py-0.5">x{amount}</span>
+      <span className="rounded bg-black/40 px-2 py-0.5 text-xs">x{amount}</span>
     </div>
   );
 }

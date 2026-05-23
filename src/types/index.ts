@@ -10,6 +10,8 @@ export type VocabularyCategory =
   | "biome"
   | "action";
 
+export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+
 export type VocabularyItem = {
   id: string;
   minecraftKey?: string;
@@ -18,6 +20,9 @@ export type VocabularyItem = {
   phonetic?: string;
   category: VocabularyCategory;
   difficulty: 1 | 2 | 3;
+  icon?: string;
+  image?: string;
+  rarity?: Rarity;
   words?: {
     word: string;
     phonetic?: string;
@@ -84,12 +89,15 @@ export type Quest = {
   mapArea: MapArea;
   difficulty: 1 | 2 | 3;
   requiredLevel: number;
+  coverImage?: string;
+  icon?: string;
+  themeColor?: string;
   steps: QuestStep[];
   rewards: Reward[];
   unlocks?: string[];
 };
 
-export type UnlockableType = "equipment" | "title" | "map";
+export type UnlockableType = "equipment" | "title" | "map" | "decoration";
 
 export type Unlockable = {
   id: string;
@@ -98,6 +106,8 @@ export type Unlockable = {
   nameCn: string;
   description: string;
   icon: string;
+  image?: string;
+  rarity?: Rarity;
   questId?: string;
 };
 
@@ -106,6 +116,8 @@ export type DailyStats = {
   completedQuests: number;
   correctAnswers: number;
   learnedWords: number;
+  dailyAdventureCompleted: boolean;
+  dailyAdventureId: string;
 };
 
 export type GameState = {
@@ -115,6 +127,12 @@ export type GameState = {
   completedQuestIds: string[];
   unlockedIds: string[];
   masteredWordIds: string[];
+  discoveredWordIds: string[];
+  learnedWordIds: string[];
+  completedGuideIds: string[];
+  completedBuildIdeaIds: string[];
+  wrongWordCounts: Record<string, number>;
+  defeatedMonsterIds: string[];
   dailyStats: DailyStats;
 };
 
@@ -125,3 +143,149 @@ export type RewardResult = {
 };
 
 export type QuestStatus = "locked" | "available" | "completed";
+
+export type MineDexStatus = "undiscovered" | "discovered" | "learned" | "mastered";
+
+export type GuideCategory =
+  | "survival"
+  | "tools"
+  | "mobs"
+  | "exploration"
+  | "crafting"
+  | "redstone";
+
+export type GuideMaterial = {
+  english: string;
+  chinese: string;
+  amount?: string;
+};
+
+export type GuideStep = {
+  cn: string;
+  en: string;
+};
+
+export type GuideKeyword = {
+  wordId: string;
+  english: string;
+  chinese: string;
+};
+
+export type Guide = {
+  id: string;
+  title: string;
+  titleCn: string;
+  category: GuideCategory;
+  difficulty: 1 | 2 | 3;
+  summaryCn: string;
+  simpleEnglish: string;
+  materials: GuideMaterial[];
+  steps: GuideStep[];
+  keywords: GuideKeyword[];
+  quizSteps: QuestStep[];
+  relatedQuestId?: string;
+  icon?: string;
+};
+
+export type BuildIdeaCategory =
+  | "house"
+  | "farm"
+  | "redstone"
+  | "adventure"
+  | "decoration";
+
+export type BuildIdea = {
+  id: string;
+  title: string;
+  titleCn: string;
+  category: BuildIdeaCategory;
+  descriptionCn: string;
+  missionEn: string[];
+  materials: GuideMaterial[];
+  keywords: GuideKeyword[];
+  rewards: Reward[];
+  icon?: string;
+};
+
+export type CraftingSlot = {
+  itemId: string;
+  english: string;
+  chinese: string;
+};
+
+export type CraftingRecipe = {
+  id: string;
+  resultEnglish: string;
+  resultChinese: string;
+  resultWordId: string;
+  grid: (CraftingSlot | null)[][];
+  simpleEnglish: string;
+  simpleChinese: string;
+  keywordIds: string[];
+  relatedGuideId?: string;
+  relatedQuestId?: string;
+};
+
+export type DailyAdventurePlan = {
+  id: string;
+  title: string;
+  titleCn: string;
+  descriptionCn: string;
+  wordIds: string[];
+  questId?: string;
+  guideId?: string;
+  rewards: Reward[];
+};
+
+export type MaterialPlanItem = {
+  itemId: string;
+  english: string;
+  chinese: string;
+  amount: number;
+};
+
+export type MaterialPlan = {
+  id: string;
+  title: string;
+  titleCn: string;
+  descriptionCn: string;
+  simpleEnglish: string;
+  items: MaterialPlanItem[];
+  keywordIds: string[];
+};
+
+export type MapZone = {
+  id: string;
+  mapArea: MapArea;
+  name: string;
+  nameCn: string;
+  emoji: string;
+  requiredLevel: number;
+  questIds: string[];
+  descriptionCn: string;
+};
+
+export type SpeakRole = "steve" | "alex" | "villager";
+
+export type SpeakScenario = {
+  id: string;
+  role: SpeakRole;
+  title: string;
+  titleCn: string;
+  npcLine: string;
+  npcLineCn: string;
+  expectedText: string;
+  keywords: string[];
+  hintCn: string;
+  rewardXp: number;
+};
+
+export type BaseDecoration = {
+  id: string;
+  name: string;
+  nameCn: string;
+  emoji: string;
+  description: string;
+  requiredWordIds: string[];
+  requiredCount: number;
+};
