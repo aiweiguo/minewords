@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f7ef;
+  --foreground: #1f2937;
+  --primary: #4f8a10;
+  --secondary: #8b5e34;
+  --accent: #2563eb;
+  --diamond: #22d3ee;
+  --card: #ffffff;
+  --muted: #6b7280;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-diamond: var(--diamond);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.mw-card {
+  background: var(--card);
+  border: 2px solid #d9e2cc;
+  border-radius: 1rem;
+  box-shadow: 0 4px 0 #c7d4b4;
+}
+
+.mw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.mw-btn:active {
+  transform: translateY(1px);
+}
+
+.mw-btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.mw-btn-secondary {
+  background: var(--secondary);
+  color: white;
+}
+
+.mw-btn-accent {
+  background: var(--accent);
+  color: white;
+}
+
+.mw-btn-outline {
+  background: white;
+  color: var(--foreground);
+  border: 2px solid #d1d5db;
+}

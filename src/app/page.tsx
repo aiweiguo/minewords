@@ -1,65 +1,134 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+
+import { displayResources, ResourceBadge } from "@/components/ResourceBadge";
+import { StatCard } from "@/components/StatCard";
+import { quests } from "@/data/quests";
+import { unlockables } from "@/data/unlockables";
+import { getQuestStatus } from "@/lib/questEngine";
+import { getXpProgress } from "@/lib/progress";
+import { useGameStore } from "@/store/useGameStore";
+
+const quickLinks = [
+  { href: "/dictionary", label: "词典", icon: "📖" },
+  { href: "/quests", label: "任务", icon: "⚔️" },
+  { href: "/inventory", label: "背包", icon: "🎒" },
+  { href: "/unlocks", label: "解锁", icon: "🔓" },
+];
+
+export default function HomePage() {
+  const playerName = useGameStore((state) => state.playerName);
+  const xp = useGameStore((state) => state.xp);
+  const resources = useGameStore((state) => state.resources);
+  const completedQuestIds = useGameStore((state) => state.completedQuestIds);
+  const unlockedIds = useGameStore((state) => state.unlockedIds);
+  const dailyStats = useGameStore((state) => state.dailyStats);
+  const resetProgress = useGameStore((state) => state.resetProgress);
+
+  const progress = getXpProgress(xp);
+
+  const recommendedQuests = quests
+    .filter(
+      (quest) =>
+        getQuestStatus(quest, xp, completedQuestIds) === "available",
+    )
+    .slice(0, 3);
+
+  const unlockedEquipment = unlockables.filter(
+    (item) => item.type === "equipment" && unlockedIds.includes(item.id),
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="space-y-6">
+      <StatCard
+        playerName={playerName}
+        level={progress.level}
+        xp={xp}
+        currentLevelXp={progress.currentLevelXp}
+        xpForNextLevel={progress.xpForNextLevel}
+        percent={progress.percent}
+      />
+
+      <section className="mw-card p-5">
+        <h2 className="text-xl font-black">背包资源</h2>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {displayResources.map((resource) => (
+            <ResourceBadge
+              key={resource}
+              resource={resource}
+              amount={resources[resource]}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="mw-card p-5">
+        <h2 className="text-xl font-black">今日任务进度</h2>
+        <div className="mt-3 grid gap-2 text-sm font-semibold text-muted">
+          <p>已完成任务：{dailyStats.completedQuests}</p>
+          <p>答对题数：{dailyStats.correctAnswers}</p>
+          <p>学会单词：{dailyStats.learnedWords}</p>
+        </div>
+        <div className="mt-4 space-y-3">
+          {recommendedQuests.length > 0 ? (
+            recommendedQuests.map((quest) => (
+              <Link
+                key={quest.id}
+                href={`/quests/${quest.id}`}
+                className="block rounded-xl border-2 border-[#d9e2cc] bg-[#f5f7ef] px-4 py-3 font-bold hover:bg-[#eef6e4]"
+              >
+                {quest.title} / {quest.titleCn}
+              </Link>
+            ))
+          ) : (
+            <p className="text-sm font-semibold text-muted">
+              今天的推荐任务都完成啦！可以去词典或重复练习。
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="mw-card p-5">
+        <h2 className="text-xl font-black">已解锁装备</h2>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {unlockedEquipment.length > 0 ? (
+            unlockedEquipment.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-xl bg-[#eef6e4] px-4 py-3 font-bold text-primary"
+              >
+                {item.icon} {item.nameCn}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm font-semibold text-muted">完成任务解锁第一件装备吧！</p>
+          )}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {quickLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="mw-card flex flex-col items-center justify-center p-4 text-center font-black text-primary"
+          >
+            <span className="text-3xl">{link.icon}</span>
+            <span className="mt-2">{link.label}</span>
+          </Link>
+        ))}
+      </section>
+
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={resetProgress}
+          className="text-xs font-semibold text-muted underline"
+        >
+          Reset Progress 重置进度（测试用）
+        </button>
+      </div>
+    </main>
   );
 }
