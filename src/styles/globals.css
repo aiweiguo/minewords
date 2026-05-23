@@ -185,3 +185,64 @@ body {
     0 0 24px rgba(107, 175, 24, 0.25),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
+
+@keyframes mw-map-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mw-map-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes mw-map-arrow {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+.mw-map-zone {
+  animation: mw-map-enter 0.6s ease both;
+}
+
+.mw-map-zone-active {
+  box-shadow:
+    0 4px 0 #4a3728,
+    0 0 0 1px rgba(107, 175, 24, 0.15);
+}
+
+.mw-map-zone-complete {
+  box-shadow:
+    0 4px 0 #4a3728,
+    0 0 18px rgba(245, 158, 11, 0.25);
+}
+
+.mw-map-pulse {
+  animation: mw-map-pulse 2s ease-in-out infinite;
+}
+
+.mw-map-arrow {
+  animation: mw-map-arrow 1.4s ease-in-out infinite;
+}
+
+.mw-base-deco-unlocked {
+  filter: drop-shadow(0 0 8px rgba(107, 175, 24, 0.45));
+}

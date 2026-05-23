@@ -12,6 +12,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "stick", english: "Stick", chinese: "木棍", amount: 1 },
     ],
     keywordIds: ["diamond", "sword", "stick"],
+    queryAliases: ["钻石剑", "diamond sword", "做钻石剑"],
   },
   {
     id: "diamond-sword-x3",
@@ -24,6 +25,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "stick", english: "Stick", chinese: "木棍", amount: 3 },
     ],
     keywordIds: ["diamond", "sword", "stick"],
+    queryAliases: ["三把钻石剑", "3把钻石剑", "3 diamond swords"],
   },
   {
     id: "torch-x16",
@@ -36,6 +38,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "stick", english: "Stick", chinese: "木棍", amount: 8 },
     ],
     keywordIds: ["torch", "coal", "stick", "light"],
+    queryAliases: ["火把", "torch", "16个火把", "16火把"],
   },
   {
     id: "small-house",
@@ -51,6 +54,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "bed", english: "Bed", chinese: "床", amount: 1 },
     ],
     keywordIds: ["build", "plank", "door", "bed", "shelter"],
+    queryAliases: ["小房子", "房子", "house", "建房子", "small house"],
   },
   {
     id: "iron-pickaxe-x1",
@@ -63,6 +67,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "stick", english: "Stick", chinese: "木棍", amount: 2 },
     ],
     keywordIds: ["iron", "pickaxe", "stick"],
+    queryAliases: ["铁镐", "iron pickaxe", "做铁镐"],
   },
   {
     id: "bed-x1",
@@ -75,6 +80,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "plank", english: "Plank", chinese: "木板", amount: 3 },
     ],
     keywordIds: ["wool", "plank", "bed", "sleep"],
+    queryAliases: ["床", "bed", "做床", "一张床"],
   },
 ];
 
@@ -85,7 +91,7 @@ export function getMaterialPlanById(id: string): MaterialPlan | undefined {
 export function scaleMaterialPlan(plan: MaterialPlan, multiplier: number): MaterialPlan {
   return {
     ...plan,
-    id: `${plan.id}-x${multiplier}`,
+    id: `${plan.id}-scaled-${multiplier}`,
     title: `${multiplier}× ${plan.title}`,
     titleCn: `${multiplier}× ${plan.titleCn}`,
     items: plan.items.map((item) => ({

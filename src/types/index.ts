@@ -109,6 +109,8 @@ export type Unlockable = {
   image?: string;
   rarity?: Rarity;
   questId?: string;
+  requiredWordIds?: string[];
+  requiredCount?: number;
 };
 
 export type DailyStats = {
@@ -118,6 +120,7 @@ export type DailyStats = {
   learnedWords: number;
   dailyAdventureCompleted: boolean;
   dailyAdventureId: string;
+  speakAttempts: number;
 };
 
 export type GameState = {
@@ -131,8 +134,11 @@ export type GameState = {
   learnedWordIds: string[];
   completedGuideIds: string[];
   completedBuildIdeaIds: string[];
+  completedSpeakIds: string[];
   wrongWordCounts: Record<string, number>;
   defeatedMonsterIds: string[];
+  learningStreak: number;
+  lastActiveDate: string;
   dailyStats: DailyStats;
 };
 
@@ -252,6 +258,18 @@ export type MaterialPlan = {
   simpleEnglish: string;
   items: MaterialPlanItem[];
   keywordIds: string[];
+  queryAliases?: string[];
+};
+
+export type SentencePattern = {
+  id: string;
+  patternEn: string;
+  patternCn: string;
+  examples: {
+    english: string;
+    chinese: string;
+    wordIds: string[];
+  }[];
 };
 
 export type MapZone = {

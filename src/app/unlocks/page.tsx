@@ -5,6 +5,7 @@ import { RarityBadge } from "@/components/RarityBadge";
 import { getQuestById } from "@/data/quests";
 import { unlockables } from "@/data/unlockables";
 import { assetMap, getUnlockableImage } from "@/lib/assets";
+import { getDecorationUnlockHint } from "@/lib/decorationUnlocks";
 import { getUnlockConditionText } from "@/lib/questEngine";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -34,7 +35,7 @@ export default function UnlocksPage() {
       <section className="mw-card p-5">
         <h1 className="text-3xl font-black text-primary">Unlocks 解锁</h1>
         <p className="mt-2 text-sm font-semibold text-muted">
-          完成任务解锁装备、称号和地图区域。
+          完成任务解锁装备、称号、地图区域；掌握单词解锁基地装饰。
         </p>
       </section>
 
@@ -66,6 +67,7 @@ export default function UnlocksPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {locked.map((item) => {
             const quest = item.questId ? getQuestById(item.questId) : undefined;
+            const decorationHint = getDecorationUnlockHint(item.id);
             return (
               <article key={item.id} className="mw-card p-4 opacity-80">
                 <div className="flex items-center gap-3">
@@ -73,12 +75,16 @@ export default function UnlocksPage() {
                   <div>
                     <h3 className="text-lg font-black">{item.name}</h3>
                     <p className="font-bold text-secondary">{item.nameCn}</p>
+                    {item.type === "decoration" ? (
+                      <span className="text-xs font-bold text-primary">基地装饰</span>
+                    ) : null}
                   </div>
                 </div>
                 <p className="mt-3 text-sm text-muted">{item.description}</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-bold text-primary">
                   <GameIcon src={assetMap.lock} alt="Locked" size="xs" />
-                  {getUnlockConditionText(item.questId, quest?.titleCn)}
+                  {decorationHint ??
+                    getUnlockConditionText(item.questId, quest?.titleCn)}
                 </p>
               </article>
             );

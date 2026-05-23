@@ -1,5 +1,18 @@
 import { Unlockable } from "@/types";
+import { baseDecorations } from "@/data/baseDecorations";
 import { assetMap, backgroundMap, getUnlockableImage } from "@/lib/assets";
+
+const decorationUnlockables: Unlockable[] = baseDecorations.map((deco) => ({
+  id: deco.id,
+  type: "decoration",
+  name: deco.name,
+  nameCn: deco.nameCn,
+  description: deco.description,
+  icon: deco.emoji,
+  rarity: "uncommon",
+  requiredWordIds: deco.requiredWordIds,
+  requiredCount: deco.requiredCount,
+}));
 
 export const unlockables: Unlockable[] = [
   {
@@ -123,6 +136,7 @@ export const unlockables: Unlockable[] = [
     rarity: "common",
     questId: "fight-a-zombie",
   },
+  ...decorationUnlockables,
 ].map((item) => ({
   ...item,
   image: item.image ?? getUnlockableImage(item.id),

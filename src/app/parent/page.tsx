@@ -4,7 +4,9 @@ import Link from "next/link";
 
 import { guides } from "@/data/guides";
 import { vocabulary } from "@/data/vocabulary";
+import { speakScenarios } from "@/data/speakScenarios";
 import { getTodayDateString } from "@/lib/dailyAdventure";
+import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
 
 export default function ParentPage() {
@@ -16,6 +18,10 @@ export default function ParentPage() {
   const discoveredWordIds = useGameStore((s) => s.discoveredWordIds);
   const completedQuestIds = useGameStore((s) => s.completedQuestIds);
   const completedGuideIds = useGameStore((s) => s.completedGuideIds);
+  const completedSpeakIds = useGameStore((s) => s.completedSpeakIds);
+  const wrongWordCounts = useGameStore((s) => s.wrongWordCounts);
+  const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
+  const learningStreak = useGameStore((s) => s.learningStreak);
 
   const level = Math.floor(xp / 100) + 1;
 
@@ -24,7 +30,25 @@ export default function ParentPage() {
     (w) => learnedWordIds.includes(w.id) && !masteredWordIds.includes(w.id),
   );
 
+  const reviewWords = Object.entries(wrongWordCounts)
+    .filter(
+      ([wordId, count]) =>
+        count >= MONSTER_WRONG_THRESHOLD && !defeatedMonsterIds.includes(wordId),
+    )
+    .map(([wordId]) => vocabulary.find((w) => w.id === wordId))
+    .filter(Boolean);
+
   const todayActive = dailyStats.date === getTodayDateString();
+
+  const todaySummary =
+    masteredWords.length > 0
+      ? `今天掌握：${masteredWords.slice(-5).map((w) => w.english).join(", ")}`
+      : "今天还没有新掌握的单词。";
+
+  const reviewSummary =
+    reviewWords.length > 0
+      ? `需要复习：${reviewWords.map((w) => w!.english).join(", ")}`
+      : "目前没有活跃错词怪物。";
 
   return (
     <main className="space-y-6">
@@ -36,6 +60,12 @@ export default function ParentPage() {
         </p>
       </section>
 
+      <section className="mw-card mw-reward-panel p-5">
+        <h2 className="text-xl font-black">一句话总结</h2>
+        <p className="mt-3 text-sm font-semibold">{todaySummary}</p>
+        <p className="mt-2 text-sm font-semibold text-amber-200">{reviewSummary}</p>
+      </section>
+
       <section className="mw-card p-5">
         <h2 className="text-xl font-black">今日概览</h2>
         {todayActive ? (
@@ -43,6 +73,7 @@ export default function ParentPage() {
             <li>完成任务：{dailyStats.completedQuests} 个</li>
             <li>答对题数：{dailyStats.correctAnswers} 题</li>
             <li>新学单词：{dailyStats.learnedWords} 个</li>
+            <li>口语尝试：{dailyStats.speakAttempts} 次</li>
             <li>
               今日冒险：{dailyStats.dailyAdventureCompleted ? "已完成 ✓" : "未完成"}
             </li>
@@ -57,11 +88,14 @@ export default function ParentPage() {
         <ul className="mt-4 space-y-2 text-sm font-semibold">
           <li>等级：Lv {level}</li>
           <li>总 XP：{xp}</li>
+          <li>连续学习：{learningStreak} 天</li>
           <li>已完成任务：{completedQuestIds.length} / 8</li>
           <li>已完成攻略：{completedGuideIds.length} / {guides.length}</li>
+          <li>已完成口语场景：{completedSpeakIds.length} / {speakScenarios.length}</li>
           <li>已发现单词：{discoveredWordIds.length} / {vocabulary.length}</li>
           <li>已学习单词：{learnedWordIds.length}</li>
           <li>已掌握单词：{masteredWordIds.length}</li>
+          <li>已击败错词怪：{defeatedMonsterIds.length} 个</li>
         </ul>
       </section>
 
@@ -81,6 +115,18 @@ export default function ParentPage() {
             {learnedNotMastered.slice(0, 10).map((w) => w.english).join("、")}
             {learnedNotMastered.length > 10 ? "…" : ""}
           </p>
+        </section>
+      ) : null}
+
+      {reviewWords.length > 0 ? (
+        <section className="mw-card p-5">
+          <h2 className="text-xl font-black">错词怪物</h2>
+          <p className="mt-2 text-sm font-semibold text-muted">
+            {reviewWords.map((w) => `${w!.english} (${w!.chinese})`).join("、")}
+          </p>
+          <Link href="/review" className="mt-4 inline-flex text-sm font-bold text-primary underline">
+            去击败单词怪 →
+          </Link>
         </section>
       ) : null}
 
