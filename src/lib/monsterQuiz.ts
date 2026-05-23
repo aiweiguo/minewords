@@ -1,32 +1,43 @@
-import { getVocabularyById, vocabulary } from "@/data/vocabulary";
+import { vocabulary } from "@/data/vocabulary";
 import { QuestStep } from "@/types";
+import { shuffleArray } from "@/lib/shuffle";
 
 function pickDistractors(wordId: string, count: number): string[] {
-  const word = getVocabularyById(wordId);
+  const word = vocabulary.find((item) => item.id === wordId);
   if (!word) return [];
 
-  return vocabulary
-    .filter((item) => item.id !== wordId && item.category === word.category)
-    .sort(() => Math.random() - 0.5)
+  const sameCategory = vocabulary.filter(
+    (item) => item.id !== wordId && item.category === word.category,
+  );
+  const fallback = vocabulary.filter((item) => item.id !== wordId);
+  const pool = sameCategory.length >= count ? sameCategory : fallback;
+
+  return shuffleArray(pool)
     .slice(0, count)
     .map((item) => item.chinese);
 }
 
 export function buildMonsterQuizSteps(wordId: string): QuestStep[] {
-  const word = getVocabularyById(wordId);
+  const word = vocabulary.find((item) => item.id === wordId);
   if (!word) {
     return [];
   }
 
   const distractors = pickDistractors(wordId, 2);
-  const meaningOptions = [word.chinese, ...distractors].sort(() => Math.random() - 0.5);
+  const meaningOptions = shuffleArray([word.chinese, ...distractors]);
 
-  const englishDistractors = vocabulary
-    .filter((item) => item.id !== wordId)
-    .sort(() => Math.random() - 0.5)
+  const englishDistractors = shuffleArray(
+    vocabulary.filter((item) => item.id !== wordId),
+  )
     .slice(0, 2)
     .map((item) => item.english);
-  const englishOptions = [word.english, ...englishDistractors].sort(() => Math.random() - 0.5);
+  const englishOptions = shuffleArray([word.english, ...englishDistractors]);
+
+  const sentenceDistractors = shuffleArray(
+    vocabulary.filter((item) => item.id !== wordId),
+  )
+    .slice(0, 2)
+    .map((item) => item.example);
 
   return [
     {
@@ -49,9 +60,7 @@ export function buildMonsterQuizSteps(wordId: string): QuestStep[] {
       id: `${wordId}-sentence`,
       type: "word-choice",
       prompt: `哪一句用了 ${word.english}？`,
-      options: [word.example, ...vocabulary.filter((w) => w.id !== wordId).slice(0, 2).map((w) => w.example)].sort(
-        () => Math.random() - 0.5,
-      ),
+      options: shuffleArray([word.example, ...sentenceDistractors]),
       answer: word.example,
       explanation: word.exampleCn,
     },

@@ -3,7 +3,8 @@
 import Link from "next/link";
 
 import { guides } from "@/data/guides";
-import { vocabulary } from "@/data/vocabulary";
+import { quests } from "@/data/quests";
+import { getVocabularyById, vocabulary } from "@/data/vocabulary";
 import { speakScenarios } from "@/data/speakScenarios";
 import { getTodayDateString } from "@/lib/dailyAdventure";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
@@ -35,15 +36,21 @@ export default function ParentPage() {
       ([wordId, count]) =>
         count >= MONSTER_WRONG_THRESHOLD && !defeatedMonsterIds.includes(wordId),
     )
-    .map(([wordId]) => vocabulary.find((w) => w.id === wordId))
+    .map(([wordId]) => getVocabularyById(wordId))
     .filter(Boolean);
 
   const todayActive = dailyStats.date === getTodayDateString();
 
+  const todayMastered = dailyStats.masteredTodayIds
+    .map((id) => getVocabularyById(id)?.english)
+    .filter(Boolean);
+
   const todaySummary =
-    masteredWords.length > 0
-      ? `今天掌握：${masteredWords.slice(-5).map((w) => w.english).join(", ")}`
-      : "今天还没有新掌握的单词。";
+    todayMastered.length > 0
+      ? `今天掌握：${todayMastered.join(", ")}`
+      : dailyStats.learnedWords > 0
+        ? `今天新学 ${dailyStats.learnedWords} 个单词，继续加油！`
+        : "今天还没有新掌握的单词。";
 
   const reviewSummary =
     reviewWords.length > 0
@@ -71,6 +78,8 @@ export default function ParentPage() {
         {todayActive ? (
           <ul className="mt-4 space-y-2 text-sm font-semibold">
             <li>完成任务：{dailyStats.completedQuests} 个</li>
+            <li>领取创意：{dailyStats.buildIdeasClaimed} 个</li>
+            <li>完成冒险：{dailyStats.adventuresCompleted} 次</li>
             <li>答对题数：{dailyStats.correctAnswers} 题</li>
             <li>新学单词：{dailyStats.learnedWords} 个</li>
             <li>口语尝试：{dailyStats.speakAttempts} 次</li>
@@ -89,7 +98,7 @@ export default function ParentPage() {
           <li>等级：Lv {level}</li>
           <li>总 XP：{xp}</li>
           <li>连续学习：{learningStreak} 天</li>
-          <li>已完成任务：{completedQuestIds.length} / 8</li>
+          <li>已完成任务：{completedQuestIds.length} / {quests.length}</li>
           <li>已完成攻略：{completedGuideIds.length} / {guides.length}</li>
           <li>已完成口语场景：{completedSpeakIds.length} / {speakScenarios.length}</li>
           <li>已发现单词：{discoveredWordIds.length} / {vocabulary.length}</li>

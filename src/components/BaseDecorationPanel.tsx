@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
 
 import { baseDecorations, isDecorationUnlocked } from "@/data/baseDecorations";
 import { backgroundMap } from "@/lib/assets";
@@ -22,11 +21,6 @@ export function BaseDecorationPanel() {
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
-  const syncDecorationUnlocks = useGameStore((s) => s.syncDecorationUnlocks);
-
-  useEffect(() => {
-    syncDecorationUnlocks();
-  }, [learnedWordIds, masteredWordIds, syncDecorationUnlocks]);
 
   const unlockedDecorations = baseDecorations.filter(
     (deco) =>

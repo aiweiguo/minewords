@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import { getBuildIdeaById } from "@/data/buildIdeas";
 import { getQuestById } from "@/data/quests";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
+import { getTodayDateString, getYesterdayDateString } from "@/lib/date";
 import { getDecorationUnlockIds } from "@/lib/decorationUnlocks";
 import { buildRewardResult } from "@/lib/questEngine";
 import {
@@ -25,16 +26,15 @@ const defaultResources: Record<ResourceType, number> = {
   netherite: 0,
 };
 
-function getTodayDateString(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function createDailyStats(): DailyStats {
   return {
     date: getTodayDateString(),
     completedQuests: 0,
+    buildIdeasClaimed: 0,
+    adventuresCompleted: 0,
     correctAnswers: 0,
     learnedWords: 0,
+    masteredTodayIds: [],
     dailyAdventureCompleted: false,
     dailyAdventureId: "",
     speakAttempts: 0,
@@ -47,7 +47,10 @@ function normalizeDailyStats(stats: Partial<DailyStats> | undefined): DailyStats
     return {
       ...base,
       ...stats,
+      buildIdeasClaimed: stats.buildIdeasClaimed ?? 0,
+      adventuresCompleted: stats.adventuresCompleted ?? 0,
       speakAttempts: stats.speakAttempts ?? 0,
+      masteredTodayIds: stats.masteredTodayIds ?? [],
     };
   }
   return base;
@@ -62,10 +65,7 @@ function touchLearningDay(state: GameState): Pick<GameState, "learningStreak" | 
     };
   }
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().slice(0, 10);
-  const continued = state.lastActiveDate === yesterdayStr;
+  const continued = state.lastActiveDate === getYesterdayDateString();
 
   return {
     learningStreak: continued ? state.learningStreak + 1 : 1,
@@ -97,6 +97,29 @@ function migrateSpeakIds(saved: Partial<GameState>): {
   return { completedSpeakIds, completedBuildIdeaIds };
 }
 
+function applyWordMasteredState(state: GameState, wordId: string): GameState {
+  const dailyStats = normalizeDailyStats(state.dailyStats);
+  const newlyMastered = !state.masteredWordIds.includes(wordId);
+  const newlyLearned = !state.learnedWordIds.includes(wordId);
+
+  return {
+    ...state,
+    discoveredWordIds: mergeWordIds(state.discoveredWordIds, [wordId]),
+    learnedWordIds: mergeWordIds(state.learnedWordIds, [wordId]),
+    masteredWordIds: newlyMastered
+      ? [...state.masteredWordIds, wordId]
+      : state.masteredWordIds,
+    dailyStats: {
+      ...dailyStats,
+      learnedWords: dailyStats.learnedWords + (newlyLearned ? 1 : 0),
+      masteredTodayIds:
+        newlyMastered && !dailyStats.masteredTodayIds.includes(wordId)
+          ? [...dailyStats.masteredTodayIds, wordId]
+          : dailyStats.masteredTodayIds,
+    },
+  };
+}
+
 const initialState: GameState = {
   playerName: "Alex",
   xp: 0,
@@ -122,6 +145,7 @@ type GameStore = GameState & {
   unlockItem: (unlockId: string) => void;
   discoverWord: (wordId: string) => void;
   markWordLearned: (wordId: string) => void;
+  markWordsLearned: (wordIds: string[]) => void;
   markWordMastered: (wordId: string) => void;
   completeQuest: (questId: string) => RewardResult | null;
   completeGuide: (guideId: string, keywordIds?: string[]) => boolean;
@@ -133,7 +157,7 @@ type GameStore = GameState & {
   recordSpeakAttempt: () => void;
   syncDecorationUnlocks: () => void;
   recordDailyAnswer: (correct: boolean) => void;
-  recordCorrectAnswer: () => void;
+  recordCorrectAnswer: (options?: { practiceMode?: boolean }) => void;
   resetProgress: () => void;
 };
 
@@ -230,40 +254,49 @@ export const useGameStore = create<GameStore>()(
 
       markWordLearned: (wordId) =>
         set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          const isNew = !state.learnedWordIds.includes(wordId);
           const next = {
             ...state,
             discoveredWordIds: mergeWordIds(state.discoveredWordIds, [wordId]),
-            learnedWordIds: state.learnedWordIds.includes(wordId)
-              ? state.learnedWordIds
-              : [...state.learnedWordIds, wordId],
+            learnedWordIds: isNew
+              ? [...state.learnedWordIds, wordId]
+              : state.learnedWordIds,
+            dailyStats: isNew
+              ? { ...dailyStats, learnedWords: dailyStats.learnedWords + 1 }
+              : dailyStats,
             ...touchLearningDay(state),
           };
-          return {
-            ...next,
-            ...withDecorationSync(next),
+          return { ...next, ...withDecorationSync(next) };
+        }),
+
+      markWordsLearned: (wordIds) =>
+        set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          const newIds = wordIds.filter((id) => !state.learnedWordIds.includes(id));
+          const next = {
+            ...state,
+            discoveredWordIds: mergeWordIds(state.discoveredWordIds, wordIds),
+            learnedWordIds: mergeWordIds(state.learnedWordIds, wordIds),
+            dailyStats:
+              newIds.length > 0
+                ? {
+                    ...dailyStats,
+                    learnedWords: dailyStats.learnedWords + newIds.length,
+                  }
+                : dailyStats,
+            ...touchLearningDay(state),
           };
+          return { ...next, ...withDecorationSync(next) };
         }),
 
       markWordMastered: (wordId) =>
         set((state) => {
-          const dailyStats = normalizeDailyStats(state.dailyStats);
           const next = {
-            ...state,
-            discoveredWordIds: mergeWordIds(state.discoveredWordIds, [wordId]),
-            learnedWordIds: mergeWordIds(state.learnedWordIds, [wordId]),
-            masteredWordIds: state.masteredWordIds.includes(wordId)
-              ? state.masteredWordIds
-              : [...state.masteredWordIds, wordId],
-            dailyStats: {
-              ...dailyStats,
-              learnedWords: dailyStats.learnedWords + 1,
-            },
+            ...applyWordMasteredState(state, wordId),
             ...touchLearningDay(state),
           };
-          return {
-            ...next,
-            ...withDecorationSync(next),
-          };
+          return { ...next, ...withDecorationSync(next) };
         }),
 
       recordDailyAnswer: (correct) =>
@@ -279,10 +312,19 @@ export const useGameStore = create<GameStore>()(
           };
         }),
 
-      recordCorrectAnswer: () => {
-        get().addXp(XP_PER_CORRECT_ANSWER);
-        get().recordDailyAnswer(true);
-        set((state) => touchLearningDay(state));
+      recordCorrectAnswer: (options) => {
+        if (options?.practiceMode) return;
+        set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          return {
+            xp: state.xp + XP_PER_CORRECT_ANSWER,
+            dailyStats: {
+              ...dailyStats,
+              correctAnswers: dailyStats.correctAnswers + 1,
+            },
+            ...touchLearningDay(state),
+          };
+        });
       },
 
       completeQuest: (questId) => {
@@ -313,10 +355,7 @@ export const useGameStore = create<GameStore>()(
             },
             ...touchLearningDay(state),
           };
-          return {
-            ...next,
-            ...withDecorationSync(next),
-          };
+          return { ...next, ...withDecorationSync(next) };
         });
 
         return rewardResult;
@@ -329,6 +368,7 @@ export const useGameStore = create<GameStore>()(
 
         set((state) => {
           const dailyStats = normalizeDailyStats(state.dailyStats);
+          const newLearned = keywordIds.filter((id) => !state.learnedWordIds.includes(id));
           const next = {
             ...state,
             completedGuideIds: [...state.completedGuideIds, guideId],
@@ -338,13 +378,11 @@ export const useGameStore = create<GameStore>()(
             dailyStats: {
               ...dailyStats,
               correctAnswers: dailyStats.correctAnswers + 1,
+              learnedWords: dailyStats.learnedWords + newLearned.length,
             },
             ...touchLearningDay(state),
           };
-          return {
-            ...next,
-            ...withDecorationSync(next),
-          };
+          return { ...next, ...withDecorationSync(next) };
         });
 
         return true;
@@ -362,17 +400,21 @@ export const useGameStore = create<GameStore>()(
           const dailyStats = normalizeDailyStats(state.dailyStats);
           const applied = applyRewardList(state, idea.rewards);
           const keywordIds = idea.keywords.map((k) => k.wordId);
-
-          return {
+          const newLearned = keywordIds.filter((id) => !state.learnedWordIds.includes(id));
+          const next = {
+            ...state,
             ...applied,
             completedBuildIdeaIds: [...state.completedBuildIdeaIds, ideaId],
             discoveredWordIds: mergeWordIds(state.discoveredWordIds, keywordIds),
             learnedWordIds: mergeWordIds(state.learnedWordIds, keywordIds),
             dailyStats: {
               ...dailyStats,
-              completedQuests: dailyStats.completedQuests + 1,
+              buildIdeasClaimed: dailyStats.buildIdeasClaimed + 1,
+              learnedWords: dailyStats.learnedWords + newLearned.length,
             },
+            ...touchLearningDay(state),
           };
+          return { ...next, ...withDecorationSync(next) };
         });
 
         return true;
@@ -390,8 +432,9 @@ export const useGameStore = create<GameStore>()(
         set((state) => {
           const stats = normalizeDailyStats(state.dailyStats);
           const applied = applyRewardList(state, plan.rewards);
-
-          return {
+          const newLearned = plan.wordIds.filter((id) => !state.learnedWordIds.includes(id));
+          const next = {
+            ...state,
             ...applied,
             discoveredWordIds: mergeWordIds(state.discoveredWordIds, plan.wordIds),
             learnedWordIds: mergeWordIds(state.learnedWordIds, plan.wordIds),
@@ -399,9 +442,12 @@ export const useGameStore = create<GameStore>()(
               ...stats,
               dailyAdventureCompleted: true,
               dailyAdventureId: plan.id,
-              completedQuests: stats.completedQuests + 1,
+              adventuresCompleted: stats.adventuresCompleted + 1,
+              learnedWords: stats.learnedWords + newLearned.length,
             },
+            ...touchLearningDay(state),
           };
+          return { ...next, ...withDecorationSync(next) };
         });
 
         return true;
@@ -420,23 +466,18 @@ export const useGameStore = create<GameStore>()(
           return false;
         }
         set((state) => {
+          const mastered = applyWordMasteredState(state, wordId);
           const next = {
-            ...state,
-            defeatedMonsterIds: [...state.defeatedMonsterIds, wordId],
+            ...mastered,
+            defeatedMonsterIds: [...mastered.defeatedMonsterIds, wordId],
             wrongWordCounts: {
-              ...state.wrongWordCounts,
+              ...mastered.wrongWordCounts,
               [wordId]: 0,
             },
-            masteredWordIds: state.masteredWordIds.includes(wordId)
-              ? state.masteredWordIds
-              : [...state.masteredWordIds, wordId],
-            xp: state.xp + 10,
+            xp: mastered.xp + 10,
             ...touchLearningDay(state),
           };
-          return {
-            ...next,
-            ...withDecorationSync(next),
-          };
+          return { ...next, ...withDecorationSync(next) };
         });
         return true;
       },
@@ -472,8 +513,7 @@ export const useGameStore = create<GameStore>()(
         return true;
       },
 
-      syncDecorationUnlocks: () =>
-        set((state) => withDecorationSync(state)),
+      syncDecorationUnlocks: () => set((state) => withDecorationSync(state)),
 
       resetProgress: () =>
         set({

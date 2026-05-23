@@ -24,8 +24,17 @@ export default function SpeakPage() {
       ? speakScenarios
       : speakScenarios.filter((s) => s.role === roleFilter);
 
-  const scenario = getSpeakScenarioById(activeId) ?? speakScenarios[0];
+  const scenario = getSpeakScenarioById(activeId) ?? scenarios[0] ?? speakScenarios[0];
   const supported = isSpeechRecognitionSupported();
+
+  function handleRoleFilter(role: SpeakRole | "all") {
+    setRoleFilter(role);
+    const next =
+      role === "all"
+        ? speakScenarios
+        : speakScenarios.filter((s) => s.role === role);
+    setActiveId(next[0]?.id ?? speakScenarios[0].id);
+  }
 
   return (
     <main className="space-y-6">
@@ -61,9 +70,11 @@ export default function SpeakPage() {
           <button
             key={role}
             type="button"
-            onClick={() => setRoleFilter(role)}
+            onClick={() => handleRoleFilter(role)}
             className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-              roleFilter === role ? "bg-primary text-white" : "bg-white border-2 border-[#d9e2cc]"
+              roleFilter === role
+                ? "bg-primary text-white"
+                : "border-2 border-[#8B6914]/50 bg-black/20"
             }`}
           >
             {role === "all" ? "全部" : speakRoleLabels[role].nameCn}

@@ -26,8 +26,12 @@ export function getQuestStatus(
   return "available";
 }
 
-export function isQuestLocked(quest: Quest, xp: number): boolean {
-  return getQuestStatus(quest, xp, []) === "locked";
+export function isQuestLocked(
+  quest: Quest,
+  xp: number,
+  completedQuestIds: string[],
+): boolean {
+  return getQuestStatus(quest, xp, completedQuestIds) === "locked";
 }
 
 export function canClaimQuestRewards(

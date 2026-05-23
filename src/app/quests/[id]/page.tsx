@@ -55,13 +55,13 @@ export default function QuestDetailPage({ params }: QuestDetailPageProps) {
         <p className="mt-2 text-sm font-bold">需要等级：Lv {quest.requiredLevel}</p>
 
         {locked ? (
-          <p className="mt-4 rounded-xl bg-gray-100 px-4 py-3 text-sm font-bold text-gray-700">
+          <p className="mt-4 rounded-xl bg-black/30 px-4 py-3 text-sm font-bold text-amber-200">
             等级不足，先去完成其他任务升级吧。
           </p>
         ) : null}
 
         {practiceMode ? (
-          <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">
+          <p className="mt-4 rounded-xl bg-amber-900/30 px-4 py-3 text-sm font-bold text-amber-100">
             练习模式：可以重复答题，但不会重复领取奖励。
           </p>
         ) : null}

@@ -98,8 +98,8 @@ export function scaleMaterialPlan(plan: MaterialPlan, multiplier: number): Mater
       ...item,
       amount: item.amount * multiplier,
     })),
-    simpleEnglish: plan.simpleEnglish.replace(/\d+/g, (n) =>
-      String(Number(n) * multiplier),
-    ),
+    simpleEnglish: plan.items
+      .map((item) => `${item.amount * multiplier} ${item.english.toLowerCase()}`)
+      .join(", "),
   };
 }

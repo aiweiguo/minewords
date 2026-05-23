@@ -165,7 +165,15 @@ export default function HomePage() {
         <span className="mx-2 text-muted">·</span>
         <button
           type="button"
-          onClick={resetProgress}
+          onClick={() => {
+            if (
+              window.confirm(
+                "确定要重置全部进度吗？此操作无法撤销。Reset all progress?",
+              )
+            ) {
+              resetProgress();
+            }
+          }}
           className="text-xs font-semibold text-muted underline"
         >
           Reset Progress 重置进度（测试用）

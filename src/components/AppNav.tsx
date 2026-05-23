@@ -15,7 +15,7 @@ export function AppNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky bottom-0 z-20 border-t-2 border-[#8B6914] bg-[#2a3224]/95 backdrop-blur">
+    <nav className="sticky bottom-0 z-20 border-t-2 border-[#8B6914] bg-[#2a3224]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="mx-auto grid max-w-5xl grid-cols-5 gap-1 px-2 py-2">
         {navItems.map((item) => {
           const active =

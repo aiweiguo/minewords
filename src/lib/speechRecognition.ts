@@ -43,27 +43,36 @@ export function listenOnce(timeoutMs = 8000): Promise<RecognitionResult> {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
+    let settled = false;
+
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      fn();
+    };
+
     const timer = window.setTimeout(() => {
       recognition.stop();
-      reject(new Error("Timeout"));
+      finish(() => reject(new Error("Timeout")));
     }, timeoutMs);
 
     recognition.onresult = (event) => {
-      window.clearTimeout(timer);
       const result = event.results[0]?.[0];
-      resolve({
-        transcript: result?.transcript ?? "",
-        confidence: result?.confidence ?? 0,
-      });
+      finish(() =>
+        resolve({
+          transcript: result?.transcript ?? "",
+          confidence: result?.confidence ?? 0,
+        }),
+      );
     };
 
     recognition.onerror = (event) => {
-      window.clearTimeout(timer);
-      reject(new Error(event.error));
+      finish(() => reject(new Error(event.error)));
     };
 
     recognition.onend = () => {
-      window.clearTimeout(timer);
+      finish(() => reject(new Error("no-speech")));
     };
 
     recognition.start();
@@ -78,7 +87,9 @@ export function scoreSpeechAttempt(
   const normalized = transcript.toLowerCase();
   const matchedKeywords = keywords.filter((kw) => normalized.includes(kw.toLowerCase()));
   const expectedMatch = normalized.includes(expectedText.toLowerCase());
-  const keywordMatch = matchedKeywords.length >= Math.min(2, keywords.length);
+  const keywordMatch =
+    keywords.length > 0 &&
+    matchedKeywords.length >= Math.min(2, keywords.length);
   return {
     passed: expectedMatch || keywordMatch,
     matchedKeywords,

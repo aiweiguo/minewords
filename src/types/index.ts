@@ -116,8 +116,11 @@ export type Unlockable = {
 export type DailyStats = {
   date: string;
   completedQuests: number;
+  buildIdeasClaimed: number;
+  adventuresCompleted: number;
   correctAnswers: number;
   learnedWords: number;
+  masteredTodayIds: string[];
   dailyAdventureCompleted: boolean;
   dailyAdventureId: string;
   speakAttempts: number;

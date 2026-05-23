@@ -57,7 +57,9 @@ export default function CreatePage() {
             type="button"
             onClick={() => setCategory(item)}
             className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-              category === item ? "bg-primary text-white" : "bg-white border-2 border-[#d9e2cc]"
+              category === item
+                ? "bg-primary text-white"
+                : "border-2 border-[#8B6914]/50 bg-black/20"
             }`}
           >
             {item === "all"

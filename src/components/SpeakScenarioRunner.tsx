@@ -119,12 +119,26 @@ export function SpeakScenarioRunner({ scenario }: SpeakScenarioRunnerProps) {
         >
           {listening ? "正在听…" : completed ? "已完成 Completed ✓" : "🎤 开始说话 Speak"}
         </button>
-      ) : null}
+      ) : (
+        <button
+          type="button"
+          disabled={completed}
+          onClick={() => {
+            recordSpeakAttempt();
+            completeSpeakScenario(scenario.id, scenario.rewardXp);
+            setPassed(true);
+            setResult("手动确认：我已跟读完成。");
+          }}
+          className="mw-btn mw-btn-secondary mt-6 w-full disabled:opacity-60"
+        >
+          我已跟读 I said it
+        </button>
+      )}
 
       {result ? (
         <p
           className={`mt-4 rounded-xl px-4 py-3 text-sm font-bold ${
-            passed ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-900"
+            passed ? "bg-green-900/40 text-green-200" : "bg-amber-900/40 text-amber-100"
           }`}
         >
           {passed ? "Great! 说得太棒了！" : "Almost! 再试一次！"}

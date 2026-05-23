@@ -17,6 +17,9 @@ export default function InventoryPage() {
   const equipment = unlockables.filter(
     (item) => item.type === "equipment" && unlockedIds.includes(item.id),
   );
+  const decorations = unlockables.filter(
+    (item) => item.type === "decoration" && unlockedIds.includes(item.id),
+  );
 
   const resourceSlots = displayResources.map((resource) => ({
     key: resource,
@@ -32,7 +35,14 @@ export default function InventoryPage() {
     rarity: item.rarity,
   }));
 
-  const filledSlots = [...resourceSlots, ...equipmentSlots];
+  const decorationSlots = decorations.map((item) => ({
+    key: item.id,
+    icon: item.icon,
+    label: item.nameCn,
+    rarity: item.rarity,
+  }));
+
+  const filledSlots = [...resourceSlots, ...equipmentSlots, ...decorationSlots];
   const emptySlotCount = Math.max(0, GRID_SIZE - filledSlots.length);
 
   return (
@@ -40,7 +50,7 @@ export default function InventoryPage() {
       <section className="mw-card p-5">
         <h1 className="text-3xl font-black text-primary">Inventory 背包</h1>
         <p className="mt-2 text-sm font-semibold text-muted">
-          Minecraft 风格 6×4 物品栏 — 查看资源和装备。
+          Minecraft 风格 6×4 物品栏 — 查看资源、装备和基地装饰。
         </p>
       </section>
 

@@ -58,7 +58,7 @@ export default async function DictionaryDetailPage({
               {word.words.map((part) => (
                 <div
                   key={part.word}
-                  className="rounded-xl bg-[#f5f7ef] px-4 py-3 font-semibold"
+                  className="rounded-xl bg-black/20 px-4 py-3 font-semibold"
                 >
                   {part.word} {part.phonetic ? part.phonetic : ""} — {part.chinese}
                 </div>
@@ -86,7 +86,7 @@ export default async function DictionaryDetailPage({
               <Link
                 key={related.id}
                 href={`/dictionary/${related.id}`}
-                className="rounded-full bg-[#eef6e4] px-4 py-2 text-sm font-bold text-primary"
+                className="rounded-full bg-primary/15 px-4 py-2 text-sm font-bold text-primary"
               >
                 {related.english}
               </Link>

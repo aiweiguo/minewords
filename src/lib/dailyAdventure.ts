@@ -1,6 +1,7 @@
 import { guides } from "@/data/guides";
 import { quests } from "@/data/quests";
 import { vocabulary } from "@/data/vocabulary";
+import { getTodayDateString } from "@/lib/date";
 import { DailyAdventurePlan, Reward } from "@/types";
 
 const adventureTemplates: Omit<DailyAdventurePlan, "id">[] = [
@@ -125,9 +126,7 @@ export function getDailyAdventure(date: string): DailyAdventurePlan {
   };
 }
 
-export function getTodayDateString(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+export { getTodayDateString };
 
 export function formatDailyRewards(rewards: Reward[]): string {
   return rewards

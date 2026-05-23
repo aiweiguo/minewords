@@ -1,31 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
-import { getVocabularyById } from "@/data/vocabulary";
 import { formatDailyRewards, getDailyAdventure, getTodayDateString } from "@/lib/dailyAdventure";
+import { canClaimDailyAdventure } from "@/lib/dailyAdventureClaim";
 import { getVocabularyIcon } from "@/lib/assets";
+import { getVocabularyById } from "@/data/vocabulary";
 import { useGameStore } from "@/store/useGameStore";
 
 export function DailyAdventurePanel() {
   const dailyStats = useGameStore((s) => s.dailyStats);
+  const completedQuestIds = useGameStore((s) => s.completedQuestIds);
+  const completedGuideIds = useGameStore((s) => s.completedGuideIds);
   const completeDailyAdventure = useGameStore((s) => s.completeDailyAdventure);
-  const discoverWord = useGameStore((s) => s.discoverWord);
 
   const today = getTodayDateString();
   const adventure = getDailyAdventure(today);
-  const isToday =
-    dailyStats.date === today || dailyStats.date === getTodayDateString();
+  const claimCheck = useMemo(
+    () => canClaimDailyAdventure(adventure, completedQuestIds, completedGuideIds),
+    [adventure, completedQuestIds, completedGuideIds],
+  );
+
   const completed =
-    isToday &&
+    dailyStats.date === today &&
     dailyStats.dailyAdventureCompleted &&
     dailyStats.dailyAdventureId === adventure.id;
 
   function handleComplete() {
-    for (const wordId of adventure.wordIds) {
-      discoverWord(wordId);
-    }
+    if (!claimCheck.ok || completed) return;
     completeDailyAdventure(adventure);
   }
 
@@ -72,7 +76,7 @@ export function DailyAdventurePanel() {
       <div className="mt-4 flex flex-wrap gap-3">
         {adventure.guideId ? (
           <Link href={`/guides/${adventure.guideId}`} className="mw-btn mw-btn-outline text-sm">
-            看攻略
+            看攻略 + 小测验
           </Link>
         ) : null}
         {adventure.questId ? (
@@ -81,15 +85,24 @@ export function DailyAdventurePanel() {
           </Link>
         ) : null}
         {!completed ? (
-          <button type="button" onClick={handleComplete} className="mw-btn mw-btn-primary text-sm">
-            完成今日冒险
+          <button
+            type="button"
+            disabled={!claimCheck.ok}
+            onClick={handleComplete}
+            className="mw-btn mw-btn-primary text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            领取今日冒险奖励
           </button>
         ) : (
-          <span className="rounded-xl bg-green-100 px-4 py-2 text-sm font-bold text-green-800">
+          <span className="rounded-xl bg-green-900/40 px-4 py-2 text-sm font-bold text-green-200">
             ✓ 今日冒险已完成
           </span>
         )}
       </div>
+
+      {!completed && !claimCheck.ok ? (
+        <p className="mt-3 text-sm font-semibold text-amber-200">{claimCheck.reason}</p>
+      ) : null}
     </section>
   );
 }

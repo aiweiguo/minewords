@@ -6,6 +6,7 @@ import { GameIcon } from "@/components/GameIcon";
 import { SpeakButton } from "@/components/SpeakButton";
 import { vocabulary } from "@/data/vocabulary";
 import { getVocabularyIcon } from "@/lib/assets";
+import { shuffleArray } from "@/lib/shuffle";
 import { speak } from "@/lib/speak";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -25,11 +26,11 @@ function pickQuizWords(seed: number) {
 
 function buildOptions(correctId: string, count = 4) {
   const correct = vocabulary.find((w) => w.id === correctId)!;
-  const others = vocabulary
-    .filter((w) => w.id !== correctId)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, count - 1);
-  return [correct, ...others].sort(() => Math.random() - 0.5);
+  const others = shuffleArray(vocabulary.filter((w) => w.id !== correctId)).slice(
+    0,
+    count - 1,
+  );
+  return shuffleArray([correct, ...others]);
 }
 
 export default function ListeningPage() {

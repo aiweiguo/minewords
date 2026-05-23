@@ -2,6 +2,10 @@ import { vocabulary } from "@/data/vocabulary";
 import { getVocabularyById } from "@/data/vocabulary";
 import { QuestStep } from "@/types";
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function resolveWordIdFromText(text: string): string | undefined {
   const normalized = text.trim().toLowerCase();
   const exact = vocabulary.find(
@@ -12,7 +16,14 @@ export function resolveWordIdFromText(text: string): string | undefined {
   );
   if (exact) return exact.id;
 
-  return vocabulary.find((w) => normalized.includes(w.english.toLowerCase()))?.id;
+  const byEnglish = vocabulary
+    .filter((w) => {
+      const pattern = new RegExp(`\\b${escapeRegex(w.english.toLowerCase())}\\b`);
+      return pattern.test(normalized);
+    })
+    .sort((a, b) => b.english.length - a.english.length);
+
+  return byEnglish[0]?.id;
 }
 
 export function resolveWordIdFromStep(step: QuestStep): string | undefined {

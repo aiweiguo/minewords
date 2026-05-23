@@ -49,7 +49,7 @@ export default function PlannerPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="例如：我想做 3 把钻石剑"
-              className="flex-1 rounded-xl border-2 border-[#d9e2cc] px-4 py-3 font-semibold"
+              className="mw-input flex-1 rounded-xl border-2 border-[#8B6914]/50 bg-black/20 px-4 py-3 font-semibold text-foreground"
             />
             <button type="submit" className="mw-btn mw-btn-primary">
               计算 Calculate
@@ -73,7 +73,7 @@ export default function PlannerPage() {
             setMultiplier(1);
             setQueryMessage(null);
           }}
-          className="mt-2 w-full rounded-xl border-2 border-[#d9e2cc] px-4 py-3 font-bold"
+          className="mt-2 w-full rounded-xl border-2 border-[#8B6914]/50 bg-black/20 px-4 py-3 font-bold text-foreground"
         >
           {materialPlans.map((p) => (
             <option key={p.id} value={p.id}>
@@ -90,7 +90,9 @@ export default function PlannerPage() {
               type="button"
               onClick={() => setMultiplier(n)}
               className={`rounded-full px-4 py-2 text-sm font-bold ${
-                multiplier === n ? "bg-primary text-white" : "bg-white border-2 border-[#d9e2cc]"
+                multiplier === n
+                  ? "bg-primary text-white"
+                  : "border-2 border-[#8B6914]/50 bg-black/20"
               }`}
             >
               ×{n}
