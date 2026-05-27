@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 import { getBuildIdeaById } from "@/data/buildIdeas";
 import { getQuestById } from "@/data/quests";
+import { getSpeakScenarioById } from "@/data/speakScenarios";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
 import { getTodayDateString, getYesterdayDateString } from "@/lib/date";
 import { getDecorationUnlockIds } from "@/lib/decorationUnlocks";
@@ -137,6 +138,7 @@ const initialState: GameState = {
   learningStreak: 0,
   lastActiveDate: "",
   dailyStats: createDailyStats(),
+  hasSeenOnboarding: false,
 };
 
 type GameStore = GameState & {
@@ -158,6 +160,7 @@ type GameStore = GameState & {
   syncDecorationUnlocks: () => void;
   recordDailyAnswer: (correct: boolean) => void;
   recordCorrectAnswer: (options?: { practiceMode?: boolean }) => void;
+  markOnboardingSeen: () => void;
   resetProgress: () => void;
 };
 
@@ -500,12 +503,18 @@ export const useGameStore = create<GameStore>()(
         }
         set((state) => {
           const dailyStats = normalizeDailyStats(state.dailyStats);
+          const scenario = getSpeakScenarioById(scenarioId);
+          const keywordIds = scenario?.keywords ?? [];
+          const newLearned = keywordIds.filter((id) => !state.learnedWordIds.includes(id));
           return {
             completedSpeakIds: [...state.completedSpeakIds, scenarioId],
+            discoveredWordIds: mergeWordIds(state.discoveredWordIds, keywordIds),
+            learnedWordIds: mergeWordIds(state.learnedWordIds, keywordIds),
             xp: state.xp + xp,
             dailyStats: {
               ...dailyStats,
               correctAnswers: dailyStats.correctAnswers + 1,
+              learnedWords: dailyStats.learnedWords + newLearned.length,
             },
             ...touchLearningDay(state),
           };
@@ -514,6 +523,11 @@ export const useGameStore = create<GameStore>()(
       },
 
       syncDecorationUnlocks: () => set((state) => withDecorationSync(state)),
+
+      markOnboardingSeen: () =>
+        set((state) =>
+          state.hasSeenOnboarding ? state : { hasSeenOnboarding: true },
+        ),
 
       resetProgress: () =>
         set({
@@ -540,6 +554,7 @@ export const useGameStore = create<GameStore>()(
           learningStreak: saved.learningStreak ?? 0,
           lastActiveDate: saved.lastActiveDate ?? "",
           dailyStats: normalizeDailyStats(saved.dailyStats),
+          hasSeenOnboarding: saved.hasSeenOnboarding ?? true,
         };
 
         return {
@@ -565,6 +580,7 @@ export const useGameStore = create<GameStore>()(
         learningStreak: state.learningStreak,
         lastActiveDate: state.lastActiveDate,
         dailyStats: state.dailyStats,
+        hasSeenOnboarding: state.hasSeenOnboarding,
       }),
     },
   ),
