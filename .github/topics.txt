@@ -1,0 +1,12 @@
+# MineWords
+
+A Minecraft-themed English learning app for kids. Built with Next.js and TypeScript.
+
+minecraft-education
+english-learning
+kids-education
+gamification
+nextjs
+typescript
+speech-recognition
+vocabulary
