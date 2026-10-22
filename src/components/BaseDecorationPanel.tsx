@@ -15,6 +15,8 @@ const sceneSlots = [
   { id: "slot-6", className: "bottom-[16%] right-[12%]" },
   { id: "slot-7", className: "bottom-[8%] left-[38%]" },
   { id: "slot-8", className: "top-[8%] left-[42%]" },
+  { id: "slot-9", className: "top-[30%] left-[48%]" },
+  { id: "slot-10", className: "bottom-[30%] right-[40%]" },
 ];
 
 export function BaseDecorationPanel() {
@@ -50,7 +52,7 @@ export function BaseDecorationPanel() {
           const on =
             isDecorationUnlocked(deco, learnedWordIds, masteredWordIds) ||
             unlockedIds.includes(deco.id);
-          const slot = sceneSlots[index];
+          const slot = sceneSlots[index % sceneSlots.length];
           return (
             <div
               key={deco.id}

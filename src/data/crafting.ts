@@ -212,6 +212,65 @@ export const craftingRecipes: CraftingRecipe[] = [
     keywordIds: ["chest", "plank", "craft"],
     relatedGuideId: "craft-chest",
   },
+  {
+    id: "ladder",
+    resultEnglish: "Ladder",
+    resultChinese: "梯子",
+    resultWordId: "ladder",
+    grid: [
+      [slot("stick", "Stick", "木棍"), null, slot("stick", "Stick", "木棍")],
+      [slot("stick", "Stick", "木棍"), slot("stick", "Stick", "木棍"), slot("stick", "Stick", "木棍")],
+      [slot("stick", "Stick", "木棍"), null, slot("stick", "Stick", "木棍")],
+    ],
+    simpleEnglish: "Seven sticks make a ladder.",
+    simpleChinese: "七根木棍合成梯子。",
+    keywordIds: ["ladder", "stick", "climb"],
+  },
+  {
+    id: "fence",
+    resultEnglish: "Fence",
+    resultChinese: "栅栏",
+    resultWordId: "fence",
+    grid: [
+      [
+        slot("plank", "Plank", "木板"),
+        slot("stick", "Stick", "木棍"),
+        slot("plank", "Plank", "木板"),
+      ],
+      [
+        slot("plank", "Plank", "木板"),
+        slot("stick", "Stick", "木棍"),
+        slot("plank", "Plank", "木板"),
+      ],
+    ],
+    simpleEnglish: "Four planks and two sticks make a fence.",
+    simpleChinese: "四个木板和两根木棍合成栅栏。",
+    keywordIds: ["fence", "plank", "stick", "farm"],
+    relatedQuestId: "start-a-farm",
+  },
+  {
+    id: "furnace",
+    resultEnglish: "Furnace",
+    resultChinese: "熔炉",
+    resultWordId: "furnace",
+    grid: [
+      [
+        slot("stone", "Stone", "石头"),
+        slot("stone", "Stone", "石头"),
+        slot("stone", "Stone", "石头"),
+      ],
+      [slot("stone", "Stone", "石头"), null, slot("stone", "Stone", "石头")],
+      [
+        slot("stone", "Stone", "石头"),
+        slot("stone", "Stone", "石头"),
+        slot("stone", "Stone", "石头"),
+      ],
+    ],
+    simpleEnglish: "Eight stone blocks make a furnace.",
+    simpleChinese: "八个石头合成熔炉。",
+    keywordIds: ["furnace", "stone", "cook", "smelt"],
+    relatedQuestId: "cook-a-meal",
+  },
 ];
 
 export function getCraftingRecipeById(id: string): CraftingRecipe | undefined {
