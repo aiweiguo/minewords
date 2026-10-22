@@ -64,6 +64,40 @@ export const sentencePatterns: SentencePattern[] = [
       { english: "I have a diamond sword.", chinese: "我有一把钻石剑。", wordIds: ["diamond", "sword"] },
     ],
   },
+  {
+    id: "lets-explore",
+    patternEn: "Let's explore ...",
+    patternCn: "我们来探索……",
+    examples: [
+      {
+        english: "Let's explore the nether.",
+        chinese: "我们来探索下界。",
+        wordIds: ["explore", "nether"],
+      },
+      {
+        english: "Let's explore the ocean.",
+        chinese: "我们来探索海洋。",
+        wordIds: ["explore", "ocean"],
+      },
+    ],
+  },
+  {
+    id: "i-protect",
+    patternEn: "I protect ...",
+    patternCn: "我保护……",
+    examples: [
+      {
+        english: "I protect my house.",
+        chinese: "我保护我的房子。",
+        wordIds: ["protect", "house"],
+      },
+      {
+        english: "I protect the village.",
+        chinese: "我保护村庄。",
+        wordIds: ["protect", "village"],
+      },
+    ],
+  },
 ];
 
 export function getSentencePatternForKeywords(keywords: string[]): SentencePattern | undefined {
