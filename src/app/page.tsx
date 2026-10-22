@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
+import { HubRoom } from "@/components/HubRoom";
 import { displayResources, ResourceBadge } from "@/components/ResourceBadge";
-import { assetMap, backgroundMap } from "@/lib/assets";
+import { assetMap } from "@/lib/assets";
 import { getXpProgress } from "@/lib/progress";
 import { useGameStore } from "@/store/useGameStore";
+import { RoomBlockType } from "@/types";
 
 const moreLinks = [
   { href: "/map", label: "地图 Map" },
@@ -22,104 +24,75 @@ const moreLinks = [
   { href: "/listening", label: "听力 Listening" },
   { href: "/unlocks", label: "解锁 Unlocks" },
   { href: "/parent", label: "家长 Parent" },
+  { href: "/inventory", label: "背包 Inventory" },
+  { href: "/crafting", label: "合成 Crafting" },
 ];
 
 export default function HomePage() {
   const playerName = useGameStore((state) => state.playerName);
   const xp = useGameStore((state) => state.xp);
   const resources = useGameStore((state) => state.resources);
+  const roomBlocks = useGameStore((state) => state.roomBlocks);
   const resetProgress = useGameStore((state) => state.resetProgress);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<RoomBlockType>("plank");
 
   const progress = getXpProgress(xp);
   const materialTotal = useMemo(
     () => Object.values(resources).reduce((sum, amount) => sum + amount, 0),
     [resources],
   );
-  const hasMaterials = materialTotal > 0;
+  const placedCount = Object.keys(roomBlocks).length;
+  const roomEmpty = placedCount === 0;
 
   return (
-    <main className="space-y-5">
-      <section
-        className="mw-game-panel overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(26,31,22,0.72), rgba(26,31,22,0.94)), url(${backgroundMap.battle})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="flex min-h-[min(72vh,34rem)] flex-col justify-between gap-6 p-5 sm:p-7">
+    <main className="space-y-4">
+      <HubRoom
+        selectedBlock={selectedBlock}
+        onSelectBlock={setSelectedBlock}
+      />
+
+      <section className="mw-card space-y-3 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-4xl font-black leading-tight text-primary sm:text-5xl">
-              MineWords
-            </h1>
-            <p className="mt-3 max-w-md text-lg font-bold text-foreground sm:text-xl">
-              开口打怪，攒材料
-            </p>
-            <p className="mt-1 text-sm font-semibold text-muted">
-              Speak to attack · gather materials
-            </p>
-            <p className="mt-4 text-sm font-semibold text-muted">
+            <h2 className="text-lg font-black">材料箱 Materials</h2>
+            <p className="text-xs font-semibold text-muted">
               {playerName} · Lv.{progress.level}
             </p>
           </div>
-
-          <div className="space-y-4">
-            <Link
-              href="/review"
-              className="mw-btn mw-btn-primary mw-home-cta w-full text-xl sm:text-2xl"
-            >
-              <GameIcon src={assetMap.sword} alt="" size="md" />
-              去打怪 Go Fight
-            </Link>
-
-            <div className="mw-resource-bar">
-              {displayResources.map((resource) => (
-                <ResourceBadge
-                  key={resource}
-                  resource={resource}
-                  amount={resources[resource]}
-                  compact
-                />
-              ))}
-            </div>
-          </div>
+          <Link
+            href="/review"
+            className="mw-btn mw-btn-primary mw-home-cta shrink-0 px-4 py-2 text-sm sm:text-base"
+          >
+            <GameIcon src={assetMap.sword} alt="" size="sm" />
+            出门打怪 Fight
+          </Link>
         </div>
-      </section>
 
-      <section
-        className={`grid gap-3 sm:grid-cols-2 ${
-          hasMaterials ? "mw-home-craft-ready" : ""
-        }`}
-      >
-        <Link
-          href="/inventory"
-          className={`mw-btn inline-flex w-full justify-center ${
-            hasMaterials ? "mw-btn-secondary text-base" : "mw-btn-outline text-sm"
-          }`}
-        >
-          <GameIcon src={assetMap.chest} alt="" size="sm" />
-          背包 Inventory
-          {hasMaterials ? (
-            <span className="rounded bg-black/35 px-2 py-0.5 text-xs">
-              x{materialTotal}
+        <div className="mw-resource-bar">
+          {displayResources.map((resource) => (
+            <ResourceBadge
+              key={resource}
+              resource={resource}
+              amount={resources[resource]}
+              compact
+            />
+          ))}
+        </div>
+
+        {roomEmpty && materialTotal === 0 ? (
+          <p className="text-center text-sm font-semibold text-muted">
+            空房间 — 先出门打怪攒木头/石头
+            <span className="mt-0.5 block text-xs">
+              Empty room · fight for wood & stone, then place blocks
             </span>
-          ) : null}
-        </Link>
-        <Link
-          href="/crafting"
-          className={`mw-btn inline-flex w-full justify-center ${
-            hasMaterials ? "mw-btn-secondary text-base" : "mw-btn-outline text-sm"
-          }`}
-        >
-          <GameIcon src={assetMap.axe} alt="" size="sm" />
-          合成 Crafting
-        </Link>
-        {hasMaterials ? (
-          <p className="sm:col-span-2 text-center text-sm font-semibold text-secondary">
-            已有材料 — 去背包看看，或读材料名来合成
-            <span className="block text-muted">
-              Materials ready · bag or craft next
+          </p>
+        ) : null}
+        {roomEmpty && materialTotal > 0 ? (
+          <p className="text-center text-sm font-semibold text-secondary">
+            有材料了 — 点上方空槽铺地板/墙
+            <span className="mt-0.5 block text-xs">
+              Materials ready · tap empty slots in the room
             </span>
           </p>
         ) : null}

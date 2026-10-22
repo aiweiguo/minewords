@@ -16,6 +16,9 @@ import {
   Reward,
   RewardResult,
   DailyAdventurePlan,
+  RoomBlockType,
+  RoomBlocks,
+  RoomSlotId,
 } from "@/types";
 
 const defaultResources: Record<ResourceType, number> = {
@@ -27,6 +30,31 @@ const defaultResources: Record<ResourceType, number> = {
   diamond: 0,
   netherite: 0,
 };
+
+/** Cost to place each block type into the home room. */
+export const ROOM_BLOCK_COST: Record<
+  RoomBlockType,
+  { resource: ResourceType; amount: number }
+> = {
+  plank: { resource: "wood", amount: 1 },
+  cobble: { resource: "stone", amount: 1 },
+};
+
+export const ROOM_FLOOR_SLOTS: RoomSlotId[] = [
+  "floor-0",
+  "floor-1",
+  "floor-2",
+  "floor-3",
+  "floor-4",
+  "floor-5",
+];
+
+export const ROOM_WALL_SLOTS: RoomSlotId[] = [
+  "wall-0",
+  "wall-1",
+  "wall-2",
+  "wall-3",
+];
 
 function createDailyStats(): DailyStats {
   return {
@@ -126,6 +154,7 @@ const initialState: GameState = {
   playerName: "Alex",
   xp: 0,
   resources: { ...defaultResources },
+  roomBlocks: {},
   completedQuestIds: [],
   unlockedIds: [],
   masteredWordIds: [],
@@ -145,6 +174,8 @@ const initialState: GameState = {
 type GameStore = GameState & {
   addXp: (amount: number) => void;
   addResource: (resource: ResourceType, amount: number) => void;
+  spendResource: (resource: ResourceType, amount: number) => boolean;
+  placeRoomBlock: (slotId: RoomSlotId, blockType: RoomBlockType) => boolean;
   unlockItem: (unlockId: string) => void;
   discoverWord: (wordId: string) => void;
   markWordLearned: (wordId: string) => void;
@@ -241,6 +272,43 @@ export const useGameStore = create<GameStore>()(
             [resource]: state.resources[resource] + amount,
           },
         })),
+
+      spendResource: (resource, amount) => {
+        const state = get();
+        if (amount <= 0 || state.resources[resource] < amount) {
+          return false;
+        }
+        set({
+          resources: {
+            ...state.resources,
+            [resource]: state.resources[resource] - amount,
+          },
+        });
+        return true;
+      },
+
+      placeRoomBlock: (slotId, blockType) => {
+        const state = get();
+        if (state.roomBlocks[slotId]) {
+          return false;
+        }
+        const cost = ROOM_BLOCK_COST[blockType];
+        if (state.resources[cost.resource] < cost.amount) {
+          return false;
+        }
+        const nextBlocks: RoomBlocks = {
+          ...state.roomBlocks,
+          [slotId]: blockType,
+        };
+        set({
+          resources: {
+            ...state.resources,
+            [cost.resource]: state.resources[cost.resource] - cost.amount,
+          },
+          roomBlocks: nextBlocks,
+        });
+        return true;
+      },
 
       unlockItem: (unlockId) =>
         set((state) => ({
@@ -555,6 +623,7 @@ export const useGameStore = create<GameStore>()(
           ...current,
           ...saved,
           resources: { ...defaultResources, ...saved.resources },
+          roomBlocks: saved.roomBlocks ?? {},
           discoveredWordIds: saved.discoveredWordIds ?? [],
           learnedWordIds: saved.learnedWordIds ?? [],
           completedGuideIds: saved.completedGuideIds ?? [],
@@ -578,6 +647,7 @@ export const useGameStore = create<GameStore>()(
         playerName: state.playerName,
         xp: state.xp,
         resources: state.resources,
+        roomBlocks: state.roomBlocks,
         completedQuestIds: state.completedQuestIds,
         unlockedIds: state.unlockedIds,
         masteredWordIds: state.masteredWordIds,

@@ -126,10 +126,30 @@ export type DailyStats = {
   speakAttempts: number;
 };
 
+/** Placeable block kinds in the side-view home room (MC-inspired, not official assets). */
+export type RoomBlockType = "plank" | "cobble";
+
+/** Side-view room slots: floor row + lower wall row. */
+export type RoomSlotId =
+  | "floor-0"
+  | "floor-1"
+  | "floor-2"
+  | "floor-3"
+  | "floor-4"
+  | "floor-5"
+  | "wall-0"
+  | "wall-1"
+  | "wall-2"
+  | "wall-3";
+
+export type RoomBlocks = Partial<Record<RoomSlotId, RoomBlockType>>;
+
 export type GameState = {
   playerName: string;
   xp: number;
   resources: Record<ResourceType, number>;
+  /** Placed blocks in the home hub room (persisted). */
+  roomBlocks: RoomBlocks;
   completedQuestIds: string[];
   unlockedIds: string[];
   masteredWordIds: string[];
