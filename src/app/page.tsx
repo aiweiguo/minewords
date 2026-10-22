@@ -22,7 +22,7 @@ const quickLinks = [
   { href: "/crafting", label: "合成", icon: assetMap.axe },
   { href: "/planner", label: "规划", icon: assetMap.pickaxe },
   { href: "/speak", label: "口语", icon: assetMap.star },
-  { href: "/review", label: "错词", icon: assetMap.lock },
+  { href: "/review", label: "打怪", icon: assetMap.sword },
   { href: "/create", label: "创意", icon: assetMap.star },
   { href: "/minedex", label: "图鉴", icon: assetMap.chest },
   { href: "/listening", label: "听力", icon: assetMap.star },
