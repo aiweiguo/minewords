@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { getBuildIdeaById } from "@/data/buildIdeas";
+import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getQuestById } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
@@ -15,6 +16,9 @@ import {
   Reward,
   RewardResult,
   DailyAdventurePlan,
+  RoomBlockType,
+  RoomBlocks,
+  RoomSlotId,
 } from "@/types";
 
 const defaultResources: Record<ResourceType, number> = {
@@ -26,6 +30,31 @@ const defaultResources: Record<ResourceType, number> = {
   diamond: 0,
   netherite: 0,
 };
+
+/** Cost to place each block type into the home room. */
+export const ROOM_BLOCK_COST: Record<
+  RoomBlockType,
+  { resource: ResourceType; amount: number }
+> = {
+  plank: { resource: "wood", amount: 1 },
+  cobble: { resource: "stone", amount: 1 },
+};
+
+export const ROOM_FLOOR_SLOTS: RoomSlotId[] = [
+  "floor-0",
+  "floor-1",
+  "floor-2",
+  "floor-3",
+  "floor-4",
+  "floor-5",
+];
+
+export const ROOM_WALL_SLOTS: RoomSlotId[] = [
+  "wall-0",
+  "wall-1",
+  "wall-2",
+  "wall-3",
+];
 
 function createDailyStats(): DailyStats {
   return {
@@ -125,6 +154,7 @@ const initialState: GameState = {
   playerName: "Alex",
   xp: 0,
   resources: { ...defaultResources },
+  roomBlocks: {},
   completedQuestIds: [],
   unlockedIds: [],
   masteredWordIds: [],
@@ -144,6 +174,8 @@ const initialState: GameState = {
 type GameStore = GameState & {
   addXp: (amount: number) => void;
   addResource: (resource: ResourceType, amount: number) => void;
+  spendResource: (resource: ResourceType, amount: number) => boolean;
+  placeRoomBlock: (slotId: RoomSlotId, blockType: RoomBlockType) => boolean;
   unlockItem: (unlockId: string) => void;
   discoverWord: (wordId: string) => void;
   markWordLearned: (wordId: string) => void;
@@ -154,7 +186,7 @@ type GameStore = GameState & {
   claimBuildIdea: (ideaId: string) => boolean;
   completeDailyAdventure: (plan: DailyAdventurePlan) => boolean;
   recordWrongWord: (wordId: string) => void;
-  defeatMonster: (wordId: string) => boolean;
+  defeatMonster: (wordId: string) => RewardResult | null;
   completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
   recordSpeakAttempt: () => void;
   syncDecorationUnlocks: () => void;
@@ -240,6 +272,43 @@ export const useGameStore = create<GameStore>()(
             [resource]: state.resources[resource] + amount,
           },
         })),
+
+      spendResource: (resource, amount) => {
+        const state = get();
+        if (amount <= 0 || state.resources[resource] < amount) {
+          return false;
+        }
+        set({
+          resources: {
+            ...state.resources,
+            [resource]: state.resources[resource] - amount,
+          },
+        });
+        return true;
+      },
+
+      placeRoomBlock: (slotId, blockType) => {
+        const state = get();
+        if (state.roomBlocks[slotId]) {
+          return false;
+        }
+        const cost = ROOM_BLOCK_COST[blockType];
+        if (state.resources[cost.resource] < cost.amount) {
+          return false;
+        }
+        const nextBlocks: RoomBlocks = {
+          ...state.roomBlocks,
+          [slotId]: blockType,
+        };
+        set({
+          resources: {
+            ...state.resources,
+            [cost.resource]: state.resources[cost.resource] - cost.amount,
+          },
+          roomBlocks: nextBlocks,
+        });
+        return true;
+      },
 
       unlockItem: (unlockId) =>
         set((state) => ({
@@ -466,23 +535,33 @@ export const useGameStore = create<GameStore>()(
 
       defeatMonster: (wordId) => {
         if (get().defeatedMonsterIds.includes(wordId)) {
-          return false;
+          return null;
         }
+
+        const dropRewards = getMonsterDropRewards(wordId);
+        const rewardResult: RewardResult = {
+          rewards: dropRewards,
+          unlocks: [],
+          isFirstCompletion: true,
+        };
+
         set((state) => {
           const mastered = applyWordMasteredState(state, wordId);
+          const applied = applyRewardList(mastered, dropRewards);
           const next = {
             ...mastered,
+            ...applied,
             defeatedMonsterIds: [...mastered.defeatedMonsterIds, wordId],
             wrongWordCounts: {
               ...mastered.wrongWordCounts,
               [wordId]: 0,
             },
-            xp: mastered.xp + 10,
             ...touchLearningDay(state),
           };
           return { ...next, ...withDecorationSync(next) };
         });
-        return true;
+
+        return rewardResult;
       },
 
       recordSpeakAttempt: () =>
@@ -544,6 +623,7 @@ export const useGameStore = create<GameStore>()(
           ...current,
           ...saved,
           resources: { ...defaultResources, ...saved.resources },
+          roomBlocks: saved.roomBlocks ?? {},
           discoveredWordIds: saved.discoveredWordIds ?? [],
           learnedWordIds: saved.learnedWordIds ?? [],
           completedGuideIds: saved.completedGuideIds ?? [],
@@ -567,6 +647,7 @@ export const useGameStore = create<GameStore>()(
         playerName: state.playerName,
         xp: state.xp,
         resources: state.resources,
+        roomBlocks: state.roomBlocks,
         completedQuestIds: state.completedQuestIds,
         unlockedIds: state.unlockedIds,
         masteredWordIds: state.masteredWordIds,
