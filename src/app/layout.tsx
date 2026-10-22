@@ -36,7 +36,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${pixel.variable} h-full`}
     >
       <body className="flex min-h-full flex-col antialiased">
-        <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4">
+        <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pt-3">
           {children}
         </div>
         <AppNav />

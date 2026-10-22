@@ -15,17 +15,17 @@ import { RoomBlockType, RoomSlotId } from "@/types";
 
 const blockMeta: Record<
   RoomBlockType,
-  { labelEn: string; labelCn: string; className: string }
+  { labelCn: string; className: string; resourceKey: "wood" | "stone" }
 > = {
   plank: {
-    labelEn: "Plank",
     labelCn: "木板",
     className: "mw-block-plank",
+    resourceKey: "wood",
   },
   cobble: {
-    labelEn: "Cobble",
     labelCn: "圆石",
     className: "mw-block-cobble",
+    resourceKey: "stone",
   },
 };
 
@@ -43,44 +43,45 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
 
   const cost = ROOM_BLOCK_COST[selectedBlock];
   const canAfford = resources[cost.resource] >= cost.amount;
-  const placedCount = Object.keys(roomBlocks).length;
+  const hasPlaceableMats = resources.wood >= 1 || resources.stone >= 1;
+  const emphasizeFight = !hasPlaceableMats;
+  const emphasizePlace = hasPlaceableMats;
 
   function tryPlace(slotId: RoomSlotId) {
     if (roomBlocks[slotId]) {
-      setHint("这里已经有方块了 · Slot already filled");
+      setHint("这里已经有方块了");
       return;
     }
     if (!canAfford) {
-      setHint(
-        `需要 ${cost.amount} ${cost.resource} · Need ${cost.amount} ${cost.resource}`,
-      );
+      setHint(`需要 ${cost.amount} ${cost.resource === "wood" ? "木头" : "石头"}，先出门打怪`);
       return;
     }
     const ok = placeRoomBlock(slotId, selectedBlock);
     if (ok) {
       setFlashSlot(slotId);
       window.setTimeout(() => setFlashSlot(null), 450);
-      setHint(
-        `放好了 ${blockMeta[selectedBlock].labelCn}！· Placed ${blockMeta[selectedBlock].labelEn}`,
-      );
+      setHint(`放好了 ${blockMeta[selectedBlock].labelCn}！`);
     }
   }
 
   function renderSlot(slotId: RoomSlotId) {
     const filled = roomBlocks[slotId];
     const isFloor = slotId.startsWith("floor-");
+    const quietEmpty = !filled && !hasPlaceableMats;
     return (
       <button
         key={slotId}
         type="button"
         aria-label={
           filled
-            ? `${blockMeta[filled].labelEn} ${slotId}`
-            : `Empty ${slotId}, place ${selectedBlock}`
+            ? `${blockMeta[filled].labelCn} ${slotId}`
+            : `空槽 ${slotId}，放置 ${blockMeta[selectedBlock].labelCn}`
         }
         onClick={() => tryPlace(slotId)}
         className={`mw-room-slot ${isFloor ? "mw-room-slot-floor" : "mw-room-slot-wall"} ${
           filled ? blockMeta[filled].className : "mw-room-slot-empty"
+        } ${quietEmpty ? "mw-room-slot-quiet" : ""} ${
+          emphasizePlace && !filled ? "mw-room-slot-ready" : ""
         } ${flashSlot === slotId ? "mw-room-slot-flash" : ""}`}
       >
         {filled ? (
@@ -98,51 +99,45 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
     <section className="mw-hub-room mw-game-panel overflow-hidden">
       <div className="mw-hub-sky" aria-hidden />
 
-      <div className="relative z-[1] flex items-start justify-between gap-3 px-4 pt-4 sm:px-5">
-        <div>
-          <p className="mw-pixel-title text-sm text-primary sm:text-base">
-            MineWords
-          </p>
-          <h1 className="mt-1 text-2xl font-black leading-tight sm:text-3xl">
-            我的家 My Base
-          </h1>
-          <p className="mt-1 text-sm font-semibold text-muted">
-            建房 · 武装 · 出门探索
-            <span className="mt-0.5 block text-xs">Build · arm · explore</span>
-          </p>
-        </div>
-        <p className="rounded border-2 border-[var(--panel-wood)] bg-black/35 px-2 py-1 text-xs font-bold text-muted">
-          已放 {placedCount}
-          <span className="block text-[10px]">placed</span>
-        </p>
-      </div>
+      <header className="relative z-[1] flex items-center justify-between gap-2 px-3 pt-3 sm:px-4">
+        <h1 className="mw-hub-title">
+          <span className="mw-pixel-title text-primary">MineWords</span>
+          <span className="mw-hub-title-sep" aria-hidden>
+            ·
+          </span>
+          <span>我的家</span>
+        </h1>
+      </header>
 
-      <div className="relative z-[1] mx-3 mt-3 sm:mx-4">
+      <div className="relative z-[1] mx-3 mt-2 sm:mx-4">
         <div className="mw-hub-room-stage">
           <div className="mw-hub-wall-row">
             {ROOM_WALL_SLOTS.map(renderSlot)}
           </div>
 
           <div className="mw-hub-fixtures">
-            <div className="mw-hub-fixture" title="Weapon rack">
+            <div
+              className="mw-hub-fixture mw-hub-fixture-inert"
+              title="武器架（即将开放）"
+              aria-disabled="true"
+            >
               <GameIcon src={assetMap.sword} alt="" size="sm" />
               <span>武器架</span>
-              <span className="text-[10px] text-muted">Rack</span>
             </div>
-            <Link href="/crafting" className="mw-hub-fixture mw-hub-fixture-link">
+            <Link href="/crafting" className="mw-hub-fixture mw-hub-fixture-link mw-hub-fixture-secondary">
               <GameIcon src={assetMap.axe} alt="" size="sm" />
               <span>工作台</span>
-              <span className="text-[10px] text-muted">Craft</span>
             </Link>
             <Link
               href="/review"
-              className="mw-hub-fixture mw-hub-fixture-link mw-hub-door"
+              className={`mw-hub-fixture mw-hub-fixture-link mw-hub-door ${
+                emphasizeFight ? "mw-hub-door-primary" : ""
+              }`}
             >
               <span className="text-2xl" aria-hidden>
                 🚪
               </span>
-              <span>出门</span>
-              <span className="text-[10px] font-bold text-primary">Fight</span>
+              <span>出门打怪</span>
             </Link>
           </div>
 
@@ -157,12 +152,17 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
         </div>
       </div>
 
-      <div className="relative z-[1] space-y-3 p-4 sm:p-5">
-        <div className="flex flex-wrap gap-2">
+      <div className="relative z-[1] space-y-2 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+        <div
+          className={`mw-hub-pickers flex flex-wrap items-center gap-2 ${
+            emphasizePlace ? "mw-hub-pickers-ready" : ""
+          }`}
+        >
           {(Object.keys(blockMeta) as RoomBlockType[]).map((type) => {
             const meta = blockMeta[type];
             const typeCost = ROOM_BLOCK_COST[type];
-            const afford = resources[typeCost.resource] >= typeCost.amount;
+            const stock = resources[meta.resourceKey];
+            const afford = stock >= typeCost.amount;
             const selected = selectedBlock === type;
             return (
               <button
@@ -171,29 +171,33 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                 onClick={() => onSelectBlock(type)}
                 className={`mw-block-picker ${meta.className} ${
                   selected ? "mw-block-picker-on" : ""
-                } ${afford ? "" : "opacity-70"}`}
+                } ${afford && emphasizePlace ? "mw-block-picker-ready" : ""} ${
+                  afford ? "" : "opacity-60"
+                }`}
               >
-                <span className="font-black">
-                  {meta.labelCn} {meta.labelEn}
-                </span>
+                <span className="font-black">{meta.labelCn}</span>
                 <span className="text-[11px] font-semibold text-black/70">
-                  {typeCost.resource} ×{typeCost.amount}
+                  {meta.resourceKey === "wood" ? "木头" : "石头"} ×{stock}
                 </span>
               </button>
             );
           })}
+          {emphasizePlace ? (
+            <span className="mw-hub-place-cta text-sm font-black text-secondary">
+              去铺块
+            </span>
+          ) : null}
         </div>
 
-        <p className="text-sm font-semibold text-muted">
-          {canAfford
-            ? "点空槽放置方块 · Tap an empty slot to place"
-            : `材料不够，去打怪攒 ${cost.resource} · Fight for ${cost.resource}`}
+        <p className="text-sm font-semibold text-muted" role="status">
+          {hint
+            ? hint
+            : emphasizeFight
+              ? "空房间 — 点门出门打怪攒木头"
+              : canAfford
+                ? "点空槽铺地板或墙"
+                : "换一块有材料的，或出门再攒"}
         </p>
-        {hint ? (
-          <p className="text-sm font-bold text-secondary" role="status">
-            {hint}
-          </p>
-        ) : null}
       </div>
     </section>
   );

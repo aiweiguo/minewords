@@ -297,6 +297,26 @@ body {
   image-rendering: pixelated;
 }
 
+.mw-hub-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.mw-hub-title .mw-pixel-title {
+  font-size: 0.7rem;
+}
+
+.mw-hub-title-sep {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .mw-hub-room {
   position: relative;
   background: linear-gradient(180deg, #6ea8d4 0%, #9ec9e8 38%, #c8b89a 38.2%, #2a3224 38.5%);
@@ -327,8 +347,8 @@ body {
       #455240 24px
     );
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25);
-  padding: 0.75rem 0.75rem 0;
-  min-height: 14.5rem;
+  padding: 0.55rem 0.55rem 0;
+  min-height: 12.5rem;
 }
 
 .mw-hub-wall-row {
@@ -351,7 +371,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
-  margin: 0.85rem 0 0.35rem;
+  margin: 0.65rem 0 0.3rem;
 }
 
 .mw-hub-fixture {
@@ -360,8 +380,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.15rem;
-  min-height: 4.25rem;
-  padding: 0.5rem 0.35rem;
+  min-height: 3.75rem;
+  padding: 0.4rem 0.3rem;
   border: 2px solid #5a4030;
   border-radius: 0.25rem;
   background:
@@ -386,6 +406,22 @@ body {
   box-shadow: 0 1px 0 #2c1c12;
 }
 
+.mw-hub-fixture-inert {
+  opacity: 0.42;
+  border-style: dashed;
+  border-color: rgba(90, 64, 48, 0.55);
+  box-shadow: none;
+  background: rgba(40, 32, 24, 0.45);
+  color: var(--muted);
+  pointer-events: none;
+  cursor: default;
+}
+
+.mw-hub-fixture-secondary {
+  opacity: 0.85;
+  box-shadow: 0 2px 0 #2c1c12;
+}
+
 .mw-hub-door {
   background:
     linear-gradient(180deg, rgba(107, 175, 24, 0.35), transparent 55%),
@@ -393,10 +429,18 @@ body {
   border-color: var(--primary);
 }
 
+.mw-hub-door-primary {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+  box-shadow:
+    0 3px 0 #2c1c12,
+    0 0 0 2px rgba(107, 175, 24, 0.45);
+  font-size: 0.8rem;
+}
+
 .mw-room-slot {
   position: relative;
   aspect-ratio: 1;
-  min-height: 2.1rem;
+  min-height: 1.85rem;
   border: 2px solid rgba(0, 0, 0, 0.35);
   border-radius: 0.15rem;
   box-shadow:
@@ -405,7 +449,8 @@ body {
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
-    filter 0.12s ease;
+    filter 0.12s ease,
+    opacity 0.12s ease;
 }
 
 .mw-room-slot:active {
@@ -424,6 +469,20 @@ body {
     rgba(20, 24, 16, 0.45);
   border-style: dashed;
   border-color: rgba(240, 244, 232, 0.28);
+}
+
+.mw-room-slot-quiet {
+  opacity: 0.35;
+  box-shadow: none;
+}
+
+.mw-room-slot-quiet .mw-room-slot-plus {
+  color: rgba(240, 244, 232, 0.22);
+  font-size: 0.75rem;
+}
+
+.mw-room-slot-ready {
+  border-color: rgba(107, 175, 24, 0.55);
 }
 
 .mw-room-slot-plus {
@@ -494,8 +553,8 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.1rem;
-  min-width: 7.5rem;
-  padding: 0.55rem 0.75rem;
+  min-width: 5.5rem;
+  padding: 0.4rem 0.65rem;
   border: 2px solid rgba(0, 0, 0, 0.35);
   border-radius: 0.25rem;
   color: #1a1208;
@@ -510,13 +569,31 @@ body {
     0 0 0 2px var(--primary);
 }
 
+.mw-block-picker-ready {
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(107, 175, 24, 0.55);
+}
+
+.mw-hub-pickers-ready .mw-block-picker-ready {
+  animation: mw-home-cta-pulse 2.8s ease-in-out infinite;
+}
+
+.mw-hub-place-cta {
+  padding: 0.25rem 0.15rem;
+}
+
 @media (min-width: 640px) {
   .mw-hub-room-stage {
-    min-height: 16.5rem;
-    padding: 1rem 1rem 0;
+    min-height: 15rem;
+    padding: 0.85rem 0.85rem 0;
   }
 
   .mw-room-slot {
-    min-height: 2.6rem;
+    min-height: 2.4rem;
+  }
+
+  .mw-hub-fixture {
+    min-height: 4rem;
   }
 }
