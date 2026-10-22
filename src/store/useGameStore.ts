@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { getBuildIdeaById } from "@/data/buildIdeas";
+import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getQuestById } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
@@ -154,7 +155,7 @@ type GameStore = GameState & {
   claimBuildIdea: (ideaId: string) => boolean;
   completeDailyAdventure: (plan: DailyAdventurePlan) => boolean;
   recordWrongWord: (wordId: string) => void;
-  defeatMonster: (wordId: string) => boolean;
+  defeatMonster: (wordId: string) => RewardResult | null;
   completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
   recordSpeakAttempt: () => void;
   syncDecorationUnlocks: () => void;
@@ -466,23 +467,33 @@ export const useGameStore = create<GameStore>()(
 
       defeatMonster: (wordId) => {
         if (get().defeatedMonsterIds.includes(wordId)) {
-          return false;
+          return null;
         }
+
+        const dropRewards = getMonsterDropRewards(wordId);
+        const rewardResult: RewardResult = {
+          rewards: dropRewards,
+          unlocks: [],
+          isFirstCompletion: true,
+        };
+
         set((state) => {
           const mastered = applyWordMasteredState(state, wordId);
+          const applied = applyRewardList(mastered, dropRewards);
           const next = {
             ...mastered,
+            ...applied,
             defeatedMonsterIds: [...mastered.defeatedMonsterIds, wordId],
             wrongWordCounts: {
               ...mastered.wrongWordCounts,
               [wordId]: 0,
             },
-            xp: mastered.xp + 10,
             ...touchLearningDay(state),
           };
           return { ...next, ...withDecorationSync(next) };
         });
-        return true;
+
+        return rewardResult;
       },
 
       recordSpeakAttempt: () =>
