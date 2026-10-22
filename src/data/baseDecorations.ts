@@ -73,6 +73,24 @@ export const baseDecorations: BaseDecoration[] = [
     requiredWordIds: ["redstone", "button", "door"],
     requiredCount: 3,
   },
+  {
+    id: "deco-ocean",
+    name: "Ocean Dock",
+    nameCn: "海边码头",
+    emoji: "🌊",
+    description: "掌握 ocean、boat、swim。",
+    requiredWordIds: ["ocean", "boat", "swim"],
+    requiredCount: 3,
+  },
+  {
+    id: "deco-nether",
+    name: "Portal Frame",
+    nameCn: "传送门框",
+    emoji: "🌀",
+    description: "掌握 portal、obsidian、nether。",
+    requiredWordIds: ["portal", "obsidian", "nether"],
+    requiredCount: 3,
+  },
 ];
 
 export function isDecorationUnlocked(

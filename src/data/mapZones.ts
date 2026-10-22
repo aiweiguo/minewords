@@ -38,8 +38,8 @@ export const mapZones: MapZone[] = [
     nameCn: "村庄",
     emoji: "🏘️",
     requiredLevel: 2,
-    questIds: [],
-    descriptionCn: "完成森林任务后解锁。去攻略库学村民交易！",
+    questIds: ["trade-at-village", "start-a-farm", "cook-a-meal"],
+    descriptionCn: "和村民交易，开垦农场，学烹饪用语。",
   },
   {
     id: "zone-nether",
@@ -48,8 +48,8 @@ export const mapZones: MapZone[] = [
     nameCn: "下界",
     emoji: "🔥",
     requiredLevel: 3,
-    questIds: [],
-    descriptionCn: "等级 3 解锁。阅读下界攻略准备探险。",
+    questIds: ["open-nether-portal", "explore-nether-fortress"],
+    descriptionCn: "建造传送门，探索下界要塞。",
   },
   {
     id: "zone-end",
@@ -58,8 +58,8 @@ export const mapZones: MapZone[] = [
     nameCn: "末地",
     emoji: "🐉",
     requiredLevel: 4,
-    questIds: [],
-    descriptionCn: "终极挑战！先掌握 dragon、end 等单词。",
+    questIds: ["face-the-dragon"],
+    descriptionCn: "终极挑战：摧毁水晶，迎战末影龙。",
   },
 ];
 

@@ -143,6 +143,7 @@ export type GameState = {
   learningStreak: number;
   lastActiveDate: string;
   dailyStats: DailyStats;
+  hasSeenOnboarding: boolean;
 };
 
 export type RewardResult = {
