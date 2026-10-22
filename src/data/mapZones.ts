@@ -27,9 +27,9 @@ export const mapZones: MapZone[] = [
     name: "Battle",
     nameCn: "战斗",
     emoji: "⚔️",
-    requiredLevel: 2,
+    requiredLevel: 1,
     questIds: ["fight-a-zombie", "craft-diamond-sword"],
-    descriptionCn: "打败怪物，合成最强武器。",
+    descriptionCn: "开口说出单词打怪，掉落材料！Speak to attack.",
   },
   {
     id: "zone-village",
