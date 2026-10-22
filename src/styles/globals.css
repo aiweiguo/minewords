@@ -260,3 +260,32 @@ body {
 .mw-base-deco-unlocked {
   filter: drop-shadow(0 0 8px rgba(107, 175, 24, 0.45));
 }
+
+@keyframes mw-home-cta-pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+  }
+}
+
+.mw-home-cta {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+  min-height: 3.75rem;
+}
+
+.mw-home-cta:hover {
+  filter: brightness(1.1);
+}
+
+.mw-home-cta:active {
+  animation: none;
+}
+
+.mw-home-craft-ready {
+  animation: mw-map-enter 0.45s ease both;
+}

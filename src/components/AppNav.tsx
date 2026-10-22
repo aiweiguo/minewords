@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "基地", icon: "🏠" },
+  { href: "/review", label: "打怪", icon: "⚔️" },
+  { href: "/inventory", label: "背包", icon: "🎒" },
+  { href: "/crafting", label: "合成", icon: "⚒️" },
   { href: "/map", label: "地图", icon: "🗺️" },
-  { href: "/speak", label: "口语", icon: "🎤" },
-  { href: "/minedex", label: "图鉴", icon: "📖" },
-  { href: "/quests", label: "任务", icon: "⚔️" },
 ];
 
 export function AppNav() {
