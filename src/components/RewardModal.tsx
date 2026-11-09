@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { GameIcon } from "@/components/GameIcon";
 import { RarityBadge } from "@/components/RarityBadge";
 import { getUnlockableById } from "@/data/unlockables";
@@ -12,6 +14,8 @@ type RewardModalProps = {
   unlocks: string[];
   isFirstCompletion: boolean;
   onClose: () => void;
+  /** Soft nudge toward building when fight drops materials. */
+  settleHref?: string;
 };
 
 export function RewardModal({
@@ -20,8 +24,16 @@ export function RewardModal({
   unlocks,
   isFirstCompletion,
   onClose,
+  settleHref = "/",
 }: RewardModalProps) {
   if (!open) return null;
+
+  const droppedBuildMats = rewards.some(
+    (reward) =>
+      reward.type === "resource" &&
+      (reward.resource === "wood" || reward.resource === "stone") &&
+      (reward.amount ?? 0) > 0,
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -102,9 +114,28 @@ export function RewardModal({
           </div>
         ) : null}
 
-        <button type="button" onClick={onClose} className="mw-btn mw-btn-primary mt-6 w-full">
-          {isFirstCompletion ? "继续冒险 Continue" : "继续 Continue"}
-        </button>
+        <div className="mt-6 space-y-2">
+          {isFirstCompletion && droppedBuildMats ? (
+            <Link
+              href={settleHref}
+              onClick={onClose}
+              className="mw-btn mw-btn-secondary w-full"
+            >
+              回基地建房 Build home
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            onClick={onClose}
+            className={`mw-btn w-full ${
+              isFirstCompletion && droppedBuildMats
+                ? "mw-btn-outline"
+                : "mw-btn-primary"
+            }`}
+          >
+            {isFirstCompletion ? "继续冒险 Continue" : "继续 Continue"}
+          </button>
+        </div>
       </div>
     </div>
   );
