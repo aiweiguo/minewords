@@ -53,7 +53,9 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       return;
     }
     if (!canAfford) {
-      setHint(`需要 ${cost.amount} ${cost.resource === "wood" ? "木头" : "石头"}，先出门打怪`);
+      setHint(
+        `需要 ${cost.amount} ${cost.resource === "wood" ? "木头" : "石头"}，先出门打怪`,
+      );
       return;
     }
     const ok = placeRoomBlock(slotId, selectedBlock);
@@ -97,9 +99,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
 
   return (
     <section className="mw-hub-room mw-game-panel overflow-hidden">
-      <div className="mw-hub-sky" aria-hidden />
-
-      <header className="relative z-[1] flex items-center justify-between gap-2 px-3 pt-3 sm:px-4">
+      <header className="mw-hub-chrome relative z-[2] flex items-center justify-between gap-2">
         <h1 className="mw-hub-title">
           <span className="mw-pixel-title text-primary">MineWords</span>
           <span className="mw-hub-title-sep" aria-hidden>
@@ -107,52 +107,103 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
           </span>
           <span>我的家</span>
         </h1>
+        <span className="mw-hub-badge" aria-hidden>
+          BASE
+        </span>
       </header>
 
-      <div className="relative z-[1] mx-3 mt-2 sm:mx-4">
-        <div className="mw-hub-room-stage">
-          <div className="mw-hub-wall-row">
-            {ROOM_WALL_SLOTS.map(renderSlot)}
+      <div className="mw-hub-stage-wrap relative z-[1]">
+        <div className="mw-hub-room-stage" role="img" aria-label="侧视房间">
+          {/* Far sky + parallax layers */}
+          <div className="mw-hub-layer mw-hub-layer-sky" aria-hidden>
+            <span className="mw-hub-sun" />
+            <span className="mw-hub-cloud mw-hub-cloud-a" />
+            <span className="mw-hub-cloud mw-hub-cloud-b" />
+            <span className="mw-hub-cloud mw-hub-cloud-c" />
+          </div>
+          <div className="mw-hub-layer mw-hub-layer-hills" aria-hidden>
+            <span className="mw-hub-hill mw-hub-hill-far" />
+            <span className="mw-hub-hill mw-hub-hill-near" />
+            <span className="mw-hub-tree mw-hub-tree-l" />
+            <span className="mw-hub-tree mw-hub-tree-r" />
           </div>
 
-          <div className="mw-hub-fixtures">
-            <div
-              className="mw-hub-fixture mw-hub-fixture-inert"
-              title="武器架（即将开放）"
-              aria-disabled="true"
-            >
-              <GameIcon src={assetMap.sword} alt="" size="sm" />
-              <span>武器架</span>
+          {/* Room interior mid-ground */}
+          <div className="mw-hub-layer mw-hub-layer-room">
+            <div className="mw-hub-backwall" aria-hidden>
+              <span className="mw-hub-torch mw-hub-torch-l" />
+              <span className="mw-hub-torch mw-hub-torch-r" />
             </div>
-            <Link href="/crafting" className="mw-hub-fixture mw-hub-fixture-link mw-hub-fixture-secondary">
-              <GameIcon src={assetMap.axe} alt="" size="sm" />
-              <span>工作台</span>
-            </Link>
-            <Link
-              href="/review"
-              className={`mw-hub-fixture mw-hub-fixture-link mw-hub-door ${
-                emphasizeFight ? "mw-hub-door-primary" : ""
-              }`}
-            >
-              <span className="text-2xl" aria-hidden>
-                🚪
-              </span>
-              <span>出门打怪</span>
-            </Link>
-          </div>
 
-          <div className="mw-hub-floor-row">
-            {ROOM_FLOOR_SLOTS.map(renderSlot)}
+            <div className="mw-hub-wall-row">
+              {ROOM_WALL_SLOTS.map(renderSlot)}
+            </div>
+
+            <div className="mw-hub-fixtures">
+              <div
+                className="mw-hub-fixture mw-hub-fixture-inert mw-hub-prop-rack"
+                title="武器架（即将开放）"
+                aria-disabled="true"
+              >
+                <span className="mw-hub-prop-art" aria-hidden>
+                  <span className="mw-hub-rack-post" />
+                  <GameIcon src={assetMap.sword} alt="" size="sm" />
+                  <span className="mw-hub-rack-post" />
+                </span>
+                <span className="mw-hub-prop-label">武器架</span>
+              </div>
+
+              <Link
+                href="/crafting"
+                className="mw-hub-fixture mw-hub-fixture-link mw-hub-fixture-secondary mw-hub-prop-table"
+              >
+                <span className="mw-hub-prop-art" aria-hidden>
+                  <span className="mw-hub-craft-top" />
+                  <span className="mw-hub-craft-legs" />
+                  <GameIcon
+                    src={assetMap.axe}
+                    alt=""
+                    size="xs"
+                    className="mw-hub-craft-tool"
+                  />
+                </span>
+                <span className="mw-hub-prop-label">工作台</span>
+              </Link>
+
+              <Link
+                href="/review"
+                className={`mw-hub-fixture mw-hub-fixture-link mw-hub-door mw-hub-prop-door ${
+                  emphasizeFight ? "mw-hub-door-primary" : ""
+                }`}
+              >
+                <span className="mw-hub-prop-art" aria-hidden>
+                  <span className="mw-hub-door-frame">
+                    <span className="mw-hub-door-leaf">
+                      <span className="mw-hub-door-knob" />
+                    </span>
+                  </span>
+                </span>
+                <span className="mw-hub-prop-label">出门打怪</span>
+              </Link>
+            </div>
+
+            <div className="mw-hub-floor-row">
+              {ROOM_FLOOR_SLOTS.map(renderSlot)}
+            </div>
           </div>
 
           <div className="mw-hub-ground" aria-hidden>
-            <div className="mw-hub-grass" />
+            <div className="mw-hub-grass">
+              <span className="mw-hub-blade" />
+              <span className="mw-hub-blade mw-hub-blade-b" />
+              <span className="mw-hub-blade mw-hub-blade-c" />
+            </div>
             <div className="mw-hub-dirt" />
           </div>
         </div>
       </div>
 
-      <div className="relative z-[1] space-y-2 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+      <div className="mw-hub-toolbar relative z-[2]">
         <div
           className={`mw-hub-pickers flex flex-wrap items-center gap-2 ${
             emphasizePlace ? "mw-hub-pickers-ready" : ""
@@ -189,7 +240,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
           ) : null}
         </div>
 
-        <p className="text-sm font-semibold text-muted" role="status">
+        <p className="mw-hub-hint" role="status">
           {hint
             ? hint
             : emphasizeFight

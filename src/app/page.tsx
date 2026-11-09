@@ -40,18 +40,18 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="space-y-3">
+    <main className="mw-hub-home">
       <HubRoom
         selectedBlock={selectedBlock}
         onSelectBlock={setSelectedBlock}
       />
 
-      <section id="more" className="mw-card scroll-mt-4 p-3">
+      <section id="more" className="mw-hub-more scroll-mt-4">
         <button
           type="button"
           aria-expanded={moreOpen}
           onClick={() => setMoreOpen((open) => !open)}
-          className="flex w-full items-center justify-between gap-3 text-left"
+          className="mw-hub-more-toggle"
         >
           <h2 className="text-base font-black">更多</h2>
           <span className="text-lg font-black text-primary" aria-hidden>
@@ -66,7 +66,7 @@ export default function HomePage() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-md border border-[var(--panel-wood)]/60 bg-black/20 px-3 py-2 text-sm font-bold text-muted transition-colors hover:bg-black/35 hover:text-foreground"
+                  className="mw-hub-more-link"
                 >
                   {link.label}
                 </Link>

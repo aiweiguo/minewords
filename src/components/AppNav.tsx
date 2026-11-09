@@ -42,7 +42,7 @@ export function AppNav() {
             <Link
               key={item.id}
               href={item.href}
-              className={`flex flex-col items-center rounded-xl px-2 py-2 text-xs font-bold transition-colors ${
+              className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-2 text-xs font-bold transition-colors ${
                 active
                   ? "bg-primary/15 text-primary"
                   : "text-muted hover:bg-black/20"
