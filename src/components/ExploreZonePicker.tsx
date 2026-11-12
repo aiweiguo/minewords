@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
 import { ExploreZoneId } from "@/data/exploreZones";
@@ -9,15 +8,13 @@ import { listExploreZoneStates } from "@/lib/exploreZones";
 import { useGameStore } from "@/store/useGameStore";
 
 export function ExploreZonePicker() {
-  const router = useRouter();
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const selectedExploreZoneId = useGameStore((s) => s.selectedExploreZoneId);
   const setSelectedExploreZone = useGameStore((s) => s.setSelectedExploreZone);
   const zones = listExploreZoneStates(unlockedIds);
 
-  function enterZone(zoneId: ExploreZoneId) {
+  function chooseZone(zoneId: ExploreZoneId) {
     setSelectedExploreZone(zoneId);
-    router.push("/review");
   }
 
   return (
@@ -38,7 +35,7 @@ export function ExploreZonePicker() {
         </Link>
       </header>
 
-      <WeaponGoalStrip variant="hub" className="relative z-[2]" />
+      <WeaponGoalStrip variant="hub" className="relative z-[2]" hideCta />
 
       <div className="mw-explore-stage-wrap relative z-[1]">
         <div className="mw-explore-stage" role="list" aria-label="探索区域">
@@ -83,11 +80,11 @@ export function ExploreZonePicker() {
               }
 
               return (
-                <button
+                <Link
                   key={zone.id}
-                  type="button"
+                  href="/review"
                   role="listitem"
-                  onClick={() => enterZone(zone.id)}
+                  onClick={() => chooseZone(zone.id)}
                   className={`mw-explore-portal mw-explore-portal-open mw-explore-portal-${zone.tone} ${
                     selected ? "mw-explore-portal-selected" : ""
                   }`}
@@ -102,7 +99,7 @@ export function ExploreZonePicker() {
                     掉落偏 {zone.focusLabelCn} · {zone.blurbEn}
                   </span>
                   <span className="mw-explore-portal-cta">进入打怪 →</span>
-                </button>
+                </Link>
               );
             })}
           </div>
