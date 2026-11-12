@@ -8,8 +8,10 @@ import { SpeakTradePanel } from "@/components/SpeakTradePanel";
 import {
   canAffordTrade,
   getTradeOfferById,
+  pickPreferredTradeOfferId,
   tradeOffers,
 } from "@/data/trades";
+import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import { useGameStore } from "@/store/useGameStore";
 
 type TradePageClientProps = {
@@ -19,16 +21,16 @@ type TradePageClientProps = {
 export function TradePageClient({ initialOfferId }: TradePageClientProps) {
   const resources = useGameStore((s) => s.resources);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const chasingDiamond =
+    goal.goal?.id === "diamond-sword" && goal.status === "gather";
 
   const activeId = useMemo(() => {
     if (initialOfferId && getTradeOfferById(initialOfferId)) {
       return initialOfferId;
     }
-    const affordable = tradeOffers.find((offer) =>
-      canAffordTrade(offer, resources),
-    );
-    return affordable?.id ?? tradeOffers[0]?.id ?? "buy-diamonds";
-  }, [initialOfferId, resources]);
+    return pickPreferredTradeOfferId(resources, goal.missing);
+  }, [initialOfferId, resources, goal.missing]);
 
   const isTrader = unlockedIds.includes("village-trader");
 
@@ -40,6 +42,13 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
         <p className="mt-2 text-sm font-semibold text-muted">
           跟村民说买 / 换：绿宝石、金、钻石。Speak buy or trade keywords.
         </p>
+        {chasingDiamond ? (
+          <p className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-900/25 px-3 py-2 text-sm font-bold text-emerald-100">
+            当前目标：钻石剑 · 说{" "}
+            <span className="text-emerald-50">Can I buy diamonds?</span>{" "}
+            或用铁换钻石
+          </p>
+        ) : null}
         {isTrader ? (
           <p className="mt-2 text-xs font-bold text-green-200">
             ✓ 已解锁村民商人 Village trader
@@ -57,6 +66,11 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
           {tradeOffers.map((offer) => {
             const affordable = canAffordTrade(offer, resources);
             const selected = offer.id === activeId;
+            const helpsDiamond =
+              chasingDiamond &&
+              (offer.id === "buy-diamonds" ||
+                offer.id === "iron-for-diamond" ||
+                offer.id === "wood-for-emerald");
             return (
               <Link
                 key={offer.id}
@@ -64,7 +78,9 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
                 className={`mw-card flex items-center gap-3 p-4 ${
                   selected
                     ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/40"
-                    : ""
+                    : helpsDiamond
+                      ? "border-emerald-500/35"
+                      : ""
                 }`}
               >
                 <GameIcon src={offer.icon} alt="" size="md" />
@@ -74,7 +90,11 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
                     {offer.expectedSpeech}
                   </p>
                   <p className="mt-1 text-xs font-semibold text-muted">
-                    {affordable ? "可以交易 — 去开口" : "材料不够"}
+                    {affordable
+                      ? "可以交易 — 去开口"
+                      : helpsDiamond
+                        ? "钻石剑材料线"
+                        : "材料不够"}
                   </p>
                 </div>
               </Link>

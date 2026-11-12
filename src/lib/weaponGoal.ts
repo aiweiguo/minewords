@@ -1,3 +1,4 @@
+import { getTradeNudgeForGoal } from "@/data/trades";
 import {
   getWeaponTierById,
   getWeaponTierIndex,
@@ -24,13 +25,15 @@ export type WeaponGoalSnapshot = {
   /** Primary missing resource for compact copy (prefer wood then first missing). */
   primaryMissing: WeaponCost | null;
   canCraft: boolean;
+  /** True when settle / goal bar should push speak-trade for missing mats. */
+  canTrade: boolean;
   stripCn: string;
   stripEn: string;
   primaryCta: {
     href: string;
     labelCn: string;
     labelEn: string;
-    kind: "craft" | "fight" | "home";
+    kind: "craft" | "trade" | "fight" | "home";
   };
   nextPreviewCn: string;
   nextPreviewEn: string;
@@ -103,6 +106,7 @@ export function getWeaponGoalSnapshot(
       missing: [],
       primaryMissing: null,
       canCraft: false,
+      canTrade: false,
       stripCn: equipped
         ? `${equipped.nameCn}已挂上武器架 · 继续打怪探险`
         : "武器线已完成",
@@ -133,6 +137,7 @@ export function getWeaponGoalSnapshot(
       missing: [],
       primaryMissing: null,
       canCraft: true,
+      canTrade: false,
       stripCn: `材料够了！去合成${goal.goalLabelCn}`,
       stripEn: `Ready — craft the ${goal.name}`,
       primaryCta: {
@@ -146,6 +151,31 @@ export function getWeaponGoalSnapshot(
     };
   }
 
+  // Post-iron: when short on diamond (or tradeable path), nudge speak-trade.
+  const tradeNudge = getTradeNudgeForGoal(missing, resources);
+  if (tradeNudge) {
+    return {
+      goal,
+      equipped,
+      status: "gather",
+      missing,
+      primaryMissing,
+      canCraft: false,
+      canTrade: true,
+      stripCn: tradeNudge.stripCn,
+      stripEn: tradeNudge.stripEn,
+      primaryCta: {
+        href: tradeNudge.href,
+        labelCn: tradeNudge.labelCn,
+        labelEn: tradeNudge.labelEn,
+        kind: "trade",
+      },
+      nextPreviewCn: "也可去钻石矿脉打怪掉钻石",
+      nextPreviewEn: "Or farm Crystal Depths for diamond drops",
+    };
+  }
+
+  const missingDiamond = missing.some((m) => m.resource === "diamond");
   return {
     goal,
     equipped,
@@ -153,16 +183,25 @@ export function getWeaponGoalSnapshot(
     missing,
     primaryMissing,
     canCraft: false,
-    stripCn: `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)}`,
-    stripEn: `Craft ${goal.name}: need ${formatMissingCn(missing)}`,
+    canTrade: false,
+    stripCn: missingDiamond
+      ? `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)} · 打矿脉或攒绿宝石去交易`
+      : `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)}`,
+    stripEn: missingDiamond
+      ? `Craft ${goal.name}: need ${formatMissingCn(missing)} — mine or trade`
+      : `Craft ${goal.name}: need ${formatMissingCn(missing)}`,
     primaryCta: {
       href: "/explore",
       labelCn: "继续打怪",
       labelEn: "Keep fighting",
       kind: "fight",
     },
-    nextPreviewCn: goal.nextPreviewCn,
-    nextPreviewEn: goal.nextPreviewEn,
+    nextPreviewCn: missingDiamond
+      ? "绿宝石够了可去交易买钻石 · Can I buy diamonds?"
+      : goal.nextPreviewCn,
+    nextPreviewEn: missingDiamond
+      ? "Bank emeralds, then trade: Can I buy diamonds?"
+      : goal.nextPreviewEn,
   };
 }
 

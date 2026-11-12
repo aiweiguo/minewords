@@ -22,6 +22,7 @@ type RewardModalProps = {
    * Zone wild farming: closing without navigating resets the encounter.
    * When mats are ready (`canCraft`), craft stays the primary CTA and
    * 「再打一只」 is demoted so farm resets don't bury speak-craft.
+   * When short on tradeable mats (`canTrade`), 「去交易」 wins over farm-again.
    */
   farmable?: boolean;
 };
@@ -44,7 +45,11 @@ export function RewardModal({
   const hasLoot = rewards.length > 0 || unlocks.length > 0;
   const showWeaponSettle = hasLoot || isFirstCompletion;
   const forceCraftCta = goal.canCraft;
+  const forceTradeCta = !forceCraftCta && goal.canTrade;
   const showFarmAgain = farmable;
+  const droppedEmerald = rewards.some(
+    (reward) => reward.type === "resource" && reward.resource === "emerald",
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -77,19 +82,31 @@ export function RewardModal({
           <div className="mt-4 space-y-3">
             {rewards.map((reward, index) => {
               if (reward.type === "resource" && reward.resource) {
+                const isEmerald = reward.resource === "emerald";
                 return (
                   <div
                     key={`${reward.resource}-${index}`}
-                    className="flex items-center gap-3 rounded-lg border border-[var(--panel-border)] bg-black/25 px-4 py-3 font-bold"
+                    className={`flex items-center gap-3 rounded-lg border px-4 py-3 font-bold ${
+                      isEmerald
+                        ? "border-emerald-400/60 bg-emerald-900/35 text-emerald-100 ring-1 ring-emerald-300/30"
+                        : "border-[var(--panel-border)] bg-black/25"
+                    }`}
                   >
                     <GameIcon
                       src={getResourceIcon(reward.resource)}
                       alt={reward.resource}
                       size="md"
                     />
-                    <span className="capitalize">
-                      {reward.resource} x{reward.amount}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span className="capitalize">
+                        {reward.resource} x{reward.amount}
+                      </span>
+                      {isEmerald ? (
+                        <p className="text-xs font-semibold text-emerald-200/90">
+                          绿宝石 · 可去交易买钻石 Emerald — trade for diamonds
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
                 );
               }
@@ -151,7 +168,7 @@ export function RewardModal({
         <div className="mt-6 space-y-2">
           {showWeaponSettle ? (
             <>
-              {forceCraftCta ? (
+              {forceCraftCta || forceTradeCta ? (
                 <Link
                   href={goal.primaryCta.href}
                   onClick={onClose}
@@ -178,7 +195,7 @@ export function RewardModal({
                   <span className="opacity-80">{goal.primaryCta.labelEn}</span>
                 </Link>
               )}
-              {showFarmAgain && forceCraftCta ? (
+              {showFarmAgain && (forceCraftCta || forceTradeCta) ? (
                 <button
                   type="button"
                   onClick={onClose}
@@ -186,6 +203,16 @@ export function RewardModal({
                 >
                   再打一只 Fight again
                 </button>
+              ) : null}
+              {droppedEmerald && !forceCraftCta && !forceTradeCta ? (
+                <Link
+                  href="/trade?offer=buy-diamonds"
+                  onClick={onClose}
+                  className="mw-btn mw-btn-outline w-full"
+                >
+                  去交易 Go trade{" "}
+                  <span className="opacity-80">绿宝石</span>
+                </Link>
               ) : null}
               <Link
                 href={settleHref}

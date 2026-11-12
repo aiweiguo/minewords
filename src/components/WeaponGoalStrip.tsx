@@ -65,7 +65,9 @@ export function WeaponGoalStrip({
             className={`mw-weapon-goal-cta ${
               snapshot.primaryCta.kind === "craft"
                 ? "mw-weapon-goal-cta-craft"
-                : ""
+                : snapshot.primaryCta.kind === "trade"
+                  ? "mw-weapon-goal-cta-trade"
+                  : ""
             }`}
           >
             {snapshot.primaryCta.labelCn}
@@ -106,11 +108,7 @@ export function WeaponGoalStrip({
       {!hideCta ? (
         <Link
           href={snapshot.primaryCta.href}
-          className={`mw-btn mt-4 w-full ${
-            snapshot.primaryCta.kind === "craft"
-              ? "mw-btn-secondary"
-              : "mw-btn-primary"
-          }`}
+          className="mw-btn mw-btn-primary mt-4 w-full"
         >
           {snapshot.primaryCta.labelCn}{" "}
           <span className="opacity-80">{snapshot.primaryCta.labelEn}</span>
