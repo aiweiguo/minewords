@@ -98,7 +98,8 @@ export function getAttackSpeechLadder(
 
 /**
  * Suggested prompt for the current fight step.
- * Zone attackSpeech is the starting rung floor (forest word · cave phrase · mines sentence).
+ * Zone attackSpeech is the starting rung (forest word · cave phrase · mines/crystal sentence).
+ * Callers may pass a lower suggestedRung after MW-35 miss step-down.
  */
 export function getAttackSpeechForMonster(
   wordId: string,
@@ -107,8 +108,8 @@ export function getAttackSpeechForMonster(
 ): AttackSpeechPrompt {
   const ladder = getAttackSpeechLadder(wordId, zoneId);
   const zone = getExploreZoneById(zoneId);
-  const floor: FluencyRung = zone?.attackSpeech ?? "word";
-  const rung = suggestedRung ?? floor;
+  const start: FluencyRung = zone?.attackSpeech ?? "word";
+  const rung = suggestedRung ?? start;
   return ladder[rung];
 }
 
@@ -116,6 +117,13 @@ export function nextFluencyRung(rung: FluencyRung): FluencyRung | null {
   const index = FLUENCY_RUNG_ORDER.indexOf(rung);
   if (index < 0 || index >= FLUENCY_RUNG_ORDER.length - 1) return null;
   return FLUENCY_RUNG_ORDER[index + 1] ?? null;
+}
+
+/** Step one rung easier (MW-35 miss step-down). Floors at word. */
+export function prevFluencyRung(rung: FluencyRung): FluencyRung | null {
+  const index = FLUENCY_RUNG_ORDER.indexOf(rung);
+  if (index <= 0) return null;
+  return FLUENCY_RUNG_ORDER[index - 1] ?? null;
 }
 
 export function fluencyRungIndex(rung: FluencyRung): number {
