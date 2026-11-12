@@ -82,7 +82,7 @@ export function ExploreZonePicker() {
               return (
                 <Link
                   key={zone.id}
-                  href="/review"
+                  href="/fight"
                   role="listitem"
                   onClick={() => chooseZone(zone.id)}
                   className={`mw-explore-portal mw-explore-portal-open mw-explore-portal-${zone.tone} ${

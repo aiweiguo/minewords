@@ -133,8 +133,8 @@ export default function ParentPage() {
           <p className="mt-2 text-sm font-semibold text-muted">
             {reviewWords.map((w) => `${w!.english} (${w!.chinese})`).join("、")}
           </p>
-          <Link href="/review" className="mt-4 inline-flex text-sm font-bold text-primary underline">
-            去击败单词怪 →
+          <Link href="/fight" className="mt-4 inline-flex text-sm font-bold text-primary underline">
+            去打怪 →
           </Link>
         </section>
       ) : null}
