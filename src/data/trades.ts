@@ -33,7 +33,7 @@ export type TradeOffer = {
 /**
  * Villager speak-trade offers (MW-20).
  * Repeatable: kids practice buy/trade sentences for rare mats.
- * Not a gold/diamond weapon ladder — materials only.
+ * Side path for rare mats (emerald → gold/diamond). Main ladder uses crystal depths drops + speak-craft.
  */
 export const tradeOffers: TradeOffer[] = [
   {

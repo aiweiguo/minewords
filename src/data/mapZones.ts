@@ -53,7 +53,7 @@ export const mapZones: MapZone[] = [
     emoji: "🏘️",
     requiredLevel: 2,
     questIds: [],
-    descriptionCn: "交易线稍后开放。先完成木 → 石 → 铁武装。",
+    descriptionCn: "村庄交易可换钻石；武装主线：木 → 石 → 铁 → 钻石。",
   },
   {
     id: "zone-nether",
@@ -63,7 +63,7 @@ export const mapZones: MapZone[] = [
     emoji: "🔥",
     requiredLevel: 3,
     questIds: [],
-    descriptionCn: "金/钻石阶以后再开。",
+    descriptionCn: "钻石剑之后再开。",
   },
   {
     id: "zone-end",

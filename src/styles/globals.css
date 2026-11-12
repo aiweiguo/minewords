@@ -790,6 +790,11 @@ body {
     contrast(1.15);
 }
 
+.mw-hub-rack-blade-diamond {
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35)) hue-rotate(160deg) saturate(1.45)
+    brightness(1.18) contrast(1.1);
+}
+
 .mw-hub-rack-ghost {
   display: inline-flex;
   transform: rotate(-18deg);
@@ -1434,7 +1439,7 @@ body {
 
 @media (min-width: 900px) {
   .mw-explore-portals {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 }
 
@@ -1498,6 +1503,10 @@ body {
 
 .mw-explore-portal-mines {
   border-color: #6b5a3e;
+}
+
+.mw-explore-portal-crystal {
+  border-color: #2a8f9e;
 }
 
 .mw-explore-portal-name {

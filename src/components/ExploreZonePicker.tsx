@@ -107,7 +107,7 @@ export function ExploreZonePicker() {
       </div>
 
       <p className="mw-explore-hint relative z-[2]" role="status">
-        木阶森林（单词起）→ 洞穴（短句起）→ 矿洞（整句打满）。同一只怪说得越完整，伤害越大。
+        木阶森林 → 洞穴 → 矿洞 → 钻石矿脉（铁剑解锁）。同一只怪说得越完整，伤害越大。
       </p>
     </section>
   );

@@ -152,8 +152,10 @@ export const craftingRecipes: CraftingRecipe[] = [
       [slot("diamond", "Diamond", "钻石"), null, null],
       [null, slot("stick", "Stick", "木棍"), null],
     ],
-    simpleEnglish: "Two diamonds and one stick make a diamond sword.",
-    simpleChinese: "两个钻石和一根木棍合成钻石剑。",
+    simpleEnglish:
+      "Say Can I craft a diamond sword? to forge the strongest blade (2 diamond + 1 wood).",
+    simpleChinese:
+      "开口说 Can I craft a diamond sword? 合成钻石剑（消耗 2 diamond + 1 wood）。",
     keywordIds: ["diamond", "sword", "stick", "craft"],
     relatedGuideId: "diamond-sword-guide",
   },

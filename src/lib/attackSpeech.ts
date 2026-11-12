@@ -30,6 +30,7 @@ export type AttackSpeechLadder = Record<FluencyRung, AttackSpeechPrompt>;
 /** Material word woven into the full-sentence rung (zone-aware). */
 function sentenceMaterialWord(zoneId?: ExploreZoneId | null): string {
   const zone = getExploreZoneById(zoneId);
+  if (zone?.focusResource === "diamond") return "diamond";
   if (zone?.focusResource === "iron") return "iron";
   if (zone?.focusResource === "stone") return "stone";
   return "wood";

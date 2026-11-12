@@ -1,7 +1,11 @@
 import { assetMap } from "@/lib/assets";
 import { ResourceType } from "@/types";
 
-export type WeaponTierId = "wooden-sword" | "stone-sword" | "iron-sword";
+export type WeaponTierId =
+  | "wooden-sword"
+  | "stone-sword"
+  | "iron-sword"
+  | "diamond-sword";
 
 export type WeaponCost = {
   resource: ResourceType;
@@ -28,12 +32,12 @@ export type WeaponTier = {
   nextPreviewCn: string;
   nextPreviewEn: string;
   /** Visual tint class for the hub rack blade. */
-  rackTone: "wood" | "stone" | "iron";
+  rackTone: "wood" | "stone" | "iron" | "diamond";
 };
 
 /**
- * Armed progression line for the hub (MW-6 → MW-18).
- * Stick is speech vocabulary only — inventory spends wood/stone/iron resources.
+ * Armed progression line for the hub (MW-6 → MW-32).
+ * Stick is speech vocabulary only — inventory spends wood/stone/iron/diamond resources.
  */
 export const weaponTiers: WeaponTier[] = [
   {
@@ -86,9 +90,29 @@ export const weaponTiers: WeaponTier[] = [
     speechHintCn: "说完整句：I craft an iron sword（含 craft / iron / sword）",
     speechHintEn: "Say a full sentence with craft, iron, or sword",
     craftXp: 24,
-    nextPreviewCn: "下一阶：金/钻石 · 稍后开放",
-    nextPreviewEn: "Next: gold/diamond · coming later",
+    nextPreviewCn: "下一阶：钻石剑 · 需要 diamond",
+    nextPreviewEn: "Next: diamond sword · needs diamond",
     rackTone: "iron",
+  },
+  {
+    id: "diamond-sword",
+    name: "Diamond Sword",
+    nameCn: "钻石剑",
+    goalLabelCn: "钻石剑",
+    icon: assetMap.sword,
+    costs: [
+      { resource: "diamond", amount: 2 },
+      { resource: "wood", amount: 1 },
+    ],
+    // Trade-style longer sentence (P1 / MW-32) — mirrors speak-trade fluency.
+    expectedSpeech: "Can I craft a diamond sword?",
+    speechKeywords: ["craft", "diamond", "sword", "buy", "want", "please"],
+    speechHintCn: "说交易式长句：Can I craft a diamond sword?（含 craft / diamond / sword）",
+    speechHintEn: "Say a trade-style sentence with craft, diamond, or sword",
+    craftXp: 32,
+    nextPreviewCn: "武器线完成 · 继续打怪探险",
+    nextPreviewEn: "Weapon line complete · keep exploring",
+    rackTone: "diamond",
   },
 ];
 

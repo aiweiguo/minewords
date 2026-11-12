@@ -104,10 +104,10 @@ export function getWeaponGoalSnapshot(
       primaryMissing: null,
       canCraft: false,
       stripCn: equipped
-        ? `${equipped.nameCn}已挂上武器架 · 金/钻石稍后开放`
+        ? `${equipped.nameCn}已挂上武器架 · 继续打怪探险`
         : "武器线已完成",
       stripEn: equipped
-        ? `${equipped.name} on the rack · gold/diamond later`
+        ? `${equipped.name} on the rack · keep exploring`
         : "Weapon line complete",
       primaryCta: {
         href: "/explore",
@@ -115,8 +115,8 @@ export function getWeaponGoalSnapshot(
         labelEn: "Keep fighting",
         kind: "fight",
       },
-      nextPreviewCn: top?.nextPreviewCn ?? "金/钻石稍后开放",
-      nextPreviewEn: top?.nextPreviewEn ?? "Gold/diamond coming later",
+      nextPreviewCn: top?.nextPreviewCn ?? "武器线完成 · 继续打怪探险",
+      nextPreviewEn: top?.nextPreviewEn ?? "Weapon line complete · keep exploring",
     };
   }
 

@@ -2,7 +2,7 @@ import { backgroundMap } from "@/lib/assets";
 import { ResourceType } from "@/types";
 import { WeaponTierId } from "@/data/weapons";
 
-export type ExploreZoneId = "forest" | "cave" | "mines";
+export type ExploreZoneId = "forest" | "cave" | "mines" | "crystal";
 
 export type ExploreZone = {
   id: ExploreZoneId;
@@ -19,7 +19,7 @@ export type ExploreZone = {
   /** Wild speak-attack encounters in this zone. */
   wildMonsterIds: readonly string[];
   background: string;
-  tone: "forest" | "cave" | "mines";
+  tone: "forest" | "cave" | "mines" | "crystal";
   /**
    * Speak-attack load for this zone.
    * word → short phrase → full sentence (weapon ladder).
@@ -28,8 +28,8 @@ export type ExploreZone = {
 };
 
 /**
- * Weapon-tier explore zones (MW-7 → MW-18).
- * Forest → wood; cave (wooden sword) → stone; mines (stone sword) → iron.
+ * Weapon-tier explore zones (MW-7 → MW-32).
+ * Forest → wood; cave → stone; mines → iron; crystal depths (iron sword) → diamond.
  */
 export const exploreZones: ExploreZone[] = [
   {
@@ -74,6 +74,20 @@ export const exploreZones: ExploreZone[] = [
     background: backgroundMap.battle,
     tone: "mines",
     // MW-19: mines still starts at sentence; lower rungs chip less HP.
+    attackSpeech: "sentence",
+  },
+  {
+    id: "crystal",
+    name: "Crystal Depths",
+    nameCn: "钻石矿脉",
+    blurbCn: "铁剑解锁 · 掉钻石做钻石剑 · 整句打满",
+    blurbEn: "Sentence attack for diamond",
+    focusResource: "diamond",
+    focusLabelCn: "钻石",
+    requiredWeaponId: "iron-sword",
+    wildMonsterIds: ["blaze", "skeleton"],
+    background: backgroundMap.cave,
+    tone: "crystal",
     attackSpeech: "sentence",
   },
 ];
