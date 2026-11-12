@@ -81,9 +81,12 @@ export function DailyAdventurePanel() {
         ) : null}
         {adventure.questId ? (
           <Link href={`/quests/${adventure.questId}`} className="mw-btn mw-btn-outline text-sm">
-            做任务
+            材料委托
           </Link>
         ) : null}
+        <Link href="/explore" className="mw-btn mw-btn-secondary text-sm">
+          出门打怪
+        </Link>
         {!completed ? (
           <button
             type="button"

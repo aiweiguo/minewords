@@ -77,7 +77,7 @@ export default function ParentPage() {
         <h2 className="text-xl font-black">今日概览</h2>
         {todayActive ? (
           <ul className="mt-4 space-y-2 text-sm font-semibold">
-            <li>完成任务：{dailyStats.completedQuests} 个</li>
+            <li>完成委托：{dailyStats.completedQuests} 个</li>
             <li>领取创意：{dailyStats.buildIdeasClaimed} 个</li>
             <li>完成冒险：{dailyStats.adventuresCompleted} 次</li>
             <li>答对题数：{dailyStats.correctAnswers} 题</li>
@@ -98,7 +98,7 @@ export default function ParentPage() {
           <li>等级：Lv {level}</li>
           <li>总 XP：{xp}</li>
           <li>连续学习：{learningStreak} 天</li>
-          <li>已完成任务：{completedQuestIds.length} / {quests.length}</li>
+          <li>已完成委托：{completedQuestIds.length} / {quests.length}</li>
           <li>已完成攻略：{completedGuideIds.length} / {guides.length}</li>
           <li>已完成口语场景：{completedSpeakIds.length} / {speakScenarios.length}</li>
           <li>已发现单词：{discoveredWordIds.length} / {vocabulary.length}</li>

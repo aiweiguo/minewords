@@ -23,7 +23,7 @@ export const unlockables: Unlockable[] = [
     description: "Your first tool for chopping wood.",
     icon: assetMap.axe,
     rarity: "common",
-    questId: "collect-wood",
+    questId: "wood-fights-for-sword",
   },
   {
     id: "stone-pickaxe",
@@ -33,7 +33,7 @@ export const unlockables: Unlockable[] = [
     description: "Use it to mine stone in caves.",
     icon: assetMap.pickaxe,
     rarity: "uncommon",
-    questId: "mine-stone",
+    questId: "gather-stone-for-sword",
   },
   {
     id: "iron-sword",
@@ -54,7 +54,7 @@ export const unlockables: Unlockable[] = [
     icon: assetMap.sword,
     image: assetMap.diamond,
     rarity: "legendary",
-    questId: "craft-diamond-sword",
+    questId: "craft-stone-sword-errand",
   },
   {
     id: "word-miner",
@@ -64,7 +64,7 @@ export const unlockables: Unlockable[] = [
     description: "Learn 20 Minecraft words.",
     icon: assetMap.pickaxe,
     rarity: "uncommon",
-    questId: "make-planks",
+    questId: "gather-wood-for-sword",
   },
   {
     id: "diamond-speaker",
@@ -74,7 +74,7 @@ export const unlockables: Unlockable[] = [
     description: "Complete the diamond sword quest.",
     icon: assetMap.diamond,
     rarity: "epic",
-    questId: "craft-diamond-sword",
+    questId: "craft-stone-sword-errand",
   },
   {
     id: "forest-map",
@@ -84,7 +84,7 @@ export const unlockables: Unlockable[] = [
     description: "Explore the green forest area.",
     icon: backgroundMap.forest,
     rarity: "common",
-    questId: "collect-wood",
+    questId: "wood-fights-for-sword",
   },
   {
     id: "cave-map",
@@ -94,7 +94,7 @@ export const unlockables: Unlockable[] = [
     description: "Mine deep inside the cave.",
     icon: backgroundMap.cave,
     rarity: "uncommon",
-    questId: "mine-stone",
+    questId: "gather-stone-for-sword",
   },
   {
     id: "village-map",
@@ -104,7 +104,7 @@ export const unlockables: Unlockable[] = [
     description: "Visit the friendly village.",
     icon: backgroundMap.village,
     rarity: "uncommon",
-    questId: "build-a-bed",
+    questId: "gather-wood-for-sword",
   },
   {
     id: "bed-builder",
@@ -114,7 +114,7 @@ export const unlockables: Unlockable[] = [
     description: "Learn how to build a bed.",
     icon: assetMap.chest,
     rarity: "common",
-    questId: "build-a-bed",
+    questId: "gather-wood-for-sword",
   },
   {
     id: "zombie-fighter",
@@ -124,7 +124,7 @@ export const unlockables: Unlockable[] = [
     description: "Defeat zombies in battle.",
     icon: assetMap.zombie,
     rarity: "rare",
-    questId: "fight-a-zombie",
+    questId: "wood-fights-for-sword",
   },
   {
     id: "wooden-sword",
@@ -134,7 +134,7 @@ export const unlockables: Unlockable[] = [
     description: "A basic sword for beginners. Craft it by speaking wood / stick / craft.",
     icon: assetMap.sword,
     rarity: "common",
-    questId: "fight-a-zombie",
+    questId: "wood-fights-for-sword",
   },
   {
     id: "stone-sword",

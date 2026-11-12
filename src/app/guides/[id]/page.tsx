@@ -105,13 +105,16 @@ export default function GuideDetailPage({ params }: GuideDetailPageProps) {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/explore" className="mw-btn mw-btn-primary">
+            出门打怪
+          </Link>
           {entry.relatedQuestId ? (
             <Link
               href={`/quests/${entry.relatedQuestId}`}
-              className="mw-btn mw-btn-primary"
+              className="mw-btn mw-btn-outline"
               onClick={() => handleViewKeywords(entry.keywords)}
             >
-              Start Learning Quest 开始任务
+              材料委托
             </Link>
           ) : null}
           <button

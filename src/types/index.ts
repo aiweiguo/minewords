@@ -81,20 +81,57 @@ export type Reward = {
   unlockId?: string;
 };
 
+/** Short material errand tied to the current weapon goal (MW-8). */
+export type ErrandGoal =
+  | {
+      type: "defeat-monsters";
+      /** How many speak-attack fights to finish the errand. */
+      amount: number;
+      /** Preferred drop / zone focus (wood, stone, …). */
+      resource?: ResourceType;
+    }
+  | {
+      type: "gather-resource";
+      resource: ResourceType;
+      amount: number;
+    }
+  | {
+      type: "craft-weapon";
+      weaponId: string;
+    };
+
+export type MaterialErrand = {
+  /** Weapon tier this errand feeds (wooden-sword, stone-sword, …). */
+  weaponId: string;
+  goal: ErrandGoal;
+  /** After claim, nudge back into the craft / explore loop. */
+  nudge: "explore" | "craft";
+  /** Explore zone hint for fight errands. */
+  exploreZoneId?: "forest" | "cave";
+};
+
 export type Quest = {
   id: string;
   title: string;
   titleCn: string;
   description: string;
+  /** Kid-facing Chinese summary (errands prefer this). */
+  descriptionCn?: string;
   mapArea: MapArea;
   difficulty: 1 | 2 | 3;
   requiredLevel: number;
   coverImage?: string;
   icon?: string;
   themeColor?: string;
+  /**
+   * Legacy quiz steps. Material errands leave this empty and use `errand`.
+   * Guides / listening still reuse QuestStep shapes elsewhere.
+   */
   steps: QuestStep[];
   rewards: Reward[];
   unlocks?: string[];
+  /** When set, /quests treats this as a material errand (not a quiz). */
+  errand?: MaterialErrand;
 };
 
 export type UnlockableType = "equipment" | "title" | "map" | "decoration";
@@ -153,6 +190,8 @@ export type GameState = {
   /** Last chosen weapon-tier explore zone (forest / cave). */
   selectedExploreZoneId: string | null;
   completedQuestIds: string[];
+  /** Progress counters for material errands (fight counts, gathered units). */
+  errandProgress: Record<string, number>;
   unlockedIds: string[];
   masteredWordIds: string[];
   discoveredWordIds: string[];
