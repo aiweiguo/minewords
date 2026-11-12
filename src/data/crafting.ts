@@ -140,6 +140,7 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleEnglish: "Say I craft an iron sword to forge a stronger blade.",
     simpleChinese: "开口说 I craft an iron sword 合成铁剑（消耗 3 iron + 1 wood）。",
     keywordIds: ["iron", "sword", "craft", "stick"],
+    relatedQuestId: "craft-iron-sword-errand",
   },
   {
     id: "diamond-sword",

@@ -47,6 +47,7 @@ export const resourceAssetMap: Record<ResourceType, string> = {
 export const mapAreaBackgrounds: Record<MapArea, string> = {
   forest: backgroundMap.forest,
   cave: backgroundMap.cave,
+  mines: backgroundMap.battle,
   village: backgroundMap.village,
   nether: backgroundMap.battle,
   end: backgroundMap.battle,
