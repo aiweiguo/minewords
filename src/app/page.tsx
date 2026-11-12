@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { HubRoom } from "@/components/HubRoom";
+import { OnboardingCoach } from "@/components/OnboardingCoach";
 import { useGameStore } from "@/store/useGameStore";
 import { RoomBlockType } from "@/types";
 
@@ -42,6 +43,7 @@ export default function HomePage() {
 
   return (
     <main className="mw-hub-home">
+      <OnboardingCoach />
       <HubRoom
         selectedBlock={selectedBlock}
         onSelectBlock={setSelectedBlock}

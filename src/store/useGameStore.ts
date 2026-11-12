@@ -852,6 +852,11 @@ export const useGameStore = create<GameStore>()(
     {
       name: "minewords-game-state",
       merge: (persisted, current) => {
+        // Zustand calls merge(undefined, current) when storage is empty.
+        // Must not throw — a throw aborts hydration and hasHydrated stays false.
+        if (persisted == null || typeof persisted !== "object") {
+          return current;
+        }
         const saved = persisted as Partial<GameState>;
         const speakMigration = migrateSpeakIds(saved);
         const unlockedIds = saved.unlockedIds ?? current.unlockedIds;
@@ -875,7 +880,8 @@ export const useGameStore = create<GameStore>()(
           learningStreak: saved.learningStreak ?? 0,
           lastActiveDate: saved.lastActiveDate ?? "",
           dailyStats: normalizeDailyStats(saved.dailyStats),
-          hasSeenOnboarding: saved.hasSeenOnboarding ?? true,
+          // Missing key = never coached (show once). Only markOnboardingSeen flips this.
+          hasSeenOnboarding: saved.hasSeenOnboarding ?? false,
         };
 
         return {

@@ -1887,3 +1887,188 @@ body {
     font-size: 1.05rem;
   }
 }
+
+/* —— First-session coaching overlay (MW-28) —— */
+.mw-coach-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(8, 12, 6, 0.72);
+  backdrop-filter: blur(4px);
+  animation: mw-map-enter 0.45s ease both;
+}
+
+.mw-coach-panel {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  padding: 1.35rem 1.25rem 1.25rem;
+  overflow: hidden;
+}
+
+.mw-coach-hero {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+}
+
+.mw-coach-sword {
+  animation: mw-map-pulse 2.2s ease-in-out infinite;
+}
+
+.mw-coach-spark {
+  position: absolute;
+  top: 0.15rem;
+  right: calc(50% - 2.4rem);
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 1px;
+  background: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+  animation: mw-coach-spark 1.6s ease-in-out infinite;
+}
+
+.mw-coach-brand {
+  margin: 0.15rem 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.mw-coach-title {
+  margin: 0.2rem 0 0;
+  text-align: center;
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.mw-coach-lead {
+  margin: 0.45rem 0 0;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.mw-coach-loop {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.25rem;
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.45rem;
+  list-style: none;
+  border-radius: 0.45rem;
+  border: 2px solid rgba(139, 105, 20, 0.55);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.mw-coach-step {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  text-align: center;
+  min-width: 0;
+}
+
+.mw-coach-step-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.mw-coach-step-cn {
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.mw-coach-step-en {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.mw-coach-arrow {
+  position: absolute;
+  right: -0.55rem;
+  top: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--primary);
+  animation: mw-map-arrow 1.4s ease-in-out infinite;
+}
+
+.mw-coach-mic-tip {
+  margin: 0.85rem 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #d6e4c3;
+  line-height: 1.4;
+}
+
+.mw-coach-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.95rem;
+}
+
+.mw-coach-cta {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+}
+
+.mw-coach-cta:disabled {
+  animation: none;
+  opacity: 0.75;
+}
+
+@keyframes mw-coach-spark {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.85) rotate(12deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(-8deg);
+  }
+}
+
+@media (max-width: 380px) {
+  .mw-coach-title {
+    font-size: 1.35rem;
+  }
+
+  .mw-coach-step-cn {
+    font-size: 0.7rem;
+  }
+
+  .mw-coach-step-en {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-coach-overlay,
+  .mw-coach-sword,
+  .mw-coach-spark,
+  .mw-coach-arrow,
+  .mw-coach-cta {
+    animation: none !important;
+  }
+}
