@@ -729,6 +729,11 @@ body {
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35)) grayscale(0.35) contrast(1.1);
 }
 
+.mw-hub-rack-blade-iron {
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35)) brightness(1.12) saturate(0.55)
+    contrast(1.15);
+}
+
 .mw-hub-rack-ghost {
   display: inline-flex;
   transform: rotate(-18deg);
@@ -1371,6 +1376,12 @@ body {
   }
 }
 
+@media (min-width: 900px) {
+  .mw-explore-portals {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
 .mw-explore-portal {
   position: relative;
   display: flex;
@@ -1427,6 +1438,10 @@ body {
 
 .mw-explore-portal-cave {
   border-color: #4a5560;
+}
+
+.mw-explore-portal-mines {
+  border-color: #6b5a3e;
 }
 
 .mw-explore-portal-name {
@@ -1507,6 +1522,10 @@ body {
 
 .mw-explore-fight-banner-cave {
   border-color: #4a5560;
+}
+
+.mw-explore-fight-banner-mines {
+  border-color: #6b5a3e;
 }
 
 @keyframes mw-explore-portal-idle {

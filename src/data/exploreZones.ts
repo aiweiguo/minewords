@@ -2,7 +2,7 @@ import { backgroundMap } from "@/lib/assets";
 import { ResourceType } from "@/types";
 import { WeaponTierId } from "@/data/weapons";
 
-export type ExploreZoneId = "forest" | "cave";
+export type ExploreZoneId = "forest" | "cave" | "mines";
 
 export type ExploreZone = {
   id: ExploreZoneId;
@@ -19,12 +19,17 @@ export type ExploreZone = {
   /** Wild speak-attack encounters in this zone. */
   wildMonsterIds: readonly string[];
   background: string;
-  tone: "forest" | "cave";
+  tone: "forest" | "cave" | "mines";
+  /**
+   * Speak-attack load for this zone.
+   * word → short phrase → full sentence (weapon ladder).
+   */
+  attackSpeech: "word" | "phrase" | "sentence";
 };
 
 /**
- * Weapon-tier explore zones (MW-7).
- * Forest feeds wood → wooden sword; cave unlocks after wooden sword for stone.
+ * Weapon-tier explore zones (MW-7 → MW-18).
+ * Forest → wood; cave (wooden sword) → stone; mines (stone sword) → iron.
  */
 export const exploreZones: ExploreZone[] = [
   {
@@ -39,6 +44,7 @@ export const exploreZones: ExploreZone[] = [
     wildMonsterIds: ["zombie", "spider"],
     background: backgroundMap.forest,
     tone: "forest",
+    attackSpeech: "word",
   },
   {
     id: "cave",
@@ -52,6 +58,22 @@ export const exploreZones: ExploreZone[] = [
     wildMonsterIds: ["skeleton", "creeper"],
     background: backgroundMap.cave,
     tone: "cave",
+    // Phrase tier reserved; MW-18 only hardens iron-zone (mines) speech.
+    attackSpeech: "word",
+  },
+  {
+    id: "mines",
+    name: "Deep Mines",
+    nameCn: "深层矿洞",
+    blurbCn: "更难的怪，掉铁做铁剑 · 要说完整句",
+    blurbEn: "Sentence attack for iron",
+    focusResource: "iron",
+    focusLabelCn: "铁",
+    requiredWeaponId: "stone-sword",
+    wildMonsterIds: ["blaze", "creeper"],
+    background: backgroundMap.battle,
+    tone: "mines",
+    attackSpeech: "sentence",
   },
 ];
 

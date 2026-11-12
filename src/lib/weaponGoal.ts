@@ -104,10 +104,10 @@ export function getWeaponGoalSnapshot(
       primaryMissing: null,
       canCraft: false,
       stripCn: equipped
-        ? `${equipped.nameCn}已挂上武器架 · 铁阶稍后开放`
+        ? `${equipped.nameCn}已挂上武器架 · 金/钻石稍后开放`
         : "武器线已完成",
       stripEn: equipped
-        ? `${equipped.name} on the rack · iron tier later`
+        ? `${equipped.name} on the rack · gold/diamond later`
         : "Weapon line complete",
       primaryCta: {
         href: "/explore",
@@ -115,8 +115,8 @@ export function getWeaponGoalSnapshot(
         labelEn: "Keep fighting",
         kind: "fight",
       },
-      nextPreviewCn: top?.nextPreviewCn ?? "铁剑稍后开放",
-      nextPreviewEn: top?.nextPreviewEn ?? "Iron sword coming later",
+      nextPreviewCn: top?.nextPreviewCn ?? "金/钻石稍后开放",
+      nextPreviewEn: top?.nextPreviewEn ?? "Gold/diamond coming later",
     };
   }
 

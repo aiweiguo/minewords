@@ -7,6 +7,7 @@ export const WILD_MONSTER_WORD_IDS = [
   "spider",
   "skeleton",
   "creeper",
+  "blaze",
 ] as const;
 
 const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
@@ -28,6 +29,11 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "iron", amount: 2 },
     { type: "resource", resource: "emerald", amount: 1 },
     { type: "xp", xp: 15 },
+  ],
+  blaze: [
+    { type: "resource", resource: "iron", amount: 3 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 18 },
   ],
 };
 

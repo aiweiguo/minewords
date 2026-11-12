@@ -1,7 +1,7 @@
 import { assetMap } from "@/lib/assets";
 import { ResourceType } from "@/types";
 
-export type WeaponTierId = "wooden-sword" | "stone-sword";
+export type WeaponTierId = "wooden-sword" | "stone-sword" | "iron-sword";
 
 export type WeaponCost = {
   resource: ResourceType;
@@ -28,12 +28,12 @@ export type WeaponTier = {
   nextPreviewCn: string;
   nextPreviewEn: string;
   /** Visual tint class for the hub rack blade. */
-  rackTone: "wood" | "stone";
+  rackTone: "wood" | "stone" | "iron";
 };
 
 /**
- * Armed progression line for the hub (MW-6).
- * Stick is speech vocabulary only — inventory spends wood/stone resources.
+ * Armed progression line for the hub (MW-6 → MW-18).
+ * Stick is speech vocabulary only — inventory spends wood/stone/iron resources.
  */
 export const weaponTiers: WeaponTier[] = [
   {
@@ -67,9 +67,28 @@ export const weaponTiers: WeaponTier[] = [
     speechHintCn: "说 stone sword 或 Craft stone sword",
     speechHintEn: "Say stone sword or Craft stone sword",
     craftXp: 18,
-    nextPreviewCn: "下一阶：铁剑 · 稍后开放",
-    nextPreviewEn: "Next: iron sword · coming later",
+    nextPreviewCn: "下一阶：铁剑 · 需要 iron",
+    nextPreviewEn: "Next: iron sword · needs iron",
     rackTone: "stone",
+  },
+  {
+    id: "iron-sword",
+    name: "Iron Sword",
+    nameCn: "铁剑",
+    goalLabelCn: "铁剑",
+    icon: assetMap.sword,
+    costs: [
+      { resource: "iron", amount: 3 },
+      { resource: "wood", amount: 1 },
+    ],
+    expectedSpeech: "I craft an iron sword",
+    speechKeywords: ["craft", "iron", "sword"],
+    speechHintCn: "说完整句：I craft an iron sword（含 craft / iron / sword）",
+    speechHintEn: "Say a full sentence with craft, iron, or sword",
+    craftXp: 24,
+    nextPreviewCn: "下一阶：金/钻石 · 稍后开放",
+    nextPreviewEn: "Next: gold/diamond · coming later",
+    rackTone: "iron",
   },
 ];
 

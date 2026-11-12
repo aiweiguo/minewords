@@ -117,9 +117,14 @@ export function getQuestStatus(
     return "locked";
   }
 
-  // Gate stone-tier errands until wooden sword is owned.
+  // Gate higher-tier errands until the previous weapon is owned.
   if (quest.errand?.weaponId === "stone-sword") {
     if (!unlockedIds.includes("wooden-sword")) {
+      return "locked";
+    }
+  }
+  if (quest.errand?.weaponId === "iron-sword") {
+    if (!unlockedIds.includes("stone-sword")) {
       return "locked";
     }
   }

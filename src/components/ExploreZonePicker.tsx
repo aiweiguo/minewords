@@ -107,7 +107,7 @@ export function ExploreZonePicker() {
       </div>
 
       <p className="mw-explore-hint relative z-[2]" role="status">
-        木阶去森林攒木头；做好木剑后洞穴开石阶。
+        木阶森林 → 木剑开洞穴攒石 → 石剑开深层矿洞攒铁（要说完整句）。
       </p>
     </section>
   );

@@ -107,7 +107,7 @@ export type MaterialErrand = {
   /** After claim, nudge back into the craft / explore loop. */
   nudge: "explore" | "craft";
   /** Explore zone hint for fight errands. */
-  exploreZoneId?: "forest" | "cave";
+  exploreZoneId?: "forest" | "cave" | "mines";
 };
 
 export type Quest = {

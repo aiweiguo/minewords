@@ -27,7 +27,7 @@ export default function CraftingPage() {
         <h1 className="text-3xl font-black text-primary">Crafting</h1>
         <p className="mt-1 text-xl font-bold">开口合成</p>
         <p className="mt-2 text-sm font-semibold text-muted">
-          先做木剑：开口说出材料名。Enough mats? Speak to craft.
+          木 → 石 → 铁：开口合成升级武器。Enough mats? Speak to craft.
         </p>
       </section>
 
