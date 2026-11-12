@@ -74,7 +74,7 @@ export const guides: Guide[] = [
         answer: "我晚上睡在床上。",
       },
     ],
-    "build-a-bed",
+    "gather-wood-for-sword",
   ),
   g(
     "crafting-table",
@@ -108,7 +108,7 @@ export const guides: Guide[] = [
         answer: "木板",
       },
     ],
-    "make-planks",
+    "gather-wood-for-sword",
   ),
   g(
     "craft-bed",
@@ -143,7 +143,7 @@ export const guides: Guide[] = [
         answer: "床",
       },
     ],
-    "build-a-bed",
+    "gather-wood-for-sword",
   ),
   g(
     "get-food",
@@ -213,7 +213,7 @@ export const guides: Guide[] = [
         answer: "镐",
       },
     ],
-    "mine-stone",
+    "gather-stone-for-sword",
   ),
   g(
     "craft-torch",
@@ -279,7 +279,7 @@ export const guides: Guide[] = [
         answer: "木棍",
       },
     ],
-    "collect-wood",
+    "wood-fights-for-sword",
   ),
   g(
     "iron-pickaxe",
@@ -443,7 +443,7 @@ export const guides: Guide[] = [
         answer: "僵尸",
       },
     ],
-    "fight-a-zombie",
+    "wood-fights-for-sword",
   ),
   g(
     "avoid-creeper",

@@ -9,7 +9,7 @@ import {
   isExploreZoneId,
 } from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
-import { getQuestById } from "@/data/quests";
+import { getQuestById, quests } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
 import {
   getWeaponTierById,
@@ -25,7 +25,11 @@ import {
   isExploreZoneUnlocked,
   resolveSelectedExploreZoneId,
 } from "@/lib/exploreZones";
-import { buildRewardResult } from "@/lib/questEngine";
+import {
+  buildRewardResult,
+  getErrandProgress,
+  getFightErrandIdsForResource,
+} from "@/lib/questEngine";
 import {
   DailyStats,
   GameState,
@@ -174,6 +178,7 @@ const initialState: GameState = {
   roomBlocks: {},
   selectedExploreZoneId: DEFAULT_EXPLORE_ZONE_ID,
   completedQuestIds: [],
+  errandProgress: {},
   unlockedIds: [],
   masteredWordIds: [],
   discoveredWordIds: [],
@@ -434,7 +439,8 @@ export const useGameStore = create<GameStore>()(
         const quest = getQuestById(questId);
         if (!quest) return null;
 
-        const alreadyCompleted = get().completedQuestIds.includes(questId);
+        const state = get();
+        const alreadyCompleted = state.completedQuestIds.includes(questId);
         if (alreadyCompleted) {
           return {
             rewards: [],
@@ -443,20 +449,32 @@ export const useGameStore = create<GameStore>()(
           };
         }
 
+        if (quest.errand) {
+          const progress = getErrandProgress(quest, {
+            errandProgress: state.errandProgress,
+            resources: state.resources,
+            unlockedIds: state.unlockedIds,
+            completedQuestIds: state.completedQuestIds,
+          });
+          if (!progress?.readyToClaim) {
+            return null;
+          }
+        }
+
         const rewardResult = buildRewardResult(quest);
 
-        set((state) => {
-          const dailyStats = normalizeDailyStats(state.dailyStats);
-          const applied = applyRewards(state, rewardResult);
+        set((current) => {
+          const dailyStats = normalizeDailyStats(current.dailyStats);
+          const applied = applyRewards(current, rewardResult);
           const next = {
-            ...state,
+            ...current,
             ...applied,
-            completedQuestIds: [...state.completedQuestIds, questId],
+            completedQuestIds: [...current.completedQuestIds, questId],
             dailyStats: {
               ...dailyStats,
               completedQuests: dailyStats.completedQuests + 1,
             },
-            ...touchLearningDay(state),
+            ...touchLearningDay(current),
           };
           return { ...next, ...withDecorationSync(next) };
         });
@@ -572,6 +590,7 @@ export const useGameStore = create<GameStore>()(
         }
 
         const zoneId = options?.zoneId;
+        const zone = zoneId ? getExploreZoneById(zoneId) : undefined;
         const dropRewards = zoneId
           ? getMonsterDropRewardsForZone(wordId, zoneId)
           : getMonsterDropRewards(wordId);
@@ -586,9 +605,19 @@ export const useGameStore = create<GameStore>()(
             ? state
             : applyWordMasteredState(state, wordId);
           const applied = applyRewardList(base, dropRewards);
+          const fightErrandIds = getFightErrandIdsForResource(
+            zone?.focusResource,
+            base.unlockedIds,
+            base.completedQuestIds,
+          );
+          const nextErrandProgress = { ...base.errandProgress };
+          for (const errandId of fightErrandIds) {
+            nextErrandProgress[errandId] = (nextErrandProgress[errandId] ?? 0) + 1;
+          }
           const next = {
             ...base,
             ...applied,
+            errandProgress: nextErrandProgress,
             defeatedMonsterIds: alreadyDefeated
               ? base.defeatedMonsterIds
               : [...base.defeatedMonsterIds, wordId],
@@ -661,11 +690,28 @@ export const useGameStore = create<GameStore>()(
           const nextUnlocked = current.unlockedIds.includes(weaponId)
             ? current.unlockedIds
             : [...current.unlockedIds, weaponId];
+
+          // Auto-claim matching craft-weapon errands so kids don't bounce to a quiz menu.
+          const craftErrandIds = quests
+            .filter(
+              (q) =>
+                q.errand?.goal.type === "craft-weapon" &&
+                q.errand.goal.weaponId === weaponId &&
+                !current.completedQuestIds.includes(q.id),
+            )
+            .map((q) => q.id);
+          const bonusXp = craftErrandIds.reduce((sum, id) => {
+            const q = getQuestById(id);
+            const xpReward = q?.rewards.find((r) => r.type === "xp")?.xp ?? 0;
+            return sum + xpReward;
+          }, 0);
+
           const next: GameState = {
             ...current,
             resources: nextResources,
             unlockedIds: nextUnlocked,
-            xp: current.xp + tier.craftXp,
+            completedQuestIds: [...current.completedQuestIds, ...craftErrandIds],
+            xp: current.xp + tier.craftXp + bonusXp,
             ...touchLearningDay(current),
           };
           return { ...next, ...withDecorationSync(next) };
@@ -739,6 +785,7 @@ export const useGameStore = create<GameStore>()(
             saved.selectedExploreZoneId ?? current.selectedExploreZoneId,
             unlockedIds,
           ),
+          errandProgress: saved.errandProgress ?? {},
           discoveredWordIds: saved.discoveredWordIds ?? [],
           learnedWordIds: saved.learnedWordIds ?? [],
           completedGuideIds: saved.completedGuideIds ?? [],
@@ -765,6 +812,7 @@ export const useGameStore = create<GameStore>()(
         roomBlocks: state.roomBlocks,
         selectedExploreZoneId: state.selectedExploreZoneId,
         completedQuestIds: state.completedQuestIds,
+        errandProgress: state.errandProgress,
         unlockedIds: state.unlockedIds,
         masteredWordIds: state.masteredWordIds,
         discoveredWordIds: state.discoveredWordIds,

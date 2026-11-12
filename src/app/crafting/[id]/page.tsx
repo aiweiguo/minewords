@@ -81,10 +81,13 @@ export default function CraftingDetailPage({ params }: CraftingDetailPageProps) 
             </Link>
           ) : null}
           {recipe.relatedQuestId ? (
-            <Link href={`/quests/${recipe.relatedQuestId}`} className="mw-btn mw-btn-primary">
-              开始任务 Start Quest
+            <Link href={`/quests/${recipe.relatedQuestId}`} className="mw-btn mw-btn-outline">
+              材料委托 Errand
             </Link>
           ) : null}
+          <Link href="/explore" className="mw-btn mw-btn-primary">
+            出门打怪 Explore
+          </Link>
         </div>
       </section>
     </main>

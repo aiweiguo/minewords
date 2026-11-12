@@ -6,7 +6,7 @@ import { QuestCard } from "@/components/QuestCard";
 import { quests } from "@/data/quests";
 import { mapAreaBackgrounds } from "@/lib/assets";
 import { getQuestStatus } from "@/lib/questEngine";
-import { MapZone } from "@/types";
+import { MapZone, ResourceType } from "@/types";
 
 type MapZoneCardProps = {
   zone: MapZone;
@@ -16,6 +16,9 @@ type MapZoneCardProps = {
   zoneQuestsTotal: number;
   xp: number;
   completedQuestIds: string[];
+  unlockedIds?: string[];
+  errandProgress?: Record<string, number>;
+  resources?: Record<ResourceType, number>;
 };
 
 export function MapZoneCard({
@@ -26,6 +29,9 @@ export function MapZoneCard({
   zoneQuestsTotal,
   xp,
   completedQuestIds,
+  unlockedIds = [],
+  errandProgress = {},
+  resources,
 }: MapZoneCardProps) {
   const complete = zoneQuestsTotal > 0 && zoneQuestsCompleted === zoneQuestsTotal;
   const background = mapAreaBackgrounds[zone.mapArea];
@@ -77,7 +83,7 @@ export function MapZoneCard({
               {zoneQuestsTotal > 0 ? (
                 <div className="mt-3">
                   <div className="mb-1 flex justify-between text-xs font-bold">
-                    <span>任务进度</span>
+                    <span>委托进度</span>
                     <span>
                       {zoneQuestsCompleted} / {zoneQuestsTotal}
                     </span>
@@ -98,9 +104,14 @@ export function MapZoneCard({
 
         {zone.questIds.length > 0 && !locked ? (
           <div className="space-y-3 border-t border-[#d9e2cc] p-4">
-            {zone.mapArea === "battle" ? (
+            {zone.mapArea === "forest" || zone.mapArea === "cave" ? (
               <Link href="/explore" className="mw-btn mw-btn-primary w-full text-sm">
-                🎤 开口打怪 Speak Attack →
+                出门打怪 Speak Attack →
+              </Link>
+            ) : null}
+            {zone.mapArea === "battle" ? (
+              <Link href="/crafting" className="mw-btn mw-btn-primary w-full text-sm">
+                去工作台合成 Craft →
               </Link>
             ) : null}
             {zone.questIds.map((questId) => {
@@ -110,7 +121,16 @@ export function MapZoneCard({
                 <QuestCard
                   key={questId}
                   quest={quest}
-                  status={getQuestStatus(quest, xp, completedQuestIds)}
+                  status={getQuestStatus(
+                    quest,
+                    xp,
+                    completedQuestIds,
+                    unlockedIds,
+                  )}
+                  errandProgress={errandProgress}
+                  resources={resources}
+                  unlockedIds={unlockedIds}
+                  completedQuestIds={completedQuestIds}
                 />
               );
             })}

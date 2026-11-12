@@ -8,6 +8,7 @@ import { QuestRunner } from "@/components/QuestRunner";
 import { RewardModal } from "@/components/RewardModal";
 import { getQuestById } from "@/data/quests";
 import { getQuestStatus } from "@/lib/questEngine";
+import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import { useGameStore } from "@/store/useGameStore";
 
 type QuestDetailPageProps = {
@@ -19,23 +20,31 @@ export default function QuestDetailPage({ params }: QuestDetailPageProps) {
   const quest = getQuestById(id);
 
   const xp = useGameStore((state) => state.xp);
+  const resources = useGameStore((state) => state.resources);
+  const unlockedIds = useGameStore((state) => state.unlockedIds);
   const completedQuestIds = useGameStore((state) => state.completedQuestIds);
 
-  const [started, setStarted] = useState(false);
   const [showRewardModal, setShowRewardModal] = useState(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState(false);
 
   const status = useMemo(
-    () => (quest ? getQuestStatus(quest, xp, completedQuestIds) : "locked"),
-    [quest, xp, completedQuestIds],
+    () =>
+      quest
+        ? getQuestStatus(quest, xp, completedQuestIds, unlockedIds)
+        : "locked",
+    [quest, xp, completedQuestIds, unlockedIds],
   );
 
   if (!quest) {
     notFound();
   }
 
-  const practiceMode = status === "completed";
   const locked = status === "locked";
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const settleHref =
+    quest.errand?.nudge === "craft" || goal.canCraft
+      ? `/crafting/${quest.errand?.weaponId ?? goal.goal?.id ?? ""}`
+      : "/explore";
 
   function handleComplete(firstCompletion: boolean) {
     setIsFirstCompletion(firstCompletion);
@@ -45,52 +54,50 @@ export default function QuestDetailPage({ params }: QuestDetailPageProps) {
   return (
     <main className="space-y-6">
       <Link href="/quests" className="text-sm font-bold text-primary">
-        ← 返回任务列表
+        ← 返回材料委托
       </Link>
 
       <section className="mw-card p-6">
-        <h1 className="text-3xl font-black">{quest.title}</h1>
-        <p className="mt-1 text-xl font-bold text-secondary">{quest.titleCn}</p>
-        <p className="mt-3 text-sm font-semibold text-muted">{quest.description}</p>
-        <p className="mt-2 text-sm font-bold">需要等级：Lv {quest.requiredLevel}</p>
+        <p className="text-xs font-black uppercase tracking-wide text-secondary">
+          Material Errand
+        </p>
+        <h1 className="mt-1 text-3xl font-black">{quest.titleCn}</h1>
+        <p className="mt-1 text-lg font-bold text-secondary">{quest.title}</p>
+        <p className="mt-3 text-sm font-semibold text-muted">
+          {quest.descriptionCn ?? quest.description}
+        </p>
 
         {locked ? (
           <p className="mt-4 rounded-xl bg-black/30 px-4 py-3 text-sm font-bold text-amber-200">
-            等级不足，先去完成其他任务升级吧。
+            还没解锁这单委托。先做完当前武器目标，或先合成木剑再来洞穴线。
           </p>
-        ) : null}
-
-        {practiceMode ? (
-          <p className="mt-4 rounded-xl bg-amber-900/30 px-4 py-3 text-sm font-bold text-amber-100">
-            练习模式：可以重复答题，但不会重复领取奖励。
-          </p>
-        ) : null}
-
-        {!started && !locked ? (
-          <button
-            type="button"
-            className="mw-btn mw-btn-primary mt-6"
-            onClick={() => setStarted(true)}
-          >
-            Start Quest 开始任务
-          </button>
         ) : null}
       </section>
 
-      {started && !locked ? (
+      {!locked ? (
         <QuestRunner
-          key={`${quest.id}-${practiceMode ? "practice" : "live"}`}
+          key={quest.id}
           quest={quest}
-          practiceMode={practiceMode}
+          practiceMode={false}
           onComplete={handleComplete}
         />
-      ) : null}
+      ) : (
+        <div className="flex flex-wrap gap-3">
+          <Link href="/explore" className="mw-btn mw-btn-primary">
+            出门打怪
+          </Link>
+          <Link href="/" className="mw-btn mw-btn-outline">
+            回基地
+          </Link>
+        </div>
+      )}
 
       <RewardModal
         open={showRewardModal}
         rewards={quest.rewards}
         unlocks={quest.unlocks ?? []}
         isFirstCompletion={isFirstCompletion}
+        settleHref={settleHref.startsWith("/crafting/") ? settleHref : "/"}
         onClose={() => setShowRewardModal(false)}
       />
     </main>

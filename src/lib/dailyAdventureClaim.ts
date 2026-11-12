@@ -14,13 +14,13 @@ export function canClaimDailyAdventure(
     }
     return {
       ok: false,
-      reason: "请先完成今日冒险的关联任务或攻略小测验，再领取奖励。",
+      reason: "请先完成今日冒险的材料委托或攻略小测验，再领取奖励。",
     };
   }
 
   if (plan.questId) {
     if (questDone) return { ok: true, reason: "" };
-    return { ok: false, reason: "请先完成上方关联任务，再领取今日冒险奖励。" };
+    return { ok: false, reason: "请先完成上方材料委托，再领取今日冒险奖励。" };
   }
 
   if (plan.guideId) {

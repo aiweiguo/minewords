@@ -9,7 +9,7 @@ import { RoomBlockType } from "@/types";
 
 const moreLinks = [
   { href: "/map", label: "地图" },
-  { href: "/quests", label: "任务" },
+  { href: "/quests", label: "材料委托" },
   { href: "/speak", label: "口语" },
   { href: "/guides", label: "攻略" },
   { href: "/dictionary", label: "词典" },

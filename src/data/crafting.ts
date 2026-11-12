@@ -42,7 +42,7 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleChinese: "你需要三个羊毛和三个木板。",
     keywordIds: ["wool", "plank", "bed", "sleep"],
     relatedGuideId: "craft-bed",
-    relatedQuestId: "build-a-bed",
+    relatedQuestId: "gather-wood-for-sword",
   },
   {
     id: "crafting-table",
@@ -63,7 +63,7 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleChinese: "四个木板合成工作台。",
     keywordIds: ["plank", "craft", "crafting-table"],
     relatedGuideId: "crafting-table",
-    relatedQuestId: "make-planks",
+    relatedQuestId: "gather-wood-for-sword",
   },
   {
     id: "stick",
@@ -110,6 +110,7 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleEnglish: "Say wood, stick, or craft to make a wooden sword.",
     simpleChinese: "开口说 wood / stick / craft 合成木剑（消耗 3 wood）。",
     keywordIds: ["wood", "stick", "sword", "craft"],
+    relatedQuestId: "craft-wooden-sword-errand",
   },
   {
     id: "stone-sword",
@@ -124,6 +125,7 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleEnglish: "Say craft stone sword to upgrade your blade.",
     simpleChinese: "开口说 craft stone sword 合成石剑（消耗 3 stone + 1 wood）。",
     keywordIds: ["stone", "sword", "craft", "stick"],
+    relatedQuestId: "craft-stone-sword-errand",
   },
   {
     id: "diamond-sword",
@@ -139,7 +141,6 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleChinese: "两个钻石和一根木棍合成钻石剑。",
     keywordIds: ["diamond", "sword", "stick", "craft"],
     relatedGuideId: "diamond-sword-guide",
-    relatedQuestId: "craft-diamond-sword",
   },
   {
     id: "shield",
@@ -274,7 +275,6 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleEnglish: "Four planks and two sticks make a fence.",
     simpleChinese: "四个木板和两根木棍合成栅栏。",
     keywordIds: ["fence", "plank", "stick", "farm"],
-    relatedQuestId: "start-a-farm",
   },
   {
     id: "furnace",
@@ -297,7 +297,6 @@ export const craftingRecipes: CraftingRecipe[] = [
     simpleEnglish: "Eight stone blocks make a furnace.",
     simpleChinese: "八个石头合成熔炉。",
     keywordIds: ["furnace", "stone", "cook", "smelt"],
-    relatedQuestId: "cook-a-meal",
   },
 ];
 

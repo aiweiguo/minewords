@@ -2,28 +2,38 @@ import Link from "next/link";
 
 import { GameIcon } from "@/components/GameIcon";
 import { mapAreaLabels } from "@/data/quests";
-import { formatRewardPreview } from "@/lib/questEngine";
+import {
+  ErrandProgressView,
+  formatRewardPreview,
+  getErrandProgress,
+} from "@/lib/questEngine";
 import { assetMap, getMapAreaBackground } from "@/lib/assets";
-import { Quest, QuestStatus } from "@/types";
+import { Quest, QuestStatus, ResourceType } from "@/types";
 
 type QuestCardProps = {
   quest: Quest;
   status: QuestStatus;
+  errandProgress?: Record<string, number>;
+  resources?: Record<ResourceType, number>;
+  unlockedIds?: string[];
+  completedQuestIds?: string[];
 };
 
 function renderDifficulty(difficulty: number) {
   return "★".repeat(difficulty) + "☆".repeat(3 - difficulty);
 }
 
-function statusLabel(status: QuestStatus) {
-  switch (status) {
-    case "completed":
-      return { text: "已完成", className: "bg-green-900/60 text-green-200 border-green-500" };
-    case "locked":
-      return { text: "等级不足", className: "bg-gray-900/60 text-gray-300 border-gray-500" };
-    default:
-      return { text: "可挑战", className: "bg-blue-900/60 text-blue-200 border-blue-500" };
+function statusLabel(status: QuestStatus, progress: ErrandProgressView | null) {
+  if (status === "completed") {
+    return { text: "已完成", className: "bg-green-900/60 text-green-200 border-green-500" };
   }
+  if (status === "locked") {
+    return { text: "未解锁", className: "bg-gray-900/60 text-gray-300 border-gray-500" };
+  }
+  if (progress?.readyToClaim) {
+    return { text: "可领取", className: "bg-amber-900/60 text-amber-100 border-amber-500" };
+  }
+  return { text: "进行中", className: "bg-blue-900/60 text-blue-200 border-blue-500" };
 }
 
 function getRewardIcons(quest: Quest): string[] {
@@ -40,13 +50,39 @@ function getRewardIcons(quest: Quest): string[] {
     .filter((icon): icon is string => Boolean(icon));
 }
 
-export function QuestCard({ quest, status }: QuestCardProps) {
-  const badge = statusLabel(status);
+export function QuestCard({
+  quest,
+  status,
+  errandProgress = {},
+  resources,
+  unlockedIds = [],
+  completedQuestIds = [],
+}: QuestCardProps) {
+  const progress = getErrandProgress(quest, {
+    errandProgress,
+    resources: resources ?? {
+      wood: 0,
+      stone: 0,
+      iron: 0,
+      gold: 0,
+      emerald: 0,
+      diamond: 0,
+      netherite: 0,
+    },
+    unlockedIds,
+    completedQuestIds,
+  });
+  const badge = statusLabel(status, progress);
   const disabled = status === "locked";
   const areaLabel = mapAreaLabels[quest.mapArea];
   const coverImage = quest.coverImage ?? getMapAreaBackground(quest.mapArea);
   const questIcon = quest.icon ?? assetMap.star;
   const rewardIcons = getRewardIcons(quest);
+  const summary = quest.descriptionCn ?? quest.description;
+  const pct =
+    progress && progress.target > 0
+      ? Math.round((progress.current / progress.target) * 100)
+      : 0;
 
   const content = (
     <article
@@ -54,7 +90,7 @@ export function QuestCard({ quest, status }: QuestCardProps) {
       style={{ borderColor: quest.themeColor ?? undefined }}
     >
       <div
-        className="mw-quest-cover relative h-28 bg-black/30"
+        className="mw-quest-cover relative h-24 bg-black/30"
         style={{
           backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.65)), url(${coverImage})`,
         }}
@@ -75,17 +111,33 @@ export function QuestCard({ quest, status }: QuestCardProps) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-xl font-black">{quest.title}</h3>
-            <p className="mt-1 text-base font-bold text-secondary">{quest.titleCn}</p>
+            <h3 className="text-xl font-black">{quest.titleCn}</h3>
+            <p className="mt-1 text-sm font-bold text-secondary">{quest.title}</p>
           </div>
           {disabled ? <GameIcon src={assetMap.lock} alt="Locked" size="xs" /> : null}
         </div>
 
-        <p className="mt-3 text-sm text-muted">{quest.description}</p>
+        <p className="mt-3 text-sm text-muted">{summary}</p>
+
+        {progress && status !== "locked" ? (
+          <div className="mt-4">
+            <div className="mb-1 flex justify-between text-xs font-bold">
+              <span>{progress.labelCn}</span>
+              <span>
+                {progress.current}/{progress.target}
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-black/30">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
 
         <div className="mt-4 space-y-2 text-sm font-semibold">
           <p>难度：{renderDifficulty(quest.difficulty)}</p>
-          <p>需要等级：Lv {quest.requiredLevel}</p>
           <div className="flex flex-wrap items-center gap-2">
             <span>奖励：</span>
             {rewardIcons.map((icon, index) => (
@@ -97,7 +149,11 @@ export function QuestCard({ quest, status }: QuestCardProps) {
 
         {!disabled ? (
           <p className="mt-4 text-sm font-bold text-primary">
-            {status === "completed" ? "再练一次 →" : "Start Quest 开始任务 →"}
+            {status === "completed"
+              ? "查看委托 →"
+              : progress?.readyToClaim
+                ? "领取材料 →"
+                : `${progress?.actionLabelCn ?? "打开委托"} →`}
           </p>
         ) : null}
       </div>
