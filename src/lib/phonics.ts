@@ -48,11 +48,21 @@ export type PhonicsChunk = {
   say: string;
 };
 
+/** Compound / multi-token part with dictionary IPA when available. */
+export type PhonicsPart = {
+  word: string;
+  chinese?: string;
+  phonetic?: string;
+};
+
 export type PhonicsPlan = {
   wordId: string;
   english: string;
   chinese: string;
+  /** Top-level dictionary IPA (reused from vocabulary). */
   phonetic?: string;
+  /** Per-part dictionary IPA for compounds / multi-word entries. */
+  parts: PhonicsPart[];
   chunks: PhonicsChunk[];
   /** Full-word TTS / repeat target. */
   demoText: string;
@@ -60,6 +70,17 @@ export type PhonicsPlan = {
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Prefer entry phonetic; else look up the part word in the dictionary. */
+export function resolveDictionaryPhonetic(
+  word: string,
+  explicit?: string,
+): string | undefined {
+  if (explicit && explicit.trim()) return explicit.trim();
+  const id = resolveVocabIdFromKeyword(word);
+  if (!id) return undefined;
+  return getVocabularyById(id)?.phonetic;
 }
 
 /** Split one English token into kid-friendly sound chunks. */
@@ -90,7 +111,7 @@ export function chunkGraphemes(token: string): PhonicsChunk[] {
 
 /**
  * Build a short phonics plan for a vocabulary word.
- * Compound entries reuse their `words` parts when present.
+ * Reuses dictionary `phonetic` (top-level + compound `words[].phonetic`).
  */
 export function getPhonicsPlan(wordId: string): PhonicsPlan | null {
   const word = getVocabularyById(wordId);
@@ -99,21 +120,35 @@ export function getPhonicsPlan(wordId: string): PhonicsPlan | null {
   const english = word.english;
   const demoText = english;
 
+  let parts: PhonicsPart[];
   let chunks: PhonicsChunk[];
+
   if (word.words && word.words.length > 0) {
+    parts = word.words.map((part) => ({
+      word: part.word,
+      chinese: part.chinese,
+      phonetic: resolveDictionaryPhonetic(part.word, part.phonetic),
+    }));
     chunks = word.words.flatMap((part, index) => {
       const partChunks = chunkGraphemes(part.word);
       if (index === 0 || partChunks.length === 0) return partChunks;
       return [{ grapheme: "·", say: "" }, ...partChunks];
     });
   } else {
-    chunks = english
-      .split(/\s+/)
-      .flatMap((token, index) => {
-        const partChunks = chunkGraphemes(token);
-        if (index === 0 || partChunks.length === 0) return partChunks;
-        return [{ grapheme: "·", say: "" }, ...partChunks];
-      });
+    const tokens = english.split(/\s+/).filter(Boolean);
+    parts = tokens.map((token) => ({
+      word: token,
+      phonetic: resolveDictionaryPhonetic(token),
+    }));
+    // Single-token entries: keep one part with the top-level IPA.
+    if (parts.length === 1 && !parts[0]!.phonetic && word.phonetic) {
+      parts = [{ word: tokens[0] ?? english, phonetic: word.phonetic }];
+    }
+    chunks = tokens.flatMap((token, index) => {
+      const partChunks = chunkGraphemes(token);
+      if (index === 0 || partChunks.length === 0) return partChunks;
+      return [{ grapheme: "·", say: "" }, ...partChunks];
+    });
   }
 
   if (chunks.length === 0) {
@@ -124,7 +159,8 @@ export function getPhonicsPlan(wordId: string): PhonicsPlan | null {
     wordId: word.id,
     english,
     chinese: word.chinese,
-    phonetic: word.phonetic,
+    phonetic: word.phonetic ?? parts.find((p) => p.phonetic)?.phonetic,
+    parts,
     chunks,
     demoText,
   };
@@ -157,6 +193,87 @@ export function resolveVocabIdFromKeyword(keyword: string): string | undefined {
   return undefined;
 }
 
+/** Tokens used to detect whether a transcript already said this word. */
+function hearingTokensForWordId(wordId: string): string[] {
+  const word = getVocabularyById(wordId);
+  if (!word) return [wordId];
+  const tokens = new Set<string>();
+  tokens.add(word.id.toLowerCase());
+  tokens.add(word.english.toLowerCase());
+  for (const part of word.english.toLowerCase().split(/\s+/)) {
+    if (part.length >= 2) tokens.add(part);
+  }
+  for (const part of word.words ?? []) {
+    if (part.word.length >= 2) tokens.add(part.word.toLowerCase());
+  }
+  return [...tokens];
+}
+
+/**
+ * Pick the unknown focus word that best matches a speech miss.
+ * Prefers candidates the kid did NOT say in the transcript.
+ */
+export function pickMissFocusWordId(
+  transcript: string | null | undefined,
+  candidateWordIds: string[],
+  learnedWordIds: string[],
+  masteredWordIds: string[] = [],
+): string | null {
+  const unknown = candidateWordIds.filter((id) =>
+    isUnknownWord(id, learnedWordIds, masteredWordIds),
+  );
+  if (unknown.length === 0) return null;
+
+  const heard = (transcript ?? "").trim().toLowerCase();
+  if (!heard) return unknown[0] ?? null;
+
+  const notHeard = unknown.filter((id) => {
+    const tokens = hearingTokensForWordId(id);
+    return !tokens.some((token) => token.length >= 2 && heard.includes(token));
+  });
+  return notHeard[0] ?? unknown[0] ?? null;
+}
+
+/** Ordered vocab ids for a speak-attack encounter (monster word). */
+export function listAttackFocusWordIds(wordId: string): string[] {
+  return wordId ? [wordId] : [];
+}
+
+/** Ordered vocab ids for craft recipe costs + speech keywords. */
+export function listCraftFocusWordIds(weaponId: WeaponTierId): string[] {
+  const weapon = getWeaponTierById(weaponId);
+  if (!weapon) return [];
+
+  const candidates: string[] = [
+    ...weapon.costs.map((c) => c.resource),
+    ...weapon.speechKeywords,
+  ];
+
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of candidates) {
+    const id = resolveVocabIdFromKeyword(raw);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+  }
+  return ids;
+}
+
+/** Ordered vocab ids for a trade offer. */
+export function listTradeFocusWordIds(tradeId: string): string[] {
+  const offer = getTradeOfferById(tradeId);
+  if (!offer) return [];
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  for (const id of offer.wordIds) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+  }
+  return ids;
+}
+
 /** Primary unknown focus word for a speak-attack encounter. */
 export function getUnknownAttackWordId(
   wordId: string,
@@ -172,19 +289,12 @@ export function getUnknownCraftWordId(
   learnedWordIds: string[],
   masteredWordIds: string[] = [],
 ): string | null {
-  const weapon = getWeaponTierById(weaponId);
-  if (!weapon) return null;
-
-  const candidates: string[] = [
-    ...weapon.costs.map((c) => c.resource),
-    ...weapon.speechKeywords,
-  ];
-
-  for (const raw of candidates) {
-    const id = resolveVocabIdFromKeyword(raw);
-    if (id && isUnknownWord(id, learnedWordIds, masteredWordIds)) return id;
-  }
-  return null;
+  return pickMissFocusWordId(
+    null,
+    listCraftFocusWordIds(weaponId),
+    learnedWordIds,
+    masteredWordIds,
+  );
 }
 
 /** First unknown focus word among trade wordIds. */
@@ -193,12 +303,32 @@ export function getUnknownTradeWordId(
   learnedWordIds: string[],
   masteredWordIds: string[] = [],
 ): string | null {
-  const offer = getTradeOfferById(tradeId);
-  if (!offer) return null;
-  for (const id of offer.wordIds) {
-    if (isUnknownWord(id, learnedWordIds, masteredWordIds)) return id;
-  }
-  return null;
+  return pickMissFocusWordId(
+    null,
+    listTradeFocusWordIds(tradeId),
+    learnedWordIds,
+    masteredWordIds,
+  );
+}
+
+/**
+ * Resolve which unknown word to teach after a speech miss with a transcript.
+ * Falls back to the host's default unknown focus.
+ */
+export function resolveMissPhonicsWordId(options: {
+  transcript: string | null | undefined;
+  candidateWordIds: string[];
+  learnedWordIds: string[];
+  masteredWordIds?: string[];
+  fallbackWordId?: string | null;
+}): string | null {
+  const picked = pickMissFocusWordId(
+    options.transcript,
+    options.candidateWordIds,
+    options.learnedWordIds,
+    options.masteredWordIds ?? [],
+  );
+  return picked ?? options.fallbackWordId ?? null;
 }
 
 /**

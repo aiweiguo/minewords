@@ -8,6 +8,7 @@ import { SpeakButton } from "@/components/SpeakButton";
 import { ExploreZoneId } from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getVocabularyById } from "@/data/vocabulary";
+import { usePhonicsSession } from "@/hooks/usePhonicsSession";
 import { FluencyRung, FLUENCY_RUNG_ORDER } from "@/lib/attackSpeech";
 import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
 import {
@@ -23,6 +24,8 @@ import {
 } from "@/lib/fluencyLadder";
 import {
   getUnknownAttackWordId,
+  listAttackFocusWordIds,
+  resolveMissPhonicsWordId,
   scoreFluencyAfterPhonics,
 } from "@/lib/phonics";
 import {
@@ -73,9 +76,16 @@ export function WordMonsterCard({
   const [rewardResult, setRewardResult] = useState<RewardResult | null>(null);
   // Defer mic detection to after mount so SSR markup matches first client paint.
   const [supported, setSupported] = useState(false);
-  const [phonicsWordId, setPhonicsWordId] = useState<string | null>(null);
-  /** After a phonics mini-learn this fight, scoring stays extra-lenient. */
-  const [phonicsBoost, setPhonicsBoost] = useState(false);
+  const {
+    phonicsWordId,
+    phonicsBoost,
+    phonicsOpen,
+    openPhonics,
+    skipPhonics,
+    completePhonics,
+    resetPhonics,
+    showPhonicsCue,
+  } = usePhonicsSession();
 
   useEffect(() => {
     setSupported(isSpeechRecognitionSupported());
@@ -86,8 +96,7 @@ export function WordMonsterCard({
     learnedWordIds,
     masteredWordIds,
   );
-  const phonicsOpen = phonicsWordId !== null;
-  const showPhonicsCue = Boolean(unknownWordId) && !phonicsBoost && !phonicsOpen;
+  const cueVisible = showPhonicsCue(unknownWordId);
 
   const previewDrops = zoneId
     ? getMonsterDropRewardsForZone(wordId, zoneId)
@@ -136,8 +145,7 @@ export function WordMonsterCard({
     setFeedback(null);
     setHp(MONSTER_MAX_HP);
     setSuggestedRung(getStartingSuggestedRung(zoneId));
-    setPhonicsWordId(null);
-    setPhonicsBoost(false);
+    resetPhonics();
   }
 
   function handleRewardClose() {
@@ -147,16 +155,16 @@ export function WordMonsterCard({
     }
   }
 
-  function openPhonics(targetId?: string | null) {
+  function startPhonics(targetId?: string | null) {
     const id = targetId ?? unknownWordId;
     if (!id) return;
-    setPhonicsWordId(id);
+    openPhonics(id);
     setFeedback(null);
+    setResult(null);
   }
 
   function handlePhonicsComplete() {
-    setPhonicsWordId(null);
-    setPhonicsBoost(true);
+    completePhonics();
     setFeedback({
       cn: "短学完成！再说一次来攻击",
       en: "Mini-learn done — speak again to attack!",
@@ -203,9 +211,16 @@ export function WordMonsterCard({
           en: score.feedbackEn,
           kind: "miss",
         });
-        // Unknown word miss → embed phonics, then return to attack.
-        if (unknownWordId) {
-          openPhonics(unknownWordId);
+        // Unknown-word miss with a transcript → embed phonics, then return.
+        const missFocus = resolveMissPhonicsWordId({
+          transcript,
+          candidateWordIds: listAttackFocusWordIds(wordId),
+          learnedWordIds,
+          masteredWordIds,
+          fallbackWordId: unknownWordId,
+        });
+        if (missFocus) {
+          startPhonics(missFocus);
         }
         return;
       }
@@ -215,15 +230,13 @@ export function WordMonsterCard({
         kind: score.isPartial ? "partial" : "full",
       });
     } catch {
+      // Mic / recognition failure — keep miss feedback + cue; don't force phonics.
       setResult("没听清楚，再试一次吧。");
       setFeedback({
         cn: "没听清楚，再试一次！",
         en: "Didn't catch that — try again!",
         kind: "miss",
       });
-      if (unknownWordId) {
-        openPhonics(unknownWordId);
-      }
     } finally {
       setListening(false);
     }
@@ -375,7 +388,7 @@ export function WordMonsterCard({
               reasonCn="这个词还不熟 — 先听音块再跟读，然后回来打怪！"
               reasonEn="New word — listen to the sounds, repeat, then attack!"
               onComplete={handlePhonicsComplete}
-              onSkip={() => setPhonicsWordId(null)}
+              onSkip={skipPhonics}
             />
           </div>
         ) : (
@@ -384,10 +397,10 @@ export function WordMonsterCard({
               {attack.promptCn} {attack.promptEn}
             </p>
 
-            {showPhonicsCue ? (
+            {cueVisible ? (
               <button
                 type="button"
-                onClick={() => openPhonics()}
+                onClick={() => startPhonics()}
                 className="mw-phonics-cue mt-3"
               >
                 不会读？先短学一下 · Learn this word
@@ -431,7 +444,7 @@ export function WordMonsterCard({
           </>
         )}
 
-        {feedback || result ? (
+        {(feedback || result) && !phonicsOpen ? (
           <p
             className={`mt-4 rounded-xl px-4 py-3 text-sm font-bold ${
               feedback?.kind === "full"

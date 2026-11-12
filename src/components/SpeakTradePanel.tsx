@@ -11,8 +11,11 @@ import {
   getTradeOfferById,
   TradeOffer,
 } from "@/data/trades";
+import { usePhonicsSession } from "@/hooks/usePhonicsSession";
 import {
   getUnknownTradeWordId,
+  listTradeFocusWordIds,
+  resolveMissPhonicsWordId,
   scoreSpeechAfterPhonics,
 } from "@/lib/phonics";
 import {
@@ -39,29 +42,39 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
   const [result, setResult] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
   const [tradeResult, setTradeResult] = useState<RewardResult | null>(null);
-  const [phonicsWordId, setPhonicsWordId] = useState<string | null>(null);
-  const [phonicsBoost, setPhonicsBoost] = useState(false);
+  const [supported, setSupported] = useState(false);
+  const {
+    phonicsWordId,
+    phonicsBoost,
+    phonicsOpen,
+    openPhonics,
+    skipPhonics,
+    completePhonics,
+    resetPhonics,
+    showPhonicsCue,
+  } = usePhonicsSession();
+
+  useEffect(() => {
+    setSupported(isSpeechRecognitionSupported());
+  }, []);
 
   useEffect(() => {
     setListening(false);
     setResult(null);
     setPassed(null);
     setTradeResult(null);
-    setPhonicsWordId(null);
-    setPhonicsBoost(false);
-  }, [tradeId]);
+    resetPhonics();
+  }, [tradeId, resetPhonics]);
 
   if (!offer) return null;
 
   const canAfford = canAffordTrade(offer, resources);
-  const supported = isSpeechRecognitionSupported();
   const unknownWordId = getUnknownTradeWordId(
     tradeId,
     learnedWordIds,
     masteredWordIds,
   );
-  const phonicsOpen = phonicsWordId !== null;
-  const showPhonicsCue = Boolean(unknownWordId) && !phonicsBoost && !phonicsOpen;
+  const cueVisible = showPhonicsCue(unknownWordId);
 
   function applyTrade(current: TradeOffer) {
     const loot = executeTrade(current.id);
@@ -73,15 +86,16 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
     setTradeResult(loot);
   }
 
-  function openPhonics(targetId?: string | null) {
+  function startPhonics(targetId?: string | null) {
     const id = targetId ?? unknownWordId;
     if (!id) return;
-    setPhonicsWordId(id);
+    openPhonics(id);
+    setPassed(null);
+    setResult(null);
   }
 
   function handlePhonicsComplete() {
-    setPhonicsWordId(null);
-    setPhonicsBoost(true);
+    completePhonics();
     setPassed(null);
     setResult("短学完成！再说一次来交易");
   }
@@ -111,15 +125,22 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
       setPassed(score.passed);
       if (score.passed) {
         applyTrade(offer);
-      } else if (unknownWordId) {
-        openPhonics(unknownWordId);
+      } else {
+        const missFocus = resolveMissPhonicsWordId({
+          transcript,
+          candidateWordIds: listTradeFocusWordIds(tradeId),
+          learnedWordIds,
+          masteredWordIds,
+          fallbackWordId: unknownWordId,
+        });
+        if (missFocus) {
+          startPhonics(missFocus);
+        }
       }
     } catch {
+      // Mic failure — keep retry feedback; cue still available for unknown words.
       setResult("没听清楚，再试一次吧。");
       setPassed(false);
-      if (unknownWordId) {
-        openPhonics(unknownWordId);
-      }
     } finally {
       setListening(false);
     }
@@ -239,7 +260,7 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
           reasonCn="交易句里有生词 — 先听音块跟读，再回来交易！"
           reasonEn="New trade word — listen, repeat, then trade!"
           onComplete={handlePhonicsComplete}
-          onSkip={() => setPhonicsWordId(null)}
+          onSkip={skipPhonics}
         />
       ) : !canAfford ? (
         <div className="space-y-3">
@@ -259,10 +280,10 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
         </div>
       ) : (
         <div className="space-y-2">
-          {showPhonicsCue ? (
+          {cueVisible ? (
             <button
               type="button"
-              onClick={() => openPhonics()}
+              onClick={() => startPhonics()}
               className="mw-phonics-cue"
             >
               不会读？先短学一下 · Learn this word
@@ -296,7 +317,7 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
         </div>
       )}
 
-      {result && !(tradeResult && passed) ? (
+      {result && !(tradeResult && passed) && !phonicsOpen ? (
         <p
           className={`rounded-xl px-4 py-3 text-sm font-bold ${
             passed
@@ -304,9 +325,17 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
               : "bg-amber-900/40 text-amber-100"
           }`}
         >
-          {passed ? "Traded! 交易成功！" : "Miss! 再试一次！"}
-          <br />
-          听到：{result}
+          {passed === true
+            ? "Traded! 交易成功！"
+            : passed === false
+              ? "Miss! 再试一次！"
+              : result}
+          {passed !== null ? (
+            <>
+              <br />
+              听到：{result}
+            </>
+          ) : null}
         </p>
       ) : null}
     </section>
