@@ -470,6 +470,7 @@ export function WordMonsterCard({
         unlocks={rewardResult?.unlocks ?? []}
         isFirstCompletion={rewardResult?.isFirstCompletion ?? true}
         onClose={handleRewardClose}
+        farmable={farmable}
       />
     </>
   );
