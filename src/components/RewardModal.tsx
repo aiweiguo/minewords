@@ -18,6 +18,12 @@ type RewardModalProps = {
   onClose: () => void;
   /** Soft nudge toward building when fight drops materials. */
   settleHref?: string;
+  /**
+   * Zone wild farming: closing without navigating resets the encounter.
+   * When mats are ready (`canCraft`), craft stays the primary CTA and
+   * 「再打一只」 is demoted so farm resets don't bury speak-craft.
+   */
+  farmable?: boolean;
 };
 
 export function RewardModal({
@@ -27,6 +33,7 @@ export function RewardModal({
   isFirstCompletion,
   onClose,
   settleHref = "/",
+  farmable = false,
 }: RewardModalProps) {
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
@@ -36,6 +43,8 @@ export function RewardModal({
   const goal = getWeaponGoalSnapshot(unlockedIds, resources);
   const hasLoot = rewards.length > 0 || unlocks.length > 0;
   const showWeaponSettle = hasLoot || isFirstCompletion;
+  const forceCraftCta = goal.canCraft;
+  const showFarmAgain = farmable;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -142,18 +151,42 @@ export function RewardModal({
         <div className="mt-6 space-y-2">
           {showWeaponSettle ? (
             <>
-              <Link
-                href={goal.primaryCta.href}
-                onClick={onClose}
-                className={`mw-btn w-full ${
-                  goal.primaryCta.kind === "craft"
-                    ? "mw-btn-secondary"
-                    : "mw-btn-primary"
-                }`}
-              >
-                {goal.primaryCta.labelCn}{" "}
-                <span className="opacity-80">{goal.primaryCta.labelEn}</span>
-              </Link>
+              {forceCraftCta ? (
+                <Link
+                  href={goal.primaryCta.href}
+                  onClick={onClose}
+                  className="mw-btn mw-btn-primary w-full"
+                >
+                  {goal.primaryCta.labelCn}{" "}
+                  <span className="opacity-80">{goal.primaryCta.labelEn}</span>
+                </Link>
+              ) : showFarmAgain ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="mw-btn mw-btn-primary w-full"
+                >
+                  再打一只 Fight again
+                </button>
+              ) : (
+                <Link
+                  href={goal.primaryCta.href}
+                  onClick={onClose}
+                  className="mw-btn mw-btn-primary w-full"
+                >
+                  {goal.primaryCta.labelCn}{" "}
+                  <span className="opacity-80">{goal.primaryCta.labelEn}</span>
+                </Link>
+              )}
+              {showFarmAgain && forceCraftCta ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="mw-btn mw-btn-outline w-full text-sm opacity-80"
+                >
+                  再打一只 Fight again
+                </button>
+              ) : null}
               <Link
                 href={settleHref}
                 onClick={onClose}
@@ -168,7 +201,7 @@ export function RewardModal({
               onClick={onClose}
               className="mw-btn mw-btn-primary w-full"
             >
-              继续 Continue
+              {showFarmAgain ? "再打一只 Fight again" : "继续 Continue"}
             </button>
           )}
         </div>
