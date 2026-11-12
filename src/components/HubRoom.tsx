@@ -247,6 +247,26 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                 </span>
                 <span className="mw-hub-prop-label">出门打怪</span>
               </Link>
+
+              <Link
+                href="/trade"
+                className="mw-hub-fixture mw-hub-fixture-link mw-hub-fixture-secondary mw-hub-prop-trade"
+                title="开口和村民交易材料"
+              >
+                <span className="mw-hub-prop-art" aria-hidden>
+                  <span className="mw-hub-villager">
+                    <span className="mw-hub-villager-head" />
+                    <span className="mw-hub-villager-body" />
+                  </span>
+                  <GameIcon
+                    src={assetMap.emerald}
+                    alt=""
+                    size="xs"
+                    className="mw-hub-trade-gem"
+                  />
+                </span>
+                <span className="mw-hub-prop-label">交易</span>
+              </Link>
             </div>
 
             <div className="mw-hub-floor-row">
@@ -311,7 +331,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                 ? "空武器架 — 点门出门打怪攒材料"
                 : canAfford
                   ? "点空槽铺地板或墙"
-                  : "换一块有材料的，或出门再攒"}
+                  : "换一块有材料的，或点交易开口换稀有材料"}
         </p>
       </div>
     </section>

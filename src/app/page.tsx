@@ -20,6 +20,7 @@ const moreLinks = [
   { href: "/unlocks", label: "解锁" },
   { href: "/inventory", label: "背包" },
   { href: "/crafting", label: "合成" },
+  { href: "/trade", label: "交易" },
   { href: "/parent", label: "家长" },
 ];
 
