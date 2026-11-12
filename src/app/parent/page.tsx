@@ -81,6 +81,29 @@ export default function ParentPage() {
         </p>
       </section>
 
+      <section className="mw-card p-5" aria-labelledby="mw-parent-tools">
+        <h2 id="mw-parent-tools" className="text-xl font-black">
+          家长工具
+        </h2>
+        <p className="mt-2 text-sm font-semibold text-muted">
+          听力和材料规划不在孩子主菜单里，需要时从这里进。
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href="/listening"
+            className="inline-flex min-h-11 items-center rounded-md border border-[var(--panel-wood)]/60 bg-black/20 px-4 py-2 text-sm font-bold text-primary underline-offset-2 hover:bg-black/35"
+          >
+            听力练习 →
+          </Link>
+          <Link
+            href="/planner"
+            className="inline-flex min-h-11 items-center rounded-md border border-[var(--panel-wood)]/60 bg-black/20 px-4 py-2 text-sm font-bold text-primary underline-offset-2 hover:bg-black/35"
+          >
+            材料规划 →
+          </Link>
+        </div>
+      </section>
+
       <section className="mw-card mw-reward-panel p-5">
         <h2 className="text-xl font-black">一句话总结</h2>
         <p className="mt-3 text-sm font-semibold">{todaySummary}</p>
