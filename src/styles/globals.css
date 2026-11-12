@@ -1296,6 +1296,53 @@ body {
   color: var(--foreground);
 }
 
+.mw-hub-more-group {
+  border-radius: 0.35rem;
+  border: 1px solid rgba(139, 105, 20, 0.4);
+  background: rgba(0, 0, 0, 0.12);
+  padding: 0.35rem 0.45rem;
+}
+
+.mw-hub-more-group-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.35rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.mw-hub-more-sublinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.15rem 0.35rem 0.45rem;
+}
+
+.mw-hub-more-sublink {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  border-radius: 0.3rem;
+  border: 1px solid rgba(139, 105, 20, 0.45);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.mw-hub-more-sublink:hover {
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--foreground);
+}
+
 @media (min-width: 640px) {
   .mw-hub-stage-wrap {
     min-height: 20rem;
