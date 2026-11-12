@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
+import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { SpeakButton } from "@/components/SpeakButton";
 import {
   canAffordTrade,
   getTradeOfferById,
   TradeOffer,
 } from "@/data/trades";
+import {
+  getUnknownTradeWordId,
+  scoreSpeechAfterPhonics,
+} from "@/lib/phonics";
 import {
   isSpeechRecognitionSupported,
   listenOnce,
@@ -27,23 +32,36 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
   const resources = useGameStore((s) => s.resources);
   const executeTrade = useGameStore((s) => s.executeTrade);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
 
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
   const [tradeResult, setTradeResult] = useState<RewardResult | null>(null);
+  const [phonicsWordId, setPhonicsWordId] = useState<string | null>(null);
+  const [phonicsBoost, setPhonicsBoost] = useState(false);
 
   useEffect(() => {
     setListening(false);
     setResult(null);
     setPassed(null);
     setTradeResult(null);
+    setPhonicsWordId(null);
+    setPhonicsBoost(false);
   }, [tradeId]);
 
   if (!offer) return null;
 
   const canAfford = canAffordTrade(offer, resources);
   const supported = isSpeechRecognitionSupported();
+  const unknownWordId = getUnknownTradeWordId(
+    tradeId,
+    learnedWordIds,
+    masteredWordIds,
+  );
+  const phonicsOpen = phonicsWordId !== null;
+  const showPhonicsCue = Boolean(unknownWordId) && !phonicsBoost && !phonicsOpen;
 
   function applyTrade(current: TradeOffer) {
     const loot = executeTrade(current.id);
@@ -53,6 +71,19 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
       return;
     }
     setTradeResult(loot);
+  }
+
+  function openPhonics(targetId?: string | null) {
+    const id = targetId ?? unknownWordId;
+    if (!id) return;
+    setPhonicsWordId(id);
+  }
+
+  function handlePhonicsComplete() {
+    setPhonicsWordId(null);
+    setPhonicsBoost(true);
+    setPassed(null);
+    setResult("短学完成！再说一次来交易");
   }
 
   async function handleSpeakTrade() {
@@ -66,18 +97,29 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
     try {
       const { transcript } = await listenOnce();
       setResult(transcript);
-      const score = scoreTradeSpeechAttempt(
-        transcript,
-        offer.expectedSpeech,
-        offer.speechKeywords,
-      );
+      const score = phonicsBoost
+        ? scoreSpeechAfterPhonics(
+            transcript,
+            offer.expectedSpeech,
+            offer.speechKeywords,
+          )
+        : scoreTradeSpeechAttempt(
+            transcript,
+            offer.expectedSpeech,
+            offer.speechKeywords,
+          );
       setPassed(score.passed);
       if (score.passed) {
         applyTrade(offer);
+      } else if (unknownWordId) {
+        openPhonics(unknownWordId);
       }
     } catch {
       setResult("没听清楚，再试一次吧。");
       setPassed(false);
+      if (unknownWordId) {
+        openPhonics(unknownWordId);
+      }
     } finally {
       setListening(false);
     }
@@ -189,6 +231,16 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
             </Link>
           </div>
         </div>
+      ) : phonicsWordId ? (
+        <PhonicsMoment
+          wordId={phonicsWordId}
+          resumeLabelCn="开口交易"
+          resumeLabelEn="speak-trade"
+          reasonCn="交易句里有生词 — 先听音块跟读，再回来交易！"
+          reasonEn="New trade word — listen, repeat, then trade!"
+          onComplete={handlePhonicsComplete}
+          onSkip={() => setPhonicsWordId(null)}
+        />
       ) : !canAfford ? (
         <div className="space-y-3">
           <p className="text-sm font-bold text-amber-100">
@@ -207,6 +259,20 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
         </div>
       ) : (
         <div className="space-y-2">
+          {showPhonicsCue ? (
+            <button
+              type="button"
+              onClick={() => openPhonics()}
+              className="mw-phonics-cue"
+            >
+              不会读？先短学一下 · Learn this word
+            </button>
+          ) : null}
+          {phonicsBoost ? (
+            <p className="text-xs font-bold text-cyan-100/90">
+              短学加成：判定更宽松 Phonics boost — extra-lenient match
+            </p>
+          ) : null}
           {supported ? (
             <button
               type="button"
