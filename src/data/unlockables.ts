@@ -51,11 +51,11 @@ export const unlockables: Unlockable[] = [
     type: "equipment",
     name: "Diamond Sword",
     nameCn: "钻石剑",
-    description: "A strong weapon made of diamond.",
+    description:
+      "A legendary blade. Craft it by saying Can I craft a diamond sword?",
     icon: assetMap.sword,
     image: assetMap.diamond,
     rarity: "legendary",
-    questId: "craft-stone-sword-errand",
   },
   {
     id: "word-miner",
@@ -72,10 +72,9 @@ export const unlockables: Unlockable[] = [
     type: "title",
     name: "Diamond Speaker",
     nameCn: "钻石口语者",
-    description: "Complete the diamond sword quest.",
+    description: "Speak-craft the diamond sword.",
     icon: assetMap.diamond,
     rarity: "epic",
-    questId: "craft-stone-sword-errand",
   },
   {
     id: "forest-map",

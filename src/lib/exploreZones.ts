@@ -18,7 +18,7 @@ export type ExploreZoneLockInfo = {
   lockEn: string | null;
 };
 
-/** Forest is always open; cave needs wooden sword; mines need stone sword. */
+/** Forest is always open; later zones need the prior weapon on the ladder. */
 export function isExploreZoneUnlocked(
   zone: ExploreZone,
   unlockedIds: string[],
@@ -121,6 +121,17 @@ function buildMaterialBias(
       { type: "resource", resource: "stone", amount: 1 },
     ];
   }
+  if (focus === "diamond") {
+    return [
+      {
+        type: "resource",
+        resource: "diamond",
+        amount: focusAmount(wordId, "diamond"),
+      },
+      { type: "resource", resource: "iron", amount: 1 },
+      { type: "resource", resource: "emerald", amount: 1 },
+    ];
+  }
   return [
     { type: "resource", resource: focus, amount: focusAmount(wordId, focus) },
   ];
@@ -141,6 +152,12 @@ function focusAmount(wordId: string, focus: ResourceType): number {
     if (wordId === "blaze") return 3;
     if (wordId === "creeper") return 3;
     return 2;
+  }
+  if (focus === "diamond") {
+    // Scarcer than iron — recipe needs 2 diamonds; a few fights clear the goal.
+    if (wordId === "blaze") return 1;
+    if (wordId === "skeleton") return 1;
+    return 1;
   }
   return 2;
 }

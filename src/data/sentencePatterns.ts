@@ -98,6 +98,23 @@ export const sentencePatterns: SentencePattern[] = [
       },
     ],
   },
+  {
+    id: "can-i-craft",
+    patternEn: "Can I craft ...?",
+    patternCn: "我能合成……吗？",
+    examples: [
+      {
+        english: "Can I craft a diamond sword?",
+        chinese: "我能合成一把钻石剑吗？",
+        wordIds: ["craft", "diamond", "sword"],
+      },
+      {
+        english: "Can I craft an iron sword?",
+        chinese: "我能合成一把铁剑吗？",
+        wordIds: ["craft", "iron", "sword"],
+      },
+    ],
+  },
 ];
 
 export function getSentencePatternForKeywords(keywords: string[]): SentencePattern | undefined {
