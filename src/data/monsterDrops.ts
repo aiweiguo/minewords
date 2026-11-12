@@ -27,12 +27,13 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
   ],
   creeper: [
     { type: "resource", resource: "iron", amount: 2 },
-    { type: "resource", resource: "emerald", amount: 1 },
+    { type: "resource", resource: "emerald", amount: 2 },
     { type: "xp", xp: 15 },
   ],
   blaze: [
     { type: "resource", resource: "iron", amount: 3 },
     { type: "resource", resource: "stone", amount: 1 },
+    { type: "resource", resource: "emerald", amount: 1 },
     { type: "xp", xp: 18 },
   ],
 };

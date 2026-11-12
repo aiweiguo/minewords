@@ -1,3 +1,4 @@
+import { WeaponCost } from "@/data/weapons";
 import { assetMap } from "@/lib/assets";
 import { ResourceType } from "@/types";
 
@@ -30,18 +31,28 @@ export type TradeOffer = {
   icon: string;
 };
 
+/** Settle / goal-bar nudge when trade can feed the current weapon goal (MW-34). */
+export type TradeGoalNudge = {
+  offerId: string;
+  href: string;
+  labelCn: string;
+  labelEn: string;
+  stripCn: string;
+  stripEn: string;
+};
+
 /**
- * Villager speak-trade offers (MW-20).
+ * Villager speak-trade offers (MW-20 → MW-34).
  * Repeatable: kids practice buy/trade sentences for rare mats.
- * Side path for rare mats (emerald → gold/diamond). Main ladder uses crystal depths drops + speak-craft.
+ * Post-iron: diamond offers tie to the diamond-sword goal.
  */
 export const tradeOffers: TradeOffer[] = [
   {
     id: "wood-for-emerald",
     title: "Trade Wood",
     titleCn: "用木头换绿宝石",
-    npcLine: "Hmm… I like wood. Want to trade?",
-    npcLineCn: "嗯……我喜欢木头。想交易吗？",
+    npcLine: "Need emeralds for diamonds? Trade me wood first!",
+    npcLineCn: "做钻石剑要绿宝石？先用木头跟我换！",
     costs: [{ resource: "wood", amount: 4 }],
     gains: [{ resource: "emerald", amount: 1 }],
     expectedSpeech: "I trade wood for emerald",
@@ -71,32 +82,32 @@ export const tradeOffers: TradeOffer[] = [
   {
     id: "buy-diamonds",
     title: "Buy Diamonds",
-    titleCn: "买钻石",
-    npcLine: "Looking for diamonds? Speak up!",
-    npcLineCn: "想要钻石？开口说！",
+    titleCn: "买钻石做剑",
+    npcLine: "Diamond sword needs diamonds — can I sell you some?",
+    npcLineCn: "钻石剑缺钻石？开口跟我买！",
     costs: [{ resource: "emerald", amount: 3 }],
     gains: [{ resource: "diamond", amount: 1 }],
     expectedSpeech: "Can I buy diamonds?",
-    speechKeywords: ["buy", "diamond", "diamonds", "please", "trade"],
-    speechHintCn: "说 buy / diamond，或 Can I buy diamonds?",
-    speechHintEn: "Say buy, diamond, or Can I buy diamonds?",
-    wordIds: ["diamond", "trade"],
+    speechKeywords: ["buy", "diamond", "diamonds", "please", "trade", "sword"],
+    speechHintCn: "说 buy / diamond / sword，或 Can I buy diamonds?",
+    speechHintEn: "Say buy, diamond, sword, or Can I buy diamonds?",
+    wordIds: ["diamond", "trade", "sword"],
     craftXp: 12,
     icon: assetMap.diamond,
   },
   {
     id: "iron-for-diamond",
     title: "Trade Iron",
-    titleCn: "用铁换钻石",
-    npcLine: "Iron for diamond — fair deal?",
-    npcLineCn: "铁换钻石——公平吗？",
+    titleCn: "用铁换钻石做剑",
+    npcLine: "Extra iron? Trade for a diamond — for your sword!",
+    npcLineCn: "铁多了？换钻石去做钻石剑！",
     costs: [{ resource: "iron", amount: 5 }],
     gains: [{ resource: "diamond", amount: 1 }],
     expectedSpeech: "Trade iron for diamond",
-    speechKeywords: ["trade", "iron", "diamond"],
-    speechHintCn: "说 trade / iron / diamond",
-    speechHintEn: "Say trade, iron, or diamond",
-    wordIds: ["trade", "iron", "diamond"],
+    speechKeywords: ["trade", "iron", "diamond", "sword"],
+    speechHintCn: "说 trade / iron / diamond / sword",
+    speechHintEn: "Say trade, iron, diamond, or sword",
+    wordIds: ["trade", "iron", "diamond", "sword"],
     craftXp: 10,
     icon: assetMap.iron,
   },
@@ -113,4 +124,86 @@ export function canAffordTrade(
   return offer.costs.every(
     (cost) => (resources[cost.resource] ?? 0) >= cost.amount,
   );
+}
+
+function formatMissingCn(missing: WeaponCost[]): string {
+  return missing.map((m) => `${m.amount} ${m.resource}`).join(" · ");
+}
+
+/**
+ * When the current weapon goal is short on tradeable mats (esp. diamond),
+ * pick a speak-trade offer and CTA copy for settle / goal bar.
+ */
+export function getTradeNudgeForGoal(
+  missing: WeaponCost[],
+  resources: Partial<Record<ResourceType, number>>,
+): TradeGoalNudge | null {
+  const missingDiamond = missing.find((m) => m.resource === "diamond");
+  if (!missingDiamond) return null;
+
+  const missingLabel = formatMissingCn(missing);
+  const buyDiamonds = getTradeOfferById("buy-diamonds");
+  const ironForDiamond = getTradeOfferById("iron-for-diamond");
+  const woodForEmerald = getTradeOfferById("wood-for-emerald");
+
+  if (buyDiamonds && canAffordTrade(buyDiamonds, resources)) {
+    return {
+      offerId: buyDiamonds.id,
+      href: `/trade?offer=${buyDiamonds.id}`,
+      labelCn: "去交易",
+      labelEn: "Go trade",
+      stripCn: `还差 ${missingLabel} · 开口买钻石做剑`,
+      stripEn: `Need ${missingLabel} — speak: Can I buy diamonds?`,
+    };
+  }
+
+  if (ironForDiamond && canAffordTrade(ironForDiamond, resources)) {
+    return {
+      offerId: ironForDiamond.id,
+      href: `/trade?offer=${ironForDiamond.id}`,
+      labelCn: "去交易",
+      labelEn: "Go trade",
+      stripCn: `还差 ${missingLabel} · 用铁换钻石做剑`,
+      stripEn: `Need ${missingLabel} — trade iron for diamond`,
+    };
+  }
+
+  if (woodForEmerald && canAffordTrade(woodForEmerald, resources)) {
+    return {
+      offerId: woodForEmerald.id,
+      href: `/trade?offer=${woodForEmerald.id}`,
+      labelCn: "去交易",
+      labelEn: "Go trade",
+      stripCn: `还差 ${missingLabel} · 先用木头换绿宝石`,
+      stripEn: `Need ${missingLabel} — trade wood for emerald first`,
+    };
+  }
+
+  // Partial emerald bank: still send kids to the diamond offer.
+  if ((resources.emerald ?? 0) > 0) {
+    return {
+      offerId: "buy-diamonds",
+      href: "/trade?offer=buy-diamonds",
+      labelCn: "去交易",
+      labelEn: "Go trade",
+      stripCn: `还差 ${missingLabel} · 绿宝石可去交易买钻石`,
+      stripEn: `Need ${missingLabel} — spend emeralds at trade`,
+    };
+  }
+
+  return null;
+}
+
+/** Prefer diamond-sword trades when picking a default offer on /trade. */
+export function pickPreferredTradeOfferId(
+  resources: Partial<Record<ResourceType, number>>,
+  missingGoalCosts: WeaponCost[] = [],
+): string {
+  const nudge = getTradeNudgeForGoal(missingGoalCosts, resources);
+  if (nudge) return nudge.offerId;
+
+  const affordable = tradeOffers.find((offer) =>
+    canAffordTrade(offer, resources),
+  );
+  return affordable?.id ?? tradeOffers[0]?.id ?? "buy-diamonds";
 }

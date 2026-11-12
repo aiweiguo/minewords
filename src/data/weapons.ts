@@ -90,8 +90,8 @@ export const weaponTiers: WeaponTier[] = [
     speechHintCn: "说完整句：I craft an iron sword（含 craft / iron / sword）",
     speechHintEn: "Say a full sentence with craft, iron, or sword",
     craftXp: 24,
-    nextPreviewCn: "下一阶：钻石剑 · 需要 diamond",
-    nextPreviewEn: "Next: diamond sword · needs diamond",
+    nextPreviewCn: "下一阶：钻石剑 · 矿脉掉落或去交易买钻石",
+    nextPreviewEn: "Next: diamond sword · mine or trade for diamonds",
     rackTone: "iron",
   },
   {
@@ -110,8 +110,8 @@ export const weaponTiers: WeaponTier[] = [
     speechHintCn: "说交易式长句：Can I craft a diamond sword?（含 craft / diamond / sword）",
     speechHintEn: "Say a trade-style sentence with craft, diamond, or sword",
     craftXp: 32,
-    nextPreviewCn: "武器线完成 · 继续打怪探险",
-    nextPreviewEn: "Weapon line complete · keep exploring",
+    nextPreviewCn: "缺钻石时可去交易：Can I buy diamonds?",
+    nextPreviewEn: "Short on diamonds? Trade: Can I buy diamonds?",
     rackTone: "diamond",
   },
 ];

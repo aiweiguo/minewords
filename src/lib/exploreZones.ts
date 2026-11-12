@@ -110,16 +110,28 @@ function buildMaterialBias(
     ];
   }
   if (focus === "stone") {
-    return [
+    const drops: Reward[] = [
       { type: "resource", resource: "stone", amount: focusAmount(wordId, "stone") },
       { type: "resource", resource: "wood", amount: 1 },
     ];
+    // Creeper keeps a visible emerald so trade currency shows up before iron.
+    if (wordId === "creeper") {
+      drops.push({ type: "resource", resource: "emerald", amount: 1 });
+    }
+    return drops;
   }
   if (focus === "iron") {
-    return [
+    const drops: Reward[] = [
       { type: "resource", resource: "iron", amount: focusAmount(wordId, "iron") },
       { type: "resource", resource: "stone", amount: 1 },
     ];
+    // Mines bank emeralds for post-iron speak-trade (buy diamonds).
+    drops.push({
+      type: "resource",
+      resource: "emerald",
+      amount: wordId === "creeper" || wordId === "blaze" ? 2 : 1,
+    });
+    return drops;
   }
   if (focus === "diamond") {
     return [
@@ -129,7 +141,12 @@ function buildMaterialBias(
         amount: focusAmount(wordId, "diamond"),
       },
       { type: "resource", resource: "iron", amount: 1 },
-      { type: "resource", resource: "emerald", amount: 1 },
+      // Crystal: emeralds are the trade path when diamond rolls feel slow.
+      {
+        type: "resource",
+        resource: "emerald",
+        amount: wordId === "blaze" ? 2 : 1,
+      },
     ];
   }
   return [

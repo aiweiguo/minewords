@@ -908,6 +908,12 @@ body {
   border-color: #6b4423;
 }
 
+.mw-weapon-goal-cta-trade {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+  border-color: #047857;
+  color: #ecfdf5;
+}
+
 .mw-weapon-goal-strip-settle {
   padding: 1rem 1.15rem;
   border: 3px solid var(--panel-wood);
@@ -997,6 +1003,17 @@ body {
   box-shadow:
     0 2px 0 #1a1208,
     0 0 10px rgba(107, 175, 24, 0.35);
+}
+
+.mw-hub-trade-primary {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+  border-color: #047857;
+  box-shadow:
+    0 3px 0 #2c1c12,
+    0 0 0 2px rgba(52, 211, 153, 0.55);
+  background:
+    linear-gradient(180deg, rgba(52, 211, 153, 0.28), transparent 50%),
+    #3a4030;
 }
 
 .mw-room-slot {
@@ -1356,6 +1373,7 @@ body {
   .mw-hub-blade,
   .mw-hub-door-primary,
   .mw-hub-craft-primary,
+  .mw-hub-trade-primary,
   .mw-hub-rack-ready,
   .mw-hub-pickers-ready .mw-block-picker-ready,
   .mw-explore-portal-open,

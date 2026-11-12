@@ -50,9 +50,11 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const hasPlaceableMats = resources.wood >= 1 || resources.stone >= 1;
   const goal = getWeaponGoalSnapshot(unlockedIds, resources);
   const craftReady = goal.canCraft;
-  const emphasizeFight = !craftReady && goal.status === "gather";
+  const tradeReady = goal.canTrade;
+  const emphasizeFight = !craftReady && !tradeReady && goal.status === "gather";
   const emphasizeCraft = craftReady;
-  const emphasizePlace = hasPlaceableMats && !craftReady;
+  const emphasizeTrade = tradeReady && !craftReady;
+  const emphasizePlace = hasPlaceableMats && !craftReady && !tradeReady;
 
   const equipped = goal.equipped;
   const nextSlot = goal.status === "line-complete" ? null : goal.goal;
@@ -249,8 +251,16 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               </Link>
 
               <Link
-                href="/trade"
-                className="mw-hub-fixture mw-hub-fixture-link mw-hub-fixture-secondary mw-hub-prop-trade"
+                href={
+                  emphasizeTrade && goal.primaryCta.kind === "trade"
+                    ? goal.primaryCta.href
+                    : "/trade"
+                }
+                className={`mw-hub-fixture mw-hub-fixture-link mw-hub-prop-trade ${
+                  emphasizeTrade
+                    ? "mw-hub-trade-primary"
+                    : "mw-hub-fixture-secondary"
+                }`}
                 title="开口和村民交易材料"
               >
                 <span className="mw-hub-prop-art" aria-hidden>
@@ -265,7 +275,9 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                     className="mw-hub-trade-gem"
                   />
                 </span>
-                <span className="mw-hub-prop-label">交易</span>
+                <span className="mw-hub-prop-label">
+                  {emphasizeTrade ? "去交易" : "交易"}
+                </span>
               </Link>
             </div>
 
