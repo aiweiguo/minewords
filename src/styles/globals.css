@@ -1764,6 +1764,33 @@ body {
   color: var(--muted);
 }
 
+.mw-phonics-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mw-phonics-part {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #bae6fd;
+}
+
+.mw-phonics-part-word {
+  text-transform: lowercase;
+}
+
+.mw-phonics-part-ipa {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .mw-phonics-reason {
   margin: 0.65rem 0 0;
   font-size: 0.85rem;

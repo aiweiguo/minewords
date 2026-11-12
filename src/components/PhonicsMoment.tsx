@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { SpeakButton } from "@/components/SpeakButton";
 import {
@@ -27,9 +27,13 @@ type PhonicsMomentProps = {
   onSkip?: () => void;
 };
 
+/** Brief hold so kids see “学会了” before returning to the play verb. */
+const COMPLETE_HOLD_MS = 900;
+
 /**
- * Embedded phonics mini-learn (MW-21): listen + sound chunks + repeat,
+ * Embedded phonics mini-learn (MW-21 / MW-33): listen + sound chunks + repeat,
  * then return to attack / craft / trade — not a separate drill home.
+ * Reuses dictionary phonetic IPA (top-level + compound parts).
  */
 export function PhonicsMoment({
   wordId,
@@ -50,6 +54,7 @@ export function PhonicsMoment({
   const [heard, setHeard] = useState<string | null>(null);
   const [passed, setPassed] = useState(false);
   const [supported, setSupported] = useState(false);
+  const completeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     setSupported(isSpeechRecognitionSupported());
@@ -60,14 +65,27 @@ export function PhonicsMoment({
     setActiveChunk(null);
     setHeard(null);
     setPassed(false);
+    if (completeTimerRef.current != null) {
+      window.clearTimeout(completeTimerRef.current);
+      completeTimerRef.current = null;
+    }
     const demo = getPhonicsPlan(wordId)?.demoText;
     if (!demo) return undefined;
     // Soft auto-play so kids hear the new word once when the moment opens.
     const timer = window.setTimeout(() => speak(demo, { rate: 0.75 }), 280);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      if (completeTimerRef.current != null) {
+        window.clearTimeout(completeTimerRef.current);
+        completeTimerRef.current = null;
+      }
+    };
   }, [wordId]);
 
   if (!plan) return null;
+
+  const showPartPhonetics =
+    plan.parts.length > 1 && plan.parts.some((part) => part.phonetic);
 
   function playChunk(index: number) {
     const chunk = plan!.chunks[index];
@@ -99,7 +117,14 @@ export function PhonicsMoment({
     discoverWord(wordId);
     markWordLearned(wordId);
     setPassed(true);
-    onComplete(wordId);
+    if (completeTimerRef.current != null) {
+      window.clearTimeout(completeTimerRef.current);
+    }
+    // Hold success flash, then hand control back to attack/craft/trade.
+    completeTimerRef.current = window.setTimeout(() => {
+      completeTimerRef.current = null;
+      onComplete(wordId);
+    }, COMPLETE_HOLD_MS);
   }
 
   async function handleRepeat() {
@@ -134,6 +159,18 @@ export function PhonicsMoment({
         <p className="mw-phonics-cn">{plan.chinese}</p>
         {plan.phonetic ? (
           <p className="mw-phonics-ipa">{plan.phonetic}</p>
+        ) : null}
+        {showPartPhonetics ? (
+          <ul className="mw-phonics-parts" aria-label="Dictionary phonetics">
+            {plan.parts.map((part) => (
+              <li key={part.word} className="mw-phonics-part">
+                <span className="mw-phonics-part-word">{part.word}</span>
+                {part.phonetic ? (
+                  <span className="mw-phonics-part-ipa">{part.phonetic}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
         ) : null}
         {reasonCn ? (
           <p className="mw-phonics-reason">
