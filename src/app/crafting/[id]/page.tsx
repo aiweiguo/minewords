@@ -24,6 +24,7 @@ export default function CraftingDetailPage({ params }: CraftingDetailPageProps) 
   }
 
   const speakCraftId = isSpeakCraftWeaponId(id) ? id : null;
+  const isPractice = !speakCraftId;
 
   return (
     <main className="space-y-6">
@@ -33,6 +34,18 @@ export default function CraftingDetailPage({ params }: CraftingDetailPageProps) 
 
       {speakCraftId ? <SpeakCraftPanel weaponId={speakCraftId} /> : null}
 
+      {isPractice ? (
+        <section className="mw-craft-practice-banner mw-card p-4">
+          <p className="mw-craft-practice-badge">练习 Practice</p>
+          <p className="mt-2 text-sm font-semibold text-muted">
+            这是百科配方，不是武器目标。开口合成剑在上面的武器线。
+          </p>
+          <Link href="/crafting" className="mw-btn mw-btn-primary mt-3 text-sm">
+            回武器线 Craft weapons
+          </Link>
+        </section>
+      ) : null}
+
       <section className="mw-card p-6">
         <div className="flex items-center gap-3">
           <GameIcon
@@ -41,6 +54,9 @@ export default function CraftingDetailPage({ params }: CraftingDetailPageProps) 
             size="xl"
           />
           <div>
+            {isPractice ? (
+              <p className="mw-craft-practice-badge mb-1">练习</p>
+            ) : null}
             <h1 className="text-3xl font-black">{recipe.resultEnglish}</h1>
             <p className="text-xl font-bold text-secondary">{recipe.resultChinese}</p>
           </div>
