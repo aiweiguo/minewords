@@ -45,6 +45,7 @@ export const displayResources: ResourceType[] = [
   "wood",
   "stone",
   "iron",
+  "gold",
   "emerald",
   "diamond",
 ];

@@ -11,6 +11,7 @@ import {
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getQuestById, quests } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
+import { getTradeOfferById } from "@/data/trades";
 import {
   getWeaponTierById,
   getWeaponTierIndex,
@@ -223,6 +224,8 @@ type GameStore = GameState & {
   setSelectedExploreZone: (zoneId: ExploreZoneId) => boolean;
   /** Spend recipe mats + unlock weapon after a successful speak-craft. */
   craftWeapon: (weaponId: WeaponTierId) => RewardResult | null;
+  /** Spend cost mats + gain rare mats after a successful speak-trade (MW-20). */
+  executeTrade: (tradeId: string) => RewardResult | null;
   completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
   recordSpeakAttempt: () => void;
   syncDecorationUnlocks: () => void;
@@ -712,6 +715,82 @@ export const useGameStore = create<GameStore>()(
             unlockedIds: nextUnlocked,
             completedQuestIds: [...current.completedQuestIds, ...craftErrandIds],
             xp: current.xp + tier.craftXp + bonusXp,
+            ...touchLearningDay(current),
+          };
+          return { ...next, ...withDecorationSync(next) };
+        });
+
+        return rewardResult;
+      },
+
+      executeTrade: (tradeId) => {
+        const offer = getTradeOfferById(tradeId);
+        if (!offer) return null;
+
+        const state = get();
+        for (const cost of offer.costs) {
+          if (state.resources[cost.resource] < cost.amount) {
+            return null;
+          }
+        }
+
+        const firstTrade = !state.unlockedIds.includes("village-trader");
+        const tradeRewards: Reward[] = [
+          { type: "xp", xp: offer.craftXp },
+          ...offer.gains.map((gain) => ({
+            type: "resource" as const,
+            resource: gain.resource,
+            amount: gain.amount,
+          })),
+        ];
+        if (firstTrade) {
+          tradeRewards.push({ type: "unlock", unlockId: "village-trader" });
+        }
+
+        const rewardResult: RewardResult = {
+          rewards: tradeRewards,
+          unlocks: firstTrade ? ["village-trader"] : [],
+          isFirstCompletion: firstTrade,
+        };
+
+        set((current) => {
+          const nextResources = { ...current.resources };
+          for (const cost of offer.costs) {
+            nextResources[cost.resource] -= cost.amount;
+          }
+          for (const gain of offer.gains) {
+            nextResources[gain.resource] =
+              (nextResources[gain.resource] ?? 0) + gain.amount;
+          }
+
+          const nextUnlocked = firstTrade
+            ? current.unlockedIds.includes("village-trader")
+              ? current.unlockedIds
+              : [...current.unlockedIds, "village-trader"]
+            : current.unlockedIds;
+
+          const dailyStats = normalizeDailyStats(current.dailyStats);
+          const newLearned = offer.wordIds.filter(
+            (id) => !current.learnedWordIds.includes(id),
+          );
+
+          const next: GameState = {
+            ...current,
+            resources: nextResources,
+            unlockedIds: nextUnlocked,
+            xp: current.xp + offer.craftXp,
+            discoveredWordIds: mergeWordIds(
+              current.discoveredWordIds,
+              offer.wordIds,
+            ),
+            learnedWordIds: mergeWordIds(
+              current.learnedWordIds,
+              offer.wordIds,
+            ),
+            dailyStats: {
+              ...dailyStats,
+              learnedWords: dailyStats.learnedWords + newLearned.length,
+            },
             ...touchLearningDay(current),
           };
           return { ...next, ...withDecorationSync(next) };

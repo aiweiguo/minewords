@@ -115,3 +115,15 @@ export function scoreCraftSpeechAttempt(
     matchedKeywords,
   };
 }
+
+/**
+ * Speak-trade scoring (MW-20): same leniency as craft — full phrase OR any one keyword
+ * (buy / diamond / trade…). Kids can say "diamonds" or "Can I buy diamonds?".
+ */
+export function scoreTradeSpeechAttempt(
+  transcript: string,
+  expectedText: string,
+  keywords: string[],
+): { passed: boolean; matchedKeywords: string[] } {
+  return scoreCraftSpeechAttempt(transcript, expectedText, keywords);
+}
