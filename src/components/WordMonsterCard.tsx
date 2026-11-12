@@ -4,8 +4,10 @@ import { useState } from "react";
 
 import { RewardModal } from "@/components/RewardModal";
 import { SpeakButton } from "@/components/SpeakButton";
+import { ExploreZoneId } from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getVocabularyById } from "@/data/vocabulary";
+import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
 import {
   isSpeechRecognitionSupported,
   listenOnce,
@@ -20,12 +22,18 @@ type WordMonsterCardProps = {
   wrongCount?: number;
   /** When true, this is a starter wild encounter (not from wrong answers). */
   wild?: boolean;
+  /** Explore zone for material-biased drops. */
+  zoneId?: ExploreZoneId;
+  /** Allow re-fighting after a win (zone wild farming). */
+  farmable?: boolean;
 };
 
 export function WordMonsterCard({
   wordId,
   wrongCount,
   wild = false,
+  zoneId,
+  farmable = false,
 }: WordMonsterCardProps) {
   const defeatMonster = useGameStore((s) => s.defeatMonster);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
@@ -39,7 +47,9 @@ export function WordMonsterCard({
   const [rewardResult, setRewardResult] = useState<RewardResult | null>(null);
 
   const supported = isSpeechRecognitionSupported();
-  const previewDrops = getMonsterDropRewards(wordId);
+  const previewDrops = zoneId
+    ? getMonsterDropRewardsForZone(wordId, zoneId)
+    : getMonsterDropRewards(wordId);
 
   if (!word) {
     return null;
@@ -49,11 +59,19 @@ export function WordMonsterCard({
   const keywords = [expectedText];
 
   function applyHit() {
-    const loot = defeatMonster(wordId);
+    const loot = defeatMonster(wordId, { zoneId, farmable });
     if (!loot) return;
     setHitFlash(true);
     window.setTimeout(() => setHitFlash(false), 600);
     setRewardResult(loot);
+  }
+
+  function handleRewardClose() {
+    setRewardResult(null);
+    if (farmable) {
+      setResult(null);
+      setPassed(null);
+    }
   }
 
   async function handleSpeakAttack() {
@@ -102,7 +120,11 @@ export function WordMonsterCard({
             <h2 className="text-2xl font-black">{monster.titleCn}</h2>
             <p className="font-bold text-secondary">{monster.title}</p>
             {wild ? (
-              <p className="text-sm text-muted">野外遭遇 Wild encounter</p>
+              <p className="text-sm text-muted">
+                {farmable
+                  ? "区域野怪 · 可反复打 Zone wild"
+                  : "野外遭遇 Wild encounter"}
+              </p>
             ) : (
               <p className="text-sm text-muted">错了 {wrongCount ?? 0} 次</p>
             )}
@@ -193,7 +215,7 @@ export function WordMonsterCard({
         rewards={rewardResult?.rewards ?? []}
         unlocks={rewardResult?.unlocks ?? []}
         isFirstCompletion={rewardResult?.isFirstCompletion ?? true}
-        onClose={() => setRewardResult(null)}
+        onClose={handleRewardClose}
       />
     </>
   );

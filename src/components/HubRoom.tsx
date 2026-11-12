@@ -233,7 +233,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               </Link>
 
               <Link
-                href="/review"
+                href="/explore"
                 className={`mw-hub-fixture mw-hub-fixture-link mw-hub-door mw-hub-prop-door ${
                   emphasizeFight ? "mw-hub-door-primary" : ""
                 }`}

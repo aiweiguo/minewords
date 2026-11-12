@@ -110,7 +110,7 @@ export function getWeaponGoalSnapshot(
         ? `${equipped.name} on the rack · iron tier later`
         : "Weapon line complete",
       primaryCta: {
-        href: "/review",
+        href: "/explore",
         labelCn: "继续打怪",
         labelEn: "Keep fighting",
         kind: "fight",
@@ -156,7 +156,7 @@ export function getWeaponGoalSnapshot(
     stripCn: `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)}`,
     stripEn: `Craft ${goal.name}: need ${formatMissingCn(missing)}`,
     primaryCta: {
-      href: "/review",
+      href: "/explore",
       labelCn: "继续打怪",
       labelEn: "Keep fighting",
       kind: "fight",

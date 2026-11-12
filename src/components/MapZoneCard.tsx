@@ -99,7 +99,7 @@ export function MapZoneCard({
         {zone.questIds.length > 0 && !locked ? (
           <div className="space-y-3 border-t border-[#d9e2cc] p-4">
             {zone.mapArea === "battle" ? (
-              <Link href="/review" className="mw-btn mw-btn-primary w-full text-sm">
+              <Link href="/explore" className="mw-btn mw-btn-primary w-full text-sm">
                 🎤 开口打怪 Speak Attack →
               </Link>
             ) : null}

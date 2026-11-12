@@ -2,6 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { getBuildIdeaById } from "@/data/buildIdeas";
+import {
+  DEFAULT_EXPLORE_ZONE_ID,
+  ExploreZoneId,
+  getExploreZoneById,
+  isExploreZoneId,
+} from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getQuestById } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
@@ -14,6 +20,11 @@ import {
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
 import { getTodayDateString, getYesterdayDateString } from "@/lib/date";
 import { getDecorationUnlockIds } from "@/lib/decorationUnlocks";
+import {
+  getMonsterDropRewardsForZone,
+  isExploreZoneUnlocked,
+  resolveSelectedExploreZoneId,
+} from "@/lib/exploreZones";
 import { buildRewardResult } from "@/lib/questEngine";
 import {
   DailyStats,
@@ -161,6 +172,7 @@ const initialState: GameState = {
   xp: 0,
   resources: { ...defaultResources },
   roomBlocks: {},
+  selectedExploreZoneId: DEFAULT_EXPLORE_ZONE_ID,
   completedQuestIds: [],
   unlockedIds: [],
   masteredWordIds: [],
@@ -175,6 +187,13 @@ const initialState: GameState = {
   lastActiveDate: "",
   dailyStats: createDailyStats(),
   hasSeenOnboarding: false,
+};
+
+export type DefeatMonsterOptions = {
+  /** Bias drops toward the explore zone's craft material. */
+  zoneId?: ExploreZoneId;
+  /** Wild zone fights can be re-farmed so craft goals stay feedable. */
+  farmable?: boolean;
 };
 
 type GameStore = GameState & {
@@ -192,7 +211,11 @@ type GameStore = GameState & {
   claimBuildIdea: (ideaId: string) => boolean;
   completeDailyAdventure: (plan: DailyAdventurePlan) => boolean;
   recordWrongWord: (wordId: string) => void;
-  defeatMonster: (wordId: string) => RewardResult | null;
+  defeatMonster: (
+    wordId: string,
+    options?: DefeatMonsterOptions,
+  ) => RewardResult | null;
+  setSelectedExploreZone: (zoneId: ExploreZoneId) => boolean;
   /** Spend recipe mats + unlock weapon after a successful speak-craft. */
   craftWeapon: (weaponId: WeaponTierId) => RewardResult | null;
   completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
@@ -541,27 +564,36 @@ export const useGameStore = create<GameStore>()(
           },
         })),
 
-      defeatMonster: (wordId) => {
-        if (get().defeatedMonsterIds.includes(wordId)) {
+      defeatMonster: (wordId, options) => {
+        const alreadyDefeated = get().defeatedMonsterIds.includes(wordId);
+        const farmable = options?.farmable === true;
+        if (alreadyDefeated && !farmable) {
           return null;
         }
 
-        const dropRewards = getMonsterDropRewards(wordId);
+        const zoneId = options?.zoneId;
+        const dropRewards = zoneId
+          ? getMonsterDropRewardsForZone(wordId, zoneId)
+          : getMonsterDropRewards(wordId);
         const rewardResult: RewardResult = {
           rewards: dropRewards,
           unlocks: [],
-          isFirstCompletion: true,
+          isFirstCompletion: !alreadyDefeated,
         };
 
         set((state) => {
-          const mastered = applyWordMasteredState(state, wordId);
-          const applied = applyRewardList(mastered, dropRewards);
+          const base = alreadyDefeated
+            ? state
+            : applyWordMasteredState(state, wordId);
+          const applied = applyRewardList(base, dropRewards);
           const next = {
-            ...mastered,
+            ...base,
             ...applied,
-            defeatedMonsterIds: [...mastered.defeatedMonsterIds, wordId],
+            defeatedMonsterIds: alreadyDefeated
+              ? base.defeatedMonsterIds
+              : [...base.defeatedMonsterIds, wordId],
             wrongWordCounts: {
-              ...mastered.wrongWordCounts,
+              ...base.wrongWordCounts,
               [wordId]: 0,
             },
             ...touchLearningDay(state),
@@ -570,6 +602,18 @@ export const useGameStore = create<GameStore>()(
         });
 
         return rewardResult;
+      },
+
+      setSelectedExploreZone: (zoneId) => {
+        if (!isExploreZoneId(zoneId)) return false;
+        const zone = getExploreZoneById(zoneId);
+        if (!zone) return false;
+        const state = get();
+        if (!isExploreZoneUnlocked(zone, state.unlockedIds)) {
+          return false;
+        }
+        set({ selectedExploreZoneId: zoneId });
+        return true;
       },
 
       craftWeapon: (weaponId) => {
@@ -685,11 +729,16 @@ export const useGameStore = create<GameStore>()(
       merge: (persisted, current) => {
         const saved = persisted as Partial<GameState>;
         const speakMigration = migrateSpeakIds(saved);
+        const unlockedIds = saved.unlockedIds ?? current.unlockedIds;
         const mergedState: GameState = {
           ...current,
           ...saved,
           resources: { ...defaultResources, ...saved.resources },
           roomBlocks: saved.roomBlocks ?? {},
+          selectedExploreZoneId: resolveSelectedExploreZoneId(
+            saved.selectedExploreZoneId ?? current.selectedExploreZoneId,
+            unlockedIds,
+          ),
           discoveredWordIds: saved.discoveredWordIds ?? [],
           learnedWordIds: saved.learnedWordIds ?? [],
           completedGuideIds: saved.completedGuideIds ?? [],
@@ -714,6 +763,7 @@ export const useGameStore = create<GameStore>()(
         xp: state.xp,
         resources: state.resources,
         roomBlocks: state.roomBlocks,
+        selectedExploreZoneId: state.selectedExploreZoneId,
         completedQuestIds: state.completedQuestIds,
         unlockedIds: state.unlockedIds,
         masteredWordIds: state.masteredWordIds,

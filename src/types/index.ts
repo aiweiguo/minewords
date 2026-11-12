@@ -150,6 +150,8 @@ export type GameState = {
   resources: Record<ResourceType, number>;
   /** Placed blocks in the home hub room (persisted). */
   roomBlocks: RoomBlocks;
+  /** Last chosen weapon-tier explore zone (forest / cave). */
+  selectedExploreZoneId: string | null;
   completedQuestIds: string[];
   unlockedIds: string[];
   masteredWordIds: string[];
