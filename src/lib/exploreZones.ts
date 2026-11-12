@@ -18,7 +18,7 @@ export type ExploreZoneLockInfo = {
   lockEn: string | null;
 };
 
-/** Forest is always open; cave needs wooden sword on the rack. */
+/** Forest is always open; cave needs wooden sword; mines need stone sword. */
 export function isExploreZoneUnlocked(
   zone: ExploreZone,
   unlockedIds: string[],
@@ -81,7 +81,7 @@ export function resolveSelectedExploreZoneId(
 }
 
 /**
- * Zone-biased drops so forest feeds wood craft goals and cave feeds stone.
+ * Zone-biased drops so each portal feeds its craft goal.
  * Keeps XP; reweights resource drops toward the zone focus.
  */
 export function getMonsterDropRewardsForZone(
@@ -93,33 +93,56 @@ export function getMonsterDropRewardsForZone(
 
   const base = getMonsterDropRewards(wordId);
   const focus = zone.focusResource;
-  const secondary: ResourceType = focus === "wood" ? "stone" : "wood";
-
   const xpRewards = base.filter((reward) => reward.type === "xp");
-  const materialBias: Reward[] =
-    zoneId === "forest"
-      ? [
-          { type: "resource", resource: "wood", amount: focusAmount(wordId, "wood") },
-          { type: "resource", resource: "stone", amount: 1 },
-        ]
-      : [
-          { type: "resource", resource: "stone", amount: focusAmount(wordId, "stone") },
-          { type: "resource", resource: secondary, amount: 1 },
-        ];
+  const materialBias = buildMaterialBias(wordId, focus);
 
   return [...materialBias, ...xpRewards.map((reward) => ({ ...reward }))];
 }
 
+function buildMaterialBias(
+  wordId: string,
+  focus: ResourceType,
+): Reward[] {
+  if (focus === "wood") {
+    return [
+      { type: "resource", resource: "wood", amount: focusAmount(wordId, "wood") },
+      { type: "resource", resource: "stone", amount: 1 },
+    ];
+  }
+  if (focus === "stone") {
+    return [
+      { type: "resource", resource: "stone", amount: focusAmount(wordId, "stone") },
+      { type: "resource", resource: "wood", amount: 1 },
+    ];
+  }
+  if (focus === "iron") {
+    return [
+      { type: "resource", resource: "iron", amount: focusAmount(wordId, "iron") },
+      { type: "resource", resource: "stone", amount: 1 },
+    ];
+  }
+  return [
+    { type: "resource", resource: focus, amount: focusAmount(wordId, focus) },
+  ];
+}
+
 function focusAmount(wordId: string, focus: ResourceType): number {
-  // Slightly stronger packs on tougher wilds so cave feels worth the wooden sword.
   if (focus === "wood") {
     if (wordId === "zombie") return 3;
     if (wordId === "spider") return 2;
     return 2;
   }
-  if (wordId === "skeleton") return 3;
-  if (wordId === "creeper") return 4;
-  return 3;
+  if (focus === "stone") {
+    if (wordId === "skeleton") return 3;
+    if (wordId === "creeper") return 4;
+    return 3;
+  }
+  if (focus === "iron") {
+    if (wordId === "blaze") return 3;
+    if (wordId === "creeper") return 3;
+    return 2;
+  }
+  return 2;
 }
 
 export function getWildMonsterIdsForZone(zoneId: ExploreZoneId): readonly string[] {

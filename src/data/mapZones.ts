@@ -39,7 +39,7 @@ export const mapZones: MapZone[] = [
     emoji: "🏘️",
     requiredLevel: 2,
     questIds: [],
-    descriptionCn: "交易线稍后开放。先完成木剑 / 石剑武装。",
+    descriptionCn: "交易线稍后开放。先完成木 → 石 → 铁武装。",
   },
   {
     id: "zone-nether",
@@ -49,7 +49,7 @@ export const mapZones: MapZone[] = [
     emoji: "🔥",
     requiredLevel: 3,
     questIds: [],
-    descriptionCn: "铁阶以后再开。",
+    descriptionCn: "金/钻石阶以后再开。",
   },
   {
     id: "zone-end",

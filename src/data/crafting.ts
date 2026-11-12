@@ -128,6 +128,20 @@ export const craftingRecipes: CraftingRecipe[] = [
     relatedQuestId: "craft-stone-sword-errand",
   },
   {
+    id: "iron-sword",
+    resultEnglish: "Iron Sword",
+    resultChinese: "铁剑",
+    resultWordId: "sword",
+    grid: [
+      [slot("iron", "Iron", "铁"), null, null],
+      [slot("iron", "Iron", "铁"), null, null],
+      [null, slot("stick", "Stick", "木棍"), null],
+    ],
+    simpleEnglish: "Say I craft an iron sword to forge a stronger blade.",
+    simpleChinese: "开口说 I craft an iron sword 合成铁剑（消耗 3 iron + 1 wood）。",
+    keywordIds: ["iron", "sword", "craft", "stick"],
+  },
+  {
     id: "diamond-sword",
     resultEnglish: "Diamond Sword",
     resultChinese: "钻石剑",

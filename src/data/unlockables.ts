@@ -40,10 +40,10 @@ export const unlockables: Unlockable[] = [
     type: "equipment",
     name: "Iron Sword",
     nameCn: "铁剑",
-    description: "A stronger weapon for battle.",
+    description:
+      "A stronger blade for harder zones. Craft it by saying I craft an iron sword.",
     icon: assetMap.sword,
     rarity: "rare",
-    questId: "find-iron",
   },
   {
     id: "diamond-sword",

@@ -7,6 +7,7 @@ import { SpeakButton } from "@/components/SpeakButton";
 import { ExploreZoneId } from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getVocabularyById } from "@/data/vocabulary";
+import { getAttackSpeechForMonster } from "@/lib/attackSpeech";
 import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
 import {
   isSpeechRecognitionSupported,
@@ -50,13 +51,11 @@ export function WordMonsterCard({
   const previewDrops = zoneId
     ? getMonsterDropRewardsForZone(wordId, zoneId)
     : getMonsterDropRewards(wordId);
+  const attack = getAttackSpeechForMonster(wordId, zoneId);
 
   if (!word) {
     return null;
   }
-
-  const expectedText = word.english;
-  const keywords = [expectedText];
 
   function applyHit() {
     const loot = defeatMonster(wordId, { zoneId, farmable });
@@ -83,7 +82,11 @@ export function WordMonsterCard({
     try {
       const { transcript } = await listenOnce();
       setResult(transcript);
-      const score = scoreSpeechAttempt(transcript, expectedText, keywords);
+      const score = scoreSpeechAttempt(
+        transcript,
+        attack.expectedText,
+        attack.keywords,
+      );
       setPassed(score.passed);
       if (score.passed) {
         applyHit();
@@ -99,7 +102,7 @@ export function WordMonsterCard({
   function handleManualAttack() {
     recordSpeakAttempt();
     setPassed(true);
-    setResult("手动确认：我已说出单词。");
+    setResult(`手动确认：${attack.manualLabelCn}。`);
     applyHit();
   }
 
@@ -135,12 +138,14 @@ export function WordMonsterCard({
           <p className="text-sm font-black uppercase tracking-wide text-primary">
             开口攻击 Speak to Attack
           </p>
-          <p className="mt-2 text-xl font-black">{word.english}</p>
+          <p className="mt-2 text-xl font-black">{attack.expectedText}</p>
           <p className="font-bold">{word.chinese}</p>
+          <p className="mt-2 text-sm font-semibold">{attack.hintCn}</p>
+          <p className="text-sm text-muted">{attack.hintEn}</p>
           <p className="mt-2 text-sm">{word.example}</p>
           <p className="text-sm text-muted">{word.exampleCn}</p>
           <div className="mt-4">
-            <SpeakButton text={word.english} label="听示范 Listen" />
+            <SpeakButton text={attack.demoText} label="听示范 Listen" />
           </div>
         </div>
 
@@ -165,7 +170,7 @@ export function WordMonsterCard({
         </div>
 
         <p className="mt-4 text-sm font-bold text-primary">
-          大声说出英文单词，打中怪物！Say the English word to hit!
+          {attack.promptCn} {attack.promptEn}
         </p>
 
         <div className="mt-4 space-y-2">
@@ -191,7 +196,9 @@ export function WordMonsterCard({
               supported ? "mw-btn-outline" : "mw-btn-secondary"
             }`}
           >
-            {rewardResult ? "已击败 Defeated ✓" : "我说出了 I said it"}
+            {rewardResult
+              ? "已击败 Defeated ✓"
+              : `${attack.manualLabelCn} ${attack.manualLabelEn}`}
           </button>
         </div>
 

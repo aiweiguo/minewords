@@ -51,6 +51,7 @@ export function getWordMonsterLabel(wordId: string): {
     creeper: "💥",
     spider: "🕷️",
     wolf: "🐺",
+    blaze: "🔥",
   };
   const emoji = mobEmoji[wordId] ?? "👾";
   return {
