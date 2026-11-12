@@ -97,6 +97,29 @@ const adventureTemplates: Omit<DailyAdventurePlan, "id">[] = [
       { type: "xp", xp: 15 },
     ],
   },
+  {
+    title: "Deep Mines Iron Run",
+    titleCn: "矿洞攒铁",
+    descriptionCn: "进深层矿洞打怪，为铁剑凑铁。",
+    wordIds: ["iron", "mine", "craft", "sword", "blaze"],
+    questId: "iron-fights-for-sword",
+    guideId: "mining-basics",
+    rewards: [
+      { type: "resource", resource: "iron", amount: 3 },
+      { type: "xp", xp: 14 },
+    ],
+  },
+  {
+    title: "Iron Sword Day",
+    titleCn: "铁剑日",
+    descriptionCn: "推进铁剑委托：打怪、攒材料、合成。",
+    wordIds: ["iron", "sword", "craft", "mine", "stick"],
+    questId: "craft-iron-sword-errand",
+    rewards: [
+      { type: "resource", resource: "iron", amount: 2 },
+      { type: "xp", xp: 16 },
+    ],
+  },
 ];
 
 function hashDate(date: string): number {

@@ -44,6 +44,7 @@ export const unlockables: Unlockable[] = [
       "A stronger blade for harder zones. Craft it by saying I craft an iron sword.",
     icon: assetMap.sword,
     rarity: "rare",
+    questId: "craft-iron-sword-errand",
   },
   {
     id: "diamond-sword",

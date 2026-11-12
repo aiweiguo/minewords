@@ -22,13 +22,27 @@ export const mapZones: MapZone[] = [
     descriptionCn: "木剑解锁后，来这里攒石头做石剑。",
   },
   {
+    id: "zone-mines",
+    mapArea: "mines",
+    name: "Deep Mines",
+    nameCn: "深层矿洞",
+    emoji: "🪨",
+    requiredLevel: 1,
+    questIds: ["iron-fights-for-sword", "gather-iron-for-sword"],
+    descriptionCn: "石剑解锁后，来深层矿洞攒铁做铁剑。",
+  },
+  {
     id: "zone-battle",
     mapArea: "battle",
     name: "Craft Bench",
     nameCn: "工作台",
     emoji: "⚔️",
     requiredLevel: 1,
-    questIds: ["craft-wooden-sword-errand", "craft-stone-sword-errand"],
+    questIds: [
+      "craft-wooden-sword-errand",
+      "craft-stone-sword-errand",
+      "craft-iron-sword-errand",
+    ],
     descriptionCn: "材料够了就开口合成武器，挂上武器架。",
   },
   {

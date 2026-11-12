@@ -33,7 +33,14 @@ export type VocabularyItem = {
   tags: string[];
 };
 
-export type MapArea = "forest" | "cave" | "village" | "nether" | "end" | "battle";
+export type MapArea =
+  | "forest"
+  | "cave"
+  | "mines"
+  | "village"
+  | "nether"
+  | "end"
+  | "battle";
 
 export type WordChoiceStep = {
   id: string;
