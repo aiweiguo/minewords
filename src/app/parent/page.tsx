@@ -67,6 +67,20 @@ export default function ParentPage() {
         </p>
       </section>
 
+      <section className="mw-card p-5" aria-labelledby="mw-parent-device-note">
+        <h2 id="mw-parent-device-note" className="text-xl font-black">
+          设备与玩法
+        </h2>
+        <p className="mt-3 text-sm font-semibold leading-relaxed">
+          推荐用 <strong>Chrome</strong>（桌面或 Android）开口打怪、合成、交易。
+          没有麦克风或浏览器不支持语音时，可以点「确认」过关——那只是备用；
+          <strong>开口说英语才是正玩法</strong>。
+        </p>
+        <p className="mt-2 text-sm font-semibold text-muted leading-relaxed">
+          iPhone / Safari 等常无语音识别：请换 Chrome，或让孩子尽量开口跟读再点确认。
+        </p>
+      </section>
+
       <section className="mw-card mw-reward-panel p-5">
         <h2 className="text-xl font-black">一句话总结</h2>
         <p className="mt-3 text-sm font-semibold">{todaySummary}</p>

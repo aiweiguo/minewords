@@ -109,8 +109,8 @@ export function OnboardingCoach() {
 
         <p className="mw-coach-mic-tip" role="status">
           {speechOk
-            ? "先开麦克风，出门才能开口打怪。"
-            : "推荐 Chrome 开口打怪；没有麦克风时可点确认。"}
+            ? "先开麦克风开口打怪。点确认只是备用，开口才是正玩法。"
+            : "推荐 Chrome。点确认可过关，但开口说英语才是正玩法。"}
         </p>
 
         <div className="mw-coach-actions">
