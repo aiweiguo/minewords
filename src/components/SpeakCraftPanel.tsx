@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
+import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { SpeakButton } from "@/components/SpeakButton";
 import {
   getWeaponTierById,
@@ -11,6 +12,10 @@ import {
   weaponTiers,
   WeaponTierId,
 } from "@/data/weapons";
+import {
+  getUnknownCraftWordId,
+  scoreSpeechAfterPhonics,
+} from "@/lib/phonics";
 import {
   isSpeechRecognitionSupported,
   listenOnce,
@@ -30,14 +35,26 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const resources = useGameStore((s) => s.resources);
   const craftWeapon = useGameStore((s) => s.craftWeapon);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
 
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
   const [craftResult, setCraftResult] = useState<RewardResult | null>(null);
+  const [phonicsWordId, setPhonicsWordId] = useState<string | null>(null);
+  const [phonicsBoost, setPhonicsBoost] = useState(false);
 
   if (!tier) return null;
   const weapon = tier;
+
+  const unknownWordId = getUnknownCraftWordId(
+    weaponId,
+    learnedWordIds,
+    masteredWordIds,
+  );
+  const phonicsOpen = phonicsWordId !== null;
+  const showPhonicsCue = Boolean(unknownWordId) && !phonicsBoost && !phonicsOpen;
 
   const owned = unlockedIds.includes(weaponId);
   const snapshot = getWeaponGoalSnapshot(unlockedIds, resources);
@@ -61,6 +78,19 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
     setCraftResult(loot);
   }
 
+  function openPhonics(targetId?: string | null) {
+    const id = targetId ?? unknownWordId;
+    if (!id) return;
+    setPhonicsWordId(id);
+  }
+
+  function handlePhonicsComplete() {
+    setPhonicsWordId(null);
+    setPhonicsBoost(true);
+    setPassed(null);
+    setResult("短学完成！再说一次来合成");
+  }
+
   async function handleSpeakCraft() {
     if (!canAfford || owned) return;
     setListening(true);
@@ -71,18 +101,29 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
     try {
       const { transcript } = await listenOnce();
       setResult(transcript);
-      const score = scoreCraftSpeechAttempt(
-        transcript,
-        weapon.expectedSpeech,
-        weapon.speechKeywords,
-      );
+      const score = phonicsBoost
+        ? scoreSpeechAfterPhonics(
+            transcript,
+            weapon.expectedSpeech,
+            weapon.speechKeywords,
+          )
+        : scoreCraftSpeechAttempt(
+            transcript,
+            weapon.expectedSpeech,
+            weapon.speechKeywords,
+          );
       setPassed(score.passed);
       if (score.passed) {
         applyCraft();
+      } else if (unknownWordId) {
+        openPhonics(unknownWordId);
       }
     } catch {
       setResult("没听清楚，再试一次吧。");
       setPassed(false);
+      if (unknownWordId) {
+        openPhonics(unknownWordId);
+      }
     } finally {
       setListening(false);
     }
@@ -161,7 +202,17 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
             </div>
           </div>
 
-          {!previousOwned && previousTier ? (
+          {phonicsWordId ? (
+            <PhonicsMoment
+              wordId={phonicsWordId}
+              resumeLabelCn="开口合成"
+              resumeLabelEn="speak-craft"
+              reasonCn="配方里有生词 — 先听音块跟读，再回来合成！"
+              reasonEn="New recipe word — listen, repeat, then craft!"
+              onComplete={handlePhonicsComplete}
+              onSkip={() => setPhonicsWordId(null)}
+            />
+          ) : !previousOwned && previousTier ? (
             <div className="space-y-3">
               <p className="text-sm font-bold text-amber-100">
                 先合成{previousTier.nameCn}，再升级这一把。
@@ -184,6 +235,20 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
             </div>
           ) : (
             <div className="space-y-2">
+              {showPhonicsCue ? (
+                <button
+                  type="button"
+                  onClick={() => openPhonics()}
+                  className="mw-phonics-cue"
+                >
+                  不会读？先短学一下 · Learn this word
+                </button>
+              ) : null}
+              {phonicsBoost ? (
+                <p className="text-xs font-bold text-cyan-100/90">
+                  短学加成：判定更宽松 Phonics boost — extra-lenient match
+                </p>
+              ) : null}
               {supported ? (
                 <button
                   type="button"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { RewardModal } from "@/components/RewardModal";
 import { SpeakButton } from "@/components/SpeakButton";
 import { ExploreZoneId } from "@/data/exploreZones";
@@ -20,6 +21,10 @@ import {
   rungLabelEn,
   scoreFluencyAttempt,
 } from "@/lib/fluencyLadder";
+import {
+  getUnknownAttackWordId,
+  scoreFluencyAfterPhonics,
+} from "@/lib/phonics";
 import {
   isSpeechRecognitionSupported,
   listenOnce,
@@ -48,6 +53,8 @@ export function WordMonsterCard({
 }: WordMonsterCardProps) {
   const defeatMonster = useGameStore((s) => s.defeatMonster);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
   const word = getVocabularyById(wordId);
   const monster = getWordMonsterLabel(wordId);
 
@@ -66,10 +73,21 @@ export function WordMonsterCard({
   const [rewardResult, setRewardResult] = useState<RewardResult | null>(null);
   // Defer mic detection to after mount so SSR markup matches first client paint.
   const [supported, setSupported] = useState(false);
+  const [phonicsWordId, setPhonicsWordId] = useState<string | null>(null);
+  /** After a phonics mini-learn this fight, scoring stays extra-lenient. */
+  const [phonicsBoost, setPhonicsBoost] = useState(false);
 
   useEffect(() => {
     setSupported(isSpeechRecognitionSupported());
   }, []);
+
+  const unknownWordId = getUnknownAttackWordId(
+    wordId,
+    learnedWordIds,
+    masteredWordIds,
+  );
+  const phonicsOpen = phonicsWordId !== null;
+  const showPhonicsCue = Boolean(unknownWordId) && !phonicsBoost && !phonicsOpen;
 
   const previewDrops = zoneId
     ? getMonsterDropRewardsForZone(wordId, zoneId)
@@ -118,6 +136,8 @@ export function WordMonsterCard({
     setFeedback(null);
     setHp(MONSTER_MAX_HP);
     setSuggestedRung(getStartingSuggestedRung(zoneId));
+    setPhonicsWordId(null);
+    setPhonicsBoost(false);
   }
 
   function handleRewardClose() {
@@ -125,6 +145,24 @@ export function WordMonsterCard({
     if (farmable) {
       resetEncounter();
     }
+  }
+
+  function openPhonics(targetId?: string | null) {
+    const id = targetId ?? unknownWordId;
+    if (!id) return;
+    setPhonicsWordId(id);
+    setFeedback(null);
+  }
+
+  function handlePhonicsComplete() {
+    setPhonicsWordId(null);
+    setPhonicsBoost(true);
+    setFeedback({
+      cn: "短学完成！再说一次来攻击",
+      en: "Mini-learn done — speak again to attack!",
+      kind: "partial",
+    });
+    setResult(null);
   }
 
   async function handleSpeakAttack() {
@@ -136,13 +174,39 @@ export function WordMonsterCard({
     try {
       const { transcript } = await listenOnce();
       setResult(transcript);
-      const score = scoreFluencyAttempt(transcript, wordId, zoneId);
+      let score = scoreFluencyAttempt(transcript, wordId, zoneId);
+
+      // After phonics, accept a soft word-level hit even if the ladder miss.
+      if (
+        (!score.rung || score.damage <= 0) &&
+        phonicsBoost &&
+        scoreFluencyAfterPhonics(
+          transcript,
+          wordId,
+          attack.expectedText,
+          attack.keywords,
+        )
+      ) {
+        score = {
+          rung: "word",
+          damage: FLUENCY_DAMAGE.word,
+          matchedKeywords: attack.keywords,
+          isPartial: true,
+          feedbackCn: "短学后打中了！再说短句伤害更大",
+          feedbackEn: "Hit after phonics! Try a short phrase for more.",
+        };
+      }
+
       if (!score.rung || score.damage <= 0) {
         setFeedback({
           cn: score.feedbackCn,
           en: score.feedbackEn,
           kind: "miss",
         });
+        // Unknown word miss → embed phonics, then return to attack.
+        if (unknownWordId) {
+          openPhonics(unknownWordId);
+        }
         return;
       }
       resolveHit(score.damage, score.rung, {
@@ -157,6 +221,9 @@ export function WordMonsterCard({
         en: "Didn't catch that — try again!",
         kind: "miss",
       });
+      if (unknownWordId) {
+        openPhonics(unknownWordId);
+      }
     } finally {
       setListening(false);
     }
@@ -299,38 +366,70 @@ export function WordMonsterCard({
           </p>
         </div>
 
-        <p className="mt-4 text-sm font-bold text-primary">
-          {attack.promptCn} {attack.promptEn}
-        </p>
+        {phonicsWordId ? (
+          <div className="mt-4">
+            <PhonicsMoment
+              wordId={phonicsWordId}
+              resumeLabelCn="开口攻击"
+              resumeLabelEn="speak-attack"
+              reasonCn="这个词还不熟 — 先听音块再跟读，然后回来打怪！"
+              reasonEn="New word — listen to the sounds, repeat, then attack!"
+              onComplete={handlePhonicsComplete}
+              onSkip={() => setPhonicsWordId(null)}
+            />
+          </div>
+        ) : (
+          <>
+            <p className="mt-4 text-sm font-bold text-primary">
+              {attack.promptCn} {attack.promptEn}
+            </p>
 
-        <div className="mt-4 space-y-2">
-          {supported ? (
-            <button
-              type="button"
-              disabled={listening || defeated || hp <= 0}
-              onClick={handleSpeakAttack}
-              className="mw-btn mw-btn-primary w-full disabled:opacity-60"
-            >
-              {listening
-                ? "正在听… Listening…"
-                : defeated
+            {showPhonicsCue ? (
+              <button
+                type="button"
+                onClick={() => openPhonics()}
+                className="mw-phonics-cue mt-3"
+              >
+                不会读？先短学一下 · Learn this word
+              </button>
+            ) : null}
+
+            {phonicsBoost ? (
+              <p className="mt-3 text-xs font-bold text-cyan-100/90">
+                短学加成：判定更宽松 Phonics boost — extra-lenient match
+              </p>
+            ) : null}
+
+            <div className="mt-4 space-y-2">
+              {supported ? (
+                <button
+                  type="button"
+                  disabled={listening || defeated || hp <= 0}
+                  onClick={handleSpeakAttack}
+                  className="mw-btn mw-btn-primary w-full disabled:opacity-60"
+                >
+                  {listening
+                    ? "正在听… Listening…"
+                    : defeated
+                      ? "已击败 Defeated ✓"
+                      : "🎤 开口攻击 Attack"}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                disabled={listening || defeated || hp <= 0}
+                onClick={handleManualAttack}
+                className={`mw-btn w-full disabled:opacity-60 ${
+                  supported ? "mw-btn-outline" : "mw-btn-secondary"
+                }`}
+              >
+                {defeated
                   ? "已击败 Defeated ✓"
-                  : "🎤 开口攻击 Attack"}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            disabled={listening || defeated || hp <= 0}
-            onClick={handleManualAttack}
-            className={`mw-btn w-full disabled:opacity-60 ${
-              supported ? "mw-btn-outline" : "mw-btn-secondary"
-            }`}
-          >
-            {defeated
-              ? "已击败 Defeated ✓"
-              : `${attack.manualLabelCn} ${attack.manualLabelEn}`}
-          </button>
-        </div>
+                  : `${attack.manualLabelCn} ${attack.manualLabelEn}`}
+              </button>
+            </div>
+          </>
+        )}
 
         {feedback || result ? (
           <p
