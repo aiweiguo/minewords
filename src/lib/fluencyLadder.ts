@@ -5,6 +5,7 @@ import {
   FLUENCY_RUNG_ORDER,
   getAttackSpeechLadder,
   nextFluencyRung,
+  prevFluencyRung,
 } from "@/lib/attackSpeech";
 import { scoreSpeechAttempt } from "@/lib/speechRecognition";
 
@@ -16,6 +17,12 @@ export const FLUENCY_DAMAGE: Record<FluencyRung, number> = {
   phrase: 2,
   sentence: 3,
 };
+
+/**
+ * Consecutive scored misses before the suggested prompt steps down one rung (MW-35).
+ * Mic failures do not count — only fluency score misses.
+ */
+export const MISS_STREAK_TO_STEP_DOWN = 2;
 
 export type FluencyScoreResult = {
   /** Highest rung that matched; null = miss. */
@@ -126,6 +133,50 @@ export function raiseSuggestedRung(
   return FLUENCY_RUNG_ORDER[Math.max(matchIndex, currentIndex)] ?? current;
 }
 
+export function lowerSuggestedRung(current: FluencyRung): FluencyRung {
+  return prevFluencyRung(current) ?? current;
+}
+
+export type MissStepDownResult = {
+  nextRung: FluencyRung;
+  nextMissStreak: number;
+  didStepDown: boolean;
+};
+
+/**
+ * Count a fluency miss; after MISS_STREAK_TO_STEP_DOWN consecutive misses,
+ * drop one rung (may go below the zone start — mines/crystal can reach word).
+ */
+export function applyMissStepDown(
+  current: FluencyRung,
+  missStreak: number,
+): MissStepDownResult {
+  const streak = missStreak + 1;
+  if (streak < MISS_STREAK_TO_STEP_DOWN) {
+    return {
+      nextRung: current,
+      nextMissStreak: streak,
+      didStepDown: false,
+    };
+  }
+  const lowered = lowerSuggestedRung(current);
+  return {
+    nextRung: lowered,
+    nextMissStreak: 0,
+    didStepDown: lowered !== current,
+  };
+}
+
+export function missStepDownFeedback(rung: FluencyRung): {
+  cn: string;
+  en: string;
+} {
+  return {
+    cn: `连续没打中，降到「${rungLabelCn(rung)}」再试！`,
+    en: `Missed twice — stepping down to ${rungLabelEn(rung)}.`,
+  };
+}
+
 export function getPromptForRung(
   wordId: string,
   rung: FluencyRung,
@@ -134,6 +185,10 @@ export function getPromptForRung(
   return getAttackSpeechLadder(wordId, zoneId)[rung];
 }
 
+/**
+ * Zone attackSpeech is the *starting* suggested rung (forest word · cave phrase · mines/crystal sentence).
+ * MW-35: misses can step below that start down to word; hits still raise.
+ */
 export function getStartingSuggestedRung(
   zoneId?: ExploreZoneId | null,
 ): FluencyRung {

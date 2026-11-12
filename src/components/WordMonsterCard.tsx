@@ -13,9 +13,11 @@ import { FluencyRung, FLUENCY_RUNG_ORDER } from "@/lib/attackSpeech";
 import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
 import {
   applyDamage,
+  applyMissStepDown,
   FLUENCY_DAMAGE,
   getPromptForRung,
   getStartingSuggestedRung,
+  missStepDownFeedback,
   MONSTER_MAX_HP,
   raiseSuggestedRung,
   rungLabelCn,
@@ -73,6 +75,8 @@ export function WordMonsterCard({
   const [suggestedRung, setSuggestedRung] = useState<FluencyRung>(() =>
     getStartingSuggestedRung(zoneId),
   );
+  /** Consecutive fluency score misses (MW-35); resets on hit / farm reset. */
+  const [missStreak, setMissStreak] = useState(0);
   const [rewardResult, setRewardResult] = useState<RewardResult | null>(null);
   // Defer mic detection to after mount so SSR markup matches first client paint.
   const [supported, setSupported] = useState(false);
@@ -127,6 +131,7 @@ export function WordMonsterCard({
     const nextHp = applyDamage(hp, damage);
     setHp(nextHp);
     flashHit();
+    setMissStreak(0);
     setSuggestedRung((current) => raiseSuggestedRung(current, matched));
     if (nextHp <= 0) {
       setFeedback({
@@ -140,11 +145,32 @@ export function WordMonsterCard({
     setFeedback(hitFeedback);
   }
 
+  function resolveMiss(base: { cn: string; en: string }) {
+    const step = applyMissStepDown(suggestedRung, missStreak);
+    setMissStreak(step.nextMissStreak);
+    setSuggestedRung(step.nextRung);
+    if (step.didStepDown) {
+      const down = missStepDownFeedback(step.nextRung);
+      setFeedback({
+        cn: `${base.cn} ${down.cn}`,
+        en: `${base.en} ${down.en}`,
+        kind: "miss",
+      });
+      return;
+    }
+    setFeedback({
+      cn: base.cn,
+      en: base.en,
+      kind: "miss",
+    });
+  }
+
   function resetEncounter() {
     setResult(null);
     setFeedback(null);
     setHp(MONSTER_MAX_HP);
     setSuggestedRung(getStartingSuggestedRung(zoneId));
+    setMissStreak(0);
     resetPhonics();
   }
 
@@ -206,10 +232,9 @@ export function WordMonsterCard({
       }
 
       if (!score.rung || score.damage <= 0) {
-        setFeedback({
+        resolveMiss({
           cn: score.feedbackCn,
           en: score.feedbackEn,
-          kind: "miss",
         });
         // Unknown-word miss with a transcript → embed phonics, then return.
         const missFocus = resolveMissPhonicsWordId({
@@ -316,7 +341,7 @@ export function WordMonsterCard({
             />
           </div>
           <p className="mt-2 text-xs font-semibold text-muted">
-            流利阶梯 Fluency: 单词 1 伤 · 短句 2 伤 · 整句打满
+            流利阶梯 Fluency: 单词 1 伤 · 短句 2 伤 · 整句打满 · 连续 miss 降阶
           </p>
         </div>
 
