@@ -32,11 +32,14 @@ export function AppNav() {
             active = pathname === "/" && hash !== "#more";
           } else if (item.id === "fight") {
             active =
-              pathname.startsWith("/explore") || pathname.startsWith("/review");
+              pathname.startsWith("/explore") ||
+              pathname.startsWith("/fight") ||
+              pathname.startsWith("/review");
           } else {
             active =
               (pathname === "/" && hash === "#more") ||
               (pathname !== "/" &&
+                !pathname.startsWith("/fight") &&
                 !pathname.startsWith("/review") &&
                 !pathname.startsWith("/explore"));
           }

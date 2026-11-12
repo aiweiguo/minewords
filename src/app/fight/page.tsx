@@ -16,7 +16,7 @@ import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
 
-export default function ReviewPage() {
+export default function FightPage() {
   const wrongWordCounts = useGameStore((s) => s.wrongWordCounts);
   const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
   const resources = useGameStore((s) => s.resources);
@@ -69,7 +69,7 @@ export default function ReviewPage() {
         <div className="flex flex-wrap items-end justify-between gap-3 p-4 sm:p-5">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-primary">
-              Explore Zone
+              遭遇 Encounter
             </p>
             <h1 className="text-2xl font-black sm:text-3xl">
               {zone?.nameCn ?? "探索"}{" "}
