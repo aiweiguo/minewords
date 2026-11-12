@@ -34,7 +34,8 @@ export function RewardModal({
   if (!open) return null;
 
   const goal = getWeaponGoalSnapshot(unlockedIds, resources);
-  const showWeaponSettle = isFirstCompletion;
+  const hasLoot = rewards.length > 0 || unlocks.length > 0;
+  const showWeaponSettle = hasLoot || isFirstCompletion;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -42,18 +43,28 @@ export function RewardModal({
         <div className="text-center">
           <GameIcon src={assetMap.star} alt="Quest complete" size="xl" className="mx-auto" />
           <h2 className="mt-3 bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-3xl font-black text-transparent">
-            {isFirstCompletion ? "Quest Complete!" : "Practice Complete!"}
+            {rewards.length > 0 || unlocks.length > 0
+              ? "Loot Drop!"
+              : isFirstCompletion
+                ? "Quest Complete!"
+                : "Practice Complete!"}
           </h2>
           <p className="mt-1 text-lg font-black text-primary">
-            {isFirstCompletion ? "任务完成！" : "练习完成！"}
+            {rewards.length > 0 || unlocks.length > 0
+              ? "打到材料了！"
+              : isFirstCompletion
+                ? "任务完成！"
+                : "练习完成！"}
           </p>
         </div>
 
         <p className="mt-4 text-center text-sm font-bold text-muted">
-          {isFirstCompletion ? "你获得了：" : "这次练习没有额外奖励，但继续加油！"}
+          {rewards.length > 0 || unlocks.length > 0
+            ? "你获得了："
+            : "这次没有额外掉落，但继续加油！"}
         </p>
 
-        {isFirstCompletion ? (
+        {rewards.length > 0 || unlocks.length > 0 ? (
           <div className="mt-4 space-y-3">
             {rewards.map((reward, index) => {
               if (reward.type === "resource" && reward.resource) {

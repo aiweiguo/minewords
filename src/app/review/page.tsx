@@ -1,11 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 
 import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
 import { WordMonsterCard } from "@/components/WordMonsterCard";
 import { WILD_MONSTER_WORD_IDS } from "@/data/monsterDrops";
+import { getExploreZoneById } from "@/data/exploreZones";
 import { getVocabularyById } from "@/data/vocabulary";
+import {
+  getWildMonsterIdsForZone,
+  resolveSelectedExploreZoneId,
+} from "@/lib/exploreZones";
 import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
@@ -15,10 +21,24 @@ export default function ReviewPage() {
   const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
   const resources = useGameStore((s) => s.resources);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
+  const selectedExploreZoneId = useGameStore((s) => s.selectedExploreZoneId);
+  const setSelectedExploreZone = useGameStore((s) => s.setSelectedExploreZone);
 
-  const wildMonsters = WILD_MONSTER_WORD_IDS.filter(
-    (wordId) => !defeatedMonsterIds.includes(wordId),
+  const zoneId = resolveSelectedExploreZoneId(
+    selectedExploreZoneId,
+    unlockedIds,
   );
+  const zone = getExploreZoneById(zoneId);
+  const zoneWildIds = getWildMonsterIdsForZone(zoneId);
+
+  useEffect(() => {
+    if (selectedExploreZoneId !== zoneId) {
+      setSelectedExploreZone(zoneId);
+    }
+  }, [selectedExploreZoneId, setSelectedExploreZone, zoneId]);
+
+  // Zone wilds stay fightable (farmable) so craft goals keep getting materials.
+  const wildMonsters = [...zoneWildIds];
 
   const wrongMonsters = Object.entries(wrongWordCounts)
     .filter(
@@ -35,14 +55,36 @@ export default function ReviewPage() {
   const goal = getWeaponGoalSnapshot(unlockedIds, resources);
 
   return (
-    <main className="space-y-6">
-      <section className="mw-card p-5">
-        <h1 className="text-3xl font-black text-primary">Word Monsters</h1>
-        <p className="mt-1 text-xl font-bold">开口打怪</p>
-        <p className="mt-2 text-sm font-semibold text-muted">
-          说出英文单词打中怪物，掉落合成材料！Say the word to attack — materials drop on
-          hit.
-        </p>
+    <main className="space-y-5">
+      <section
+        className={`mw-explore-fight-banner mw-explore-fight-banner-${zone?.tone ?? "forest"} mw-game-panel overflow-hidden`}
+        style={
+          zone
+            ? {
+                backgroundImage: `linear-gradient(100deg, rgba(18, 22, 14, 0.72), rgba(18, 22, 14, 0.55)), url(${zone.background})`,
+              }
+            : undefined
+        }
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3 p-4 sm:p-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-primary">
+              Explore Zone
+            </p>
+            <h1 className="text-2xl font-black sm:text-3xl">
+              {zone?.nameCn ?? "探索"}{" "}
+              <span className="text-lg font-bold text-secondary">
+                {zone?.name}
+              </span>
+            </h1>
+            <p className="mt-1 text-sm font-semibold text-muted">
+              掉落偏 {zone?.focusLabelCn ?? "材料"} · 开口打怪喂武器目标
+            </p>
+          </div>
+          <Link href="/explore" className="mw-btn mw-btn-outline text-sm">
+            换区域 →
+          </Link>
+        </div>
       </section>
 
       <WeaponGoalStrip variant="settle" />
@@ -76,9 +118,20 @@ export default function ReviewPage() {
 
       {wildMonsters.length > 0 ? (
         <section className="space-y-4">
-          <h2 className="px-1 text-lg font-black">野外怪物 Wild Monsters</h2>
+          <h2 className="px-1 text-lg font-black">
+            {zone?.nameCn ?? "野外"}怪物 Wild Monsters
+          </h2>
+          <p className="px-1 text-sm font-semibold text-muted">
+            可反复开口打怪攒 {zone?.focusLabelCn ?? "材料"}（已学词仍可再打）。
+          </p>
           {wildMonsters.map((wordId) => (
-            <WordMonsterCard key={wordId} wordId={wordId} wild />
+            <WordMonsterCard
+              key={`${zoneId}-${wordId}`}
+              wordId={wordId}
+              wild
+              zoneId={zoneId}
+              farmable
+            />
           ))}
         </section>
       ) : null}
@@ -90,7 +143,12 @@ export default function ReviewPage() {
             同一个词错 {MONSTER_WRONG_THRESHOLD} 次以上会出现。开口说出单词即可击败！
           </p>
           {wrongMonsters.map(([wordId, count]) => (
-            <WordMonsterCard key={wordId} wordId={wordId} wrongCount={count} />
+            <WordMonsterCard
+              key={wordId}
+              wordId={wordId}
+              wrongCount={count}
+              zoneId={zoneId}
+            />
           ))}
         </section>
       ) : null}

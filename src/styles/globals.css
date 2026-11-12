@@ -1291,7 +1291,230 @@ body {
   .mw-hub-door-primary,
   .mw-hub-craft-primary,
   .mw-hub-rack-ready,
-  .mw-hub-pickers-ready .mw-block-picker-ready {
+  .mw-hub-pickers-ready .mw-block-picker-ready,
+  .mw-explore-portal-open,
+  .mw-explore-portal-selected {
     animation: none !important;
+  }
+}
+
+/* —— Explore zone pick (MW-7) —— */
+.mw-explore {
+  display: flex;
+  flex-direction: column;
+  min-height: min(72vh, 36rem);
+}
+
+.mw-explore-chrome {
+  padding: 0.55rem 0.75rem 0.35rem;
+  border-bottom: 2px solid rgba(90, 64, 48, 0.45);
+  background: rgba(20, 14, 8, 0.35);
+}
+
+.mw-explore-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.mw-explore-back {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  border: 2px solid #5a4030;
+  border-radius: 0.35rem;
+  background: #5c4030;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 2px 0 #2c1c12;
+}
+
+.mw-explore-stage-wrap {
+  flex: 1 1 auto;
+  padding: 0.55rem 0.65rem 0.35rem;
+}
+
+.mw-explore-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 14.5rem;
+  border: 2px solid #5a4030;
+  border-radius: 0.4rem;
+  background:
+    linear-gradient(180deg, #6fa8d8 0%, #8fbf7a 48%, #5c7a3a 100%);
+  box-shadow: inset 0 -12px 0 rgba(0, 0, 0, 0.12);
+}
+
+.mw-explore-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mw-explore-portals {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+  padding: 1.1rem 0.75rem 1rem;
+  min-height: 14.5rem;
+  align-content: center;
+}
+
+@media (min-width: 560px) {
+  .mw-explore-portals {
+    grid-template-columns: 1fr 1fr;
+    min-height: 16rem;
+    padding: 1.25rem 1rem;
+  }
+}
+
+.mw-explore-portal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  min-height: 9.5rem;
+  padding: 0.85rem 0.9rem;
+  border: 3px solid #3d2a1c;
+  border-radius: 0.45rem;
+  background-size: cover;
+  background-position: center;
+  color: #f4efdf;
+  text-align: left;
+  box-shadow:
+    0 4px 0 #1a120c,
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.mw-explore-portal-open {
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  animation: mw-explore-portal-idle 3.2s ease-in-out infinite;
+}
+
+.mw-explore-portal-open:hover {
+  filter: brightness(1.08);
+}
+
+.mw-explore-portal-open:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 #1a120c,
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.mw-explore-portal-selected {
+  box-shadow:
+    0 4px 0 #1a120c,
+    0 0 0 2px rgba(212, 175, 55, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.mw-explore-portal-locked {
+  filter: grayscale(0.55) brightness(0.72);
+  cursor: not-allowed;
+}
+
+.mw-explore-portal-forest {
+  border-color: #3f6b2a;
+}
+
+.mw-explore-portal-cave {
+  border-color: #4a5560;
+}
+
+.mw-explore-portal-name {
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.15;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.mw-explore-portal-en {
+  margin-left: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #d4af37;
+}
+
+.mw-explore-portal-blurb {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.mw-explore-portal-focus {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(244, 239, 223, 0.82);
+}
+
+.mw-explore-portal-cta {
+  margin-top: 0.35rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 0.3rem;
+  background: rgba(107, 175, 24, 0.92);
+  color: #14200a;
+  font-size: 0.75rem;
+  font-weight: 900;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.mw-explore-portal-lock {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.7rem;
+  font-size: 1.25rem;
+}
+
+.mw-explore-portal-req {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.15rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: 0.3rem;
+  background: rgba(20, 14, 8, 0.72);
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #f0c674;
+}
+
+.mw-explore-portal-req-en {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(244, 239, 223, 0.75);
+}
+
+.mw-explore-hint {
+  margin: 0;
+  padding: 0.45rem 0.85rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.mw-explore-fight-banner {
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #5a4030;
+}
+
+.mw-explore-fight-banner-cave {
+  border-color: #4a5560;
+}
+
+@keyframes mw-explore-portal-idle {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.04);
   }
 }

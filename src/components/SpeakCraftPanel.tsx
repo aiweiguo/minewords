@@ -142,7 +142,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
             <Link href="/" className="mw-btn mw-btn-primary">
               回基地看武器架
             </Link>
-            <Link href="/review" className="mw-btn mw-btn-outline">
+            <Link href="/explore" className="mw-btn mw-btn-outline">
               继续打怪
             </Link>
           </div>
@@ -178,7 +178,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
               <p className="text-sm font-bold text-amber-100">
                 材料不够 — 先出门打怪掉落材料。
               </p>
-              <Link href="/review" className="mw-btn mw-btn-primary w-full">
+              <Link href="/explore" className="mw-btn mw-btn-primary w-full">
                 继续打怪 Keep fighting
               </Link>
             </div>

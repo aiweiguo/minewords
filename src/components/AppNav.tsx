@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/", label: "基地", icon: "🏠", id: "home" as const },
-  { href: "/review", label: "出门", icon: "🚪", id: "fight" as const },
+  { href: "/explore", label: "出门", icon: "🚪", id: "fight" as const },
   { href: "/#more", label: "更多", icon: "⋯", id: "more" as const },
 ];
 
@@ -31,11 +31,14 @@ export function AppNav() {
           if (item.id === "home") {
             active = pathname === "/" && hash !== "#more";
           } else if (item.id === "fight") {
-            active = pathname.startsWith("/review");
+            active =
+              pathname.startsWith("/explore") || pathname.startsWith("/review");
           } else {
             active =
               (pathname === "/" && hash === "#more") ||
-              (pathname !== "/" && !pathname.startsWith("/review"));
+              (pathname !== "/" &&
+                !pathname.startsWith("/review") &&
+                !pathname.startsWith("/explore"));
           }
 
           return (
