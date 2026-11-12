@@ -122,7 +122,7 @@ export default function ReviewPage() {
             {zone?.nameCn ?? "野外"}怪物 Wild Monsters
           </h2>
           <p className="px-1 text-sm font-semibold text-muted">
-            可反复开口打怪攒 {zone?.focusLabelCn ?? "材料"}（已学词仍可再打）。
+            可反复开口打怪攒 {zone?.focusLabelCn ?? "材料"}。同一只怪：单词 → 短句 → 整句，说得越完整伤害越大。
           </p>
           {wildMonsters.map((wordId) => (
             <WordMonsterCard
@@ -140,7 +140,7 @@ export default function ReviewPage() {
         <section className="space-y-4">
           <h2 className="px-1 text-lg font-black">错词怪物 Wrong-Word Monsters</h2>
           <p className="px-1 text-sm font-semibold text-muted">
-            同一个词错 {MONSTER_WRONG_THRESHOLD} 次以上会出现。开口说出单词即可击败！
+            同一个词错 {MONSTER_WRONG_THRESHOLD} 次以上会出现。开口打怪：单词伤小，整句打满。
           </p>
           {wrongMonsters.map(([wordId, count]) => (
             <WordMonsterCard

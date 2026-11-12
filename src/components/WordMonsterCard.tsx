@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { RewardModal } from "@/components/RewardModal";
 import { SpeakButton } from "@/components/SpeakButton";
 import { ExploreZoneId } from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getVocabularyById } from "@/data/vocabulary";
-import { getAttackSpeechForMonster } from "@/lib/attackSpeech";
+import { FluencyRung, FLUENCY_RUNG_ORDER } from "@/lib/attackSpeech";
 import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
+import {
+  applyDamage,
+  FLUENCY_DAMAGE,
+  getPromptForRung,
+  getStartingSuggestedRung,
+  MONSTER_MAX_HP,
+  raiseSuggestedRung,
+  rungLabelCn,
+  rungLabelEn,
+  scoreFluencyAttempt,
+} from "@/lib/fluencyLadder";
 import {
   isSpeechRecognitionSupported,
   listenOnce,
-  scoreSpeechAttempt,
 } from "@/lib/speechRecognition";
 import { getWordMonsterLabel } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
@@ -44,56 +54,109 @@ export function WordMonsterCard({
   const [listening, setListening] = useState(false);
   const [hitFlash, setHitFlash] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [passed, setPassed] = useState<boolean | null>(null);
+  const [feedback, setFeedback] = useState<{
+    cn: string;
+    en: string;
+    kind: "miss" | "partial" | "full";
+  } | null>(null);
+  const [hp, setHp] = useState(MONSTER_MAX_HP);
+  const [suggestedRung, setSuggestedRung] = useState<FluencyRung>(() =>
+    getStartingSuggestedRung(zoneId),
+  );
   const [rewardResult, setRewardResult] = useState<RewardResult | null>(null);
+  // Defer mic detection to after mount so SSR markup matches first client paint.
+  const [supported, setSupported] = useState(false);
 
-  const supported = isSpeechRecognitionSupported();
+  useEffect(() => {
+    setSupported(isSpeechRecognitionSupported());
+  }, []);
+
   const previewDrops = zoneId
     ? getMonsterDropRewardsForZone(wordId, zoneId)
     : getMonsterDropRewards(wordId);
-  const attack = getAttackSpeechForMonster(wordId, zoneId);
+  const attack = getPromptForRung(wordId, suggestedRung, zoneId);
 
   if (!word) {
     return null;
   }
 
-  function applyHit() {
-    const loot = defeatMonster(wordId, { zoneId, farmable });
-    if (!loot) return;
+  function flashHit() {
     setHitFlash(true);
     window.setTimeout(() => setHitFlash(false), 600);
+  }
+
+  function finishEncounter() {
+    const loot = defeatMonster(wordId, { zoneId, farmable });
+    if (!loot) return;
+    flashHit();
     setRewardResult(loot);
+  }
+
+  function resolveHit(
+    damage: number,
+    matched: FluencyRung | null,
+    hitFeedback: { cn: string; en: string; kind: "partial" | "full" },
+  ) {
+    const nextHp = applyDamage(hp, damage);
+    setHp(nextHp);
+    flashHit();
+    setSuggestedRung((current) => raiseSuggestedRung(current, matched));
+    if (nextHp <= 0) {
+      setFeedback({
+        cn: "击败怪物！掉落材料了",
+        en: "Monster down — loot incoming!",
+        kind: "full",
+      });
+      finishEncounter();
+      return;
+    }
+    setFeedback(hitFeedback);
+  }
+
+  function resetEncounter() {
+    setResult(null);
+    setFeedback(null);
+    setHp(MONSTER_MAX_HP);
+    setSuggestedRung(getStartingSuggestedRung(zoneId));
   }
 
   function handleRewardClose() {
     setRewardResult(null);
     if (farmable) {
-      setResult(null);
-      setPassed(null);
+      resetEncounter();
     }
   }
 
   async function handleSpeakAttack() {
     setListening(true);
     setResult(null);
-    setPassed(null);
+    setFeedback(null);
     recordSpeakAttempt();
 
     try {
       const { transcript } = await listenOnce();
       setResult(transcript);
-      const score = scoreSpeechAttempt(
-        transcript,
-        attack.expectedText,
-        attack.keywords,
-      );
-      setPassed(score.passed);
-      if (score.passed) {
-        applyHit();
+      const score = scoreFluencyAttempt(transcript, wordId, zoneId);
+      if (!score.rung || score.damage <= 0) {
+        setFeedback({
+          cn: score.feedbackCn,
+          en: score.feedbackEn,
+          kind: "miss",
+        });
+        return;
       }
+      resolveHit(score.damage, score.rung, {
+        cn: score.feedbackCn,
+        en: score.feedbackEn,
+        kind: score.isPartial ? "partial" : "full",
+      });
     } catch {
       setResult("没听清楚，再试一次吧。");
-      setPassed(false);
+      setFeedback({
+        cn: "没听清楚，再试一次！",
+        en: "Didn't catch that — try again!",
+        kind: "miss",
+      });
     } finally {
       setListening(false);
     }
@@ -101,10 +164,29 @@ export function WordMonsterCard({
 
   function handleManualAttack() {
     recordSpeakAttempt();
-    setPassed(true);
+    const damage = FLUENCY_DAMAGE[suggestedRung];
+    const isPartial = damage < MONSTER_MAX_HP;
     setResult(`手动确认：${attack.manualLabelCn}。`);
-    applyHit();
+    resolveHit(damage, suggestedRung, {
+      cn: isPartial
+        ? suggestedRung === "word"
+          ? "只说了单词，伤害变小！再说短句伤害更大"
+          : "短句打中了！再说整句伤害打满"
+        : "整句打满伤害！",
+      en: isPartial
+        ? suggestedRung === "word"
+          ? "Word only — smaller damage! Try a short phrase for more."
+          : "Phrase hit! Full sentence does max damage."
+        : "Full sentence — max damage!",
+      kind: isPartial ? "partial" : "full",
+    });
   }
+
+  const defeated = rewardResult !== null;
+  const hearts = Array.from({ length: MONSTER_MAX_HP }, (_, index) => {
+    const filled = index < hp;
+    return filled ? "♥" : "♡";
+  }).join("");
 
   return (
     <>
@@ -134,16 +216,64 @@ export function WordMonsterCard({
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl bg-black/20 p-4">
-          <p className="text-sm font-black uppercase tracking-wide text-primary">
-            开口攻击 Speak to Attack
+        <div
+          className="mw-monster-hp mt-4"
+          role="status"
+          aria-label={`Monster HP ${hp} of ${MONSTER_MAX_HP}`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-black uppercase tracking-wide text-muted">
+              怪物血量 HP
+            </p>
+            <p className="mw-monster-hp-hearts" aria-hidden>
+              {hearts}
+            </p>
+          </div>
+          <div className="mw-monster-hp-track mt-2">
+            <div
+              className="mw-monster-hp-fill"
+              style={{ width: `${(hp / MONSTER_MAX_HP) * 100}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs font-semibold text-muted">
+            流利阶梯 Fluency: 单词 1 伤 · 短句 2 伤 · 整句打满
           </p>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-black/20 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-black uppercase tracking-wide text-primary">
+              开口攻击 Speak to Attack
+            </p>
+            <p className="rounded-lg bg-black/25 px-2 py-1 text-xs font-black text-amber-100">
+              当前台阶 {rungLabelCn(suggestedRung)} · {rungLabelEn(suggestedRung)}
+            </p>
+          </div>
           <p className="mt-2 text-xl font-black">{attack.expectedText}</p>
           <p className="font-bold">{word.chinese}</p>
           <p className="mt-2 text-sm font-semibold">{attack.hintCn}</p>
           <p className="text-sm text-muted">{attack.hintEn}</p>
-          <p className="mt-2 text-sm">{word.example}</p>
-          <p className="text-sm text-muted">{word.exampleCn}</p>
+          <ul className="mw-fluency-rungs mt-3">
+            {FLUENCY_RUNG_ORDER.map((rung) => {
+              const prompt = getPromptForRung(wordId, rung, zoneId);
+              const active = rung === suggestedRung;
+              return (
+                <li
+                  key={rung}
+                  className={`mw-fluency-rung ${active ? "mw-fluency-rung-active" : ""}`}
+                >
+                  <span className="mw-fluency-rung-label">
+                    {rungLabelCn(rung)}
+                    <span className="text-muted"> / {rungLabelEn(rung)}</span>
+                  </span>
+                  <span className="mw-fluency-rung-text">{prompt.expectedText}</span>
+                  <span className="mw-fluency-rung-dmg">
+                    {FLUENCY_DAMAGE[rung]} 伤
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
           <div className="mt-4">
             <SpeakButton text={attack.demoText} label="听示范 Listen" />
           </div>
@@ -177,42 +307,60 @@ export function WordMonsterCard({
           {supported ? (
             <button
               type="button"
-              disabled={listening || rewardResult !== null}
+              disabled={listening || defeated || hp <= 0}
               onClick={handleSpeakAttack}
               className="mw-btn mw-btn-primary w-full disabled:opacity-60"
             >
               {listening
                 ? "正在听… Listening…"
-                : rewardResult
+                : defeated
                   ? "已击败 Defeated ✓"
                   : "🎤 开口攻击 Attack"}
             </button>
           ) : null}
           <button
             type="button"
-            disabled={listening || rewardResult !== null}
+            disabled={listening || defeated || hp <= 0}
             onClick={handleManualAttack}
             className={`mw-btn w-full disabled:opacity-60 ${
               supported ? "mw-btn-outline" : "mw-btn-secondary"
             }`}
           >
-            {rewardResult
+            {defeated
               ? "已击败 Defeated ✓"
               : `${attack.manualLabelCn} ${attack.manualLabelEn}`}
           </button>
         </div>
 
-        {result ? (
+        {feedback || result ? (
           <p
             className={`mt-4 rounded-xl px-4 py-3 text-sm font-bold ${
-              passed
+              feedback?.kind === "full"
                 ? "bg-green-900/40 text-green-200"
-                : "bg-amber-900/40 text-amber-100"
+                : feedback?.kind === "partial"
+                  ? "mw-fluency-partial-feedback"
+                  : "bg-amber-900/40 text-amber-100"
             }`}
           >
-            {passed ? "Hit! 打中了！" : "Miss! 再试一次！"}
-            <br />
-            听到：{result}
+            {feedback ? (
+              <>
+                {feedback.cn}
+                <br />
+                <span className="text-xs opacity-90">{feedback.en}</span>
+              </>
+            ) : null}
+            {result ? (
+              <>
+                <br />
+                听到：{result}
+              </>
+            ) : null}
+            {hp > 0 && feedback?.kind !== "miss" ? (
+              <>
+                <br />
+                <span className="text-xs">还剩 {hp} 格血 Remaining HP {hp}</span>
+              </>
+            ) : null}
           </p>
         ) : null}
       </section>
