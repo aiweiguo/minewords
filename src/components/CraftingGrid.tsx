@@ -64,9 +64,14 @@ export function CraftingGrid({ recipe, compact = false }: CraftingGridProps) {
 
 type CraftingRecipeCardProps = {
   recipe: CraftingRecipe;
+  /** Encyclopedia / non-goal crafts — quieter than weapon goals. */
+  practice?: boolean;
 };
 
-export function CraftingRecipeCard({ recipe }: CraftingRecipeCardProps) {
+export function CraftingRecipeCard({
+  recipe,
+  practice = false,
+}: CraftingRecipeCardProps) {
   return (
     <Link href={`/crafting/${recipe.id}`} className="group block">
       <article className="mw-card p-4 transition-transform group-hover:-translate-y-0.5">
@@ -77,6 +82,9 @@ export function CraftingRecipeCard({ recipe }: CraftingRecipeCardProps) {
             size="lg"
           />
           <div>
+            {practice ? (
+              <p className="mw-craft-practice-badge mb-1">练习 Practice</p>
+            ) : null}
             <h3 className="text-lg font-black">{recipe.resultEnglish}</h3>
             <p className="font-bold text-secondary">{recipe.resultChinese}</p>
           </div>

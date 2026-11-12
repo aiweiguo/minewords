@@ -1343,6 +1343,47 @@ body {
   color: var(--foreground);
 }
 
+/* Crafting: encyclopedia recipes demoted under 练习 (MW-38) */
+.mw-craft-practice {
+  border-radius: 0.4rem;
+  border: 1px solid rgba(139, 105, 20, 0.4);
+  background: rgba(0, 0, 0, 0.12);
+  padding: 0.45rem 0.55rem;
+}
+
+.mw-craft-practice-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.35rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.mw-craft-practice-search {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--foreground);
+}
+
+.mw-craft-practice-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mw-craft-practice-banner {
+  border-style: dashed;
+  opacity: 0.95;
+}
+
 @media (min-width: 640px) {
   .mw-hub-stage-wrap {
     min-height: 20rem;
