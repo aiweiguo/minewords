@@ -235,6 +235,7 @@ export const unlockableAssetMap: Record<string, string> = {
   "iron-sword": assetMap.sword,
   "diamond-sword": assetMap.sword,
   "wooden-sword": assetMap.sword,
+  "stone-sword": assetMap.sword,
   "word-miner": assetMap.pickaxe,
   "diamond-speaker": assetMap.diamond,
   "forest-map": backgroundMap.forest,
