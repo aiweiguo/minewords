@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
 import { SpeakButton } from "@/components/SpeakButton";
@@ -32,6 +32,13 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
   const [result, setResult] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
   const [tradeResult, setTradeResult] = useState<RewardResult | null>(null);
+
+  useEffect(() => {
+    setListening(false);
+    setResult(null);
+    setPassed(null);
+    setTradeResult(null);
+  }, [tradeId]);
 
   if (!offer) return null;
 
