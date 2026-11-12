@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
+import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
+import { weaponTiers } from "@/data/weapons";
 import { assetMap } from "@/lib/assets";
+import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import {
   ROOM_BLOCK_COST,
   ROOM_FLOOR_SLOTS,
@@ -37,6 +40,7 @@ type HubRoomProps = {
 export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const roomBlocks = useGameStore((s) => s.roomBlocks);
   const resources = useGameStore((s) => s.resources);
+  const unlockedIds = useGameStore((s) => s.unlockedIds);
   const placeRoomBlock = useGameStore((s) => s.placeRoomBlock);
   const [flashSlot, setFlashSlot] = useState<RoomSlotId | null>(null);
   const [hint, setHint] = useState<string | null>(null);
@@ -44,8 +48,15 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const cost = ROOM_BLOCK_COST[selectedBlock];
   const canAfford = resources[cost.resource] >= cost.amount;
   const hasPlaceableMats = resources.wood >= 1 || resources.stone >= 1;
-  const emphasizeFight = !hasPlaceableMats;
-  const emphasizePlace = hasPlaceableMats;
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const craftReady = goal.canCraft;
+  const emphasizeFight = !craftReady && goal.status === "gather";
+  const emphasizeCraft = craftReady;
+  const emphasizePlace = hasPlaceableMats && !craftReady;
+
+  const equipped = goal.equipped;
+  const nextSlot = goal.status === "line-complete" ? null : goal.goal;
+  const rackHref = craftReady && goal.goal ? `/crafting/${goal.goal.id}` : "/crafting";
 
   function tryPlace(slotId: RoomSlotId) {
     if (roomBlocks[slotId]) {
@@ -97,6 +108,12 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
     );
   }
 
+  const rackLabel = equipped
+    ? equipped.nameCn
+    : nextSlot
+      ? `空 · 下一把${nextSlot.goalLabelCn}`
+      : "武器架";
+
   return (
     <section className="mw-hub-room mw-game-panel overflow-hidden">
       <header className="mw-hub-chrome relative z-[2] flex items-center justify-between gap-2">
@@ -111,6 +128,8 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
           BASE
         </span>
       </header>
+
+      <WeaponGoalStrip variant="hub" className="relative z-[2]" />
 
       <div className="mw-hub-stage-wrap relative z-[1]">
         <div className="mw-hub-room-stage" role="img" aria-label="侧视房间">
@@ -140,22 +159,63 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
             </div>
 
             <div className="mw-hub-fixtures">
-              <div
-                className="mw-hub-fixture mw-hub-fixture-inert mw-hub-prop-rack"
-                title="武器架（即将开放）"
-                aria-disabled="true"
+              <Link
+                href={rackHref}
+                className={`mw-hub-fixture mw-hub-fixture-link mw-hub-prop-rack ${
+                  equipped ? "mw-hub-rack-filled" : "mw-hub-rack-empty"
+                } ${emphasizeCraft ? "mw-hub-rack-ready" : ""}`}
+                title={
+                  equipped
+                    ? `${equipped.nameCn}已挂上`
+                    : nextSlot
+                      ? `目标：${nextSlot.nameCn}`
+                      : "武器架"
+                }
               >
                 <span className="mw-hub-prop-art" aria-hidden>
                   <span className="mw-hub-rack-post" />
-                  <GameIcon src={assetMap.sword} alt="" size="sm" />
+                  {equipped ? (
+                    <span
+                      className={`mw-hub-rack-blade mw-hub-rack-blade-${equipped.rackTone}`}
+                    >
+                      <GameIcon src={equipped.icon} alt="" size="sm" />
+                    </span>
+                  ) : (
+                    <span className="mw-hub-rack-ghost" aria-hidden>
+                      <GameIcon
+                        src={nextSlot?.icon ?? assetMap.sword}
+                        alt=""
+                        size="sm"
+                        className="opacity-35"
+                      />
+                    </span>
+                  )}
                   <span className="mw-hub-rack-post" />
                 </span>
-                <span className="mw-hub-prop-label">武器架</span>
-              </div>
+                <span className="mw-hub-prop-label">{rackLabel}</span>
+                {!equipped && nextSlot ? (
+                  <span className="mw-hub-rack-tier-dots" aria-hidden>
+                    {weaponTiers.map((tier) => (
+                      <span
+                        key={tier.id}
+                        className={`mw-hub-rack-dot ${
+                          unlockedIds.includes(tier.id) ? "on" : ""
+                        }`}
+                      />
+                    ))}
+                  </span>
+                ) : null}
+              </Link>
 
               <Link
-                href="/crafting"
-                className="mw-hub-fixture mw-hub-fixture-link mw-hub-fixture-secondary mw-hub-prop-table"
+                href={
+                  goal.goal ? `/crafting/${goal.goal.id}` : "/crafting/wooden-sword"
+                }
+                className={`mw-hub-fixture mw-hub-fixture-link mw-hub-prop-table ${
+                  emphasizeCraft
+                    ? "mw-hub-craft-primary"
+                    : "mw-hub-fixture-secondary"
+                }`}
               >
                 <span className="mw-hub-prop-art" aria-hidden>
                   <span className="mw-hub-craft-top" />
@@ -167,7 +227,9 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                     className="mw-hub-craft-tool"
                   />
                 </span>
-                <span className="mw-hub-prop-label">工作台</span>
+                <span className="mw-hub-prop-label">
+                  {emphasizeCraft ? "去合成" : "工作台"}
+                </span>
               </Link>
 
               <Link
@@ -243,11 +305,13 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
         <p className="mw-hub-hint" role="status">
           {hint
             ? hint
-            : emphasizeFight
-              ? "空房间 — 点门出门打怪攒木头"
-              : canAfford
-                ? "点空槽铺地板或墙"
-                : "换一块有材料的，或出门再攒"}
+            : emphasizeCraft
+              ? "材料够了 — 点工作台开口合成武器"
+              : emphasizeFight
+                ? "空武器架 — 点门出门打怪攒材料"
+                : canAfford
+                  ? "点空槽铺地板或墙"
+                  : "换一块有材料的，或出门再攒"}
         </p>
       </div>
     </section>

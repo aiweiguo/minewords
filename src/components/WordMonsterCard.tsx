@@ -146,29 +146,32 @@ export function WordMonsterCard({
           大声说出英文单词，打中怪物！Say the English word to hit!
         </p>
 
-        {supported ? (
+        <div className="mt-4 space-y-2">
+          {supported ? (
+            <button
+              type="button"
+              disabled={listening || rewardResult !== null}
+              onClick={handleSpeakAttack}
+              className="mw-btn mw-btn-primary w-full disabled:opacity-60"
+            >
+              {listening
+                ? "正在听… Listening…"
+                : rewardResult
+                  ? "已击败 Defeated ✓"
+                  : "🎤 开口攻击 Attack"}
+            </button>
+          ) : null}
           <button
             type="button"
             disabled={listening || rewardResult !== null}
-            onClick={handleSpeakAttack}
-            className="mw-btn mw-btn-primary mt-4 w-full disabled:opacity-60"
-          >
-            {listening
-              ? "正在听… Listening…"
-              : rewardResult
-                ? "已击败 Defeated ✓"
-                : "🎤 开口攻击 Attack"}
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled={rewardResult !== null}
             onClick={handleManualAttack}
-            className="mw-btn mw-btn-secondary mt-4 w-full disabled:opacity-60"
+            className={`mw-btn w-full disabled:opacity-60 ${
+              supported ? "mw-btn-outline" : "mw-btn-secondary"
+            }`}
           >
             {rewardResult ? "已击败 Defeated ✓" : "我说出了 I said it"}
           </button>
-        )}
+        </div>
 
         {result ? (
           <p

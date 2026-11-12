@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { use } from "react";
 
 import { CraftingGrid } from "@/components/CraftingGrid";
+import { SpeakCraftPanel } from "@/components/SpeakCraftPanel";
 import { getCraftingRecipeById } from "@/data/crafting";
 import { getVocabularyIcon } from "@/lib/assets";
+import { isSpeakCraftWeaponId } from "@/lib/weaponGoal";
 import { GameIcon } from "@/components/GameIcon";
 
 type CraftingDetailPageProps = {
@@ -21,11 +23,15 @@ export default function CraftingDetailPage({ params }: CraftingDetailPageProps) 
     notFound();
   }
 
+  const speakCraftId = isSpeakCraftWeaponId(id) ? id : null;
+
   return (
     <main className="space-y-6">
       <Link href="/crafting" className="text-sm font-bold text-primary">
-        ← 返回合成查询
+        ← 返回合成
       </Link>
+
+      {speakCraftId ? <SpeakCraftPanel weaponId={speakCraftId} /> : null}
 
       <section className="mw-card p-6">
         <div className="flex items-center gap-3">

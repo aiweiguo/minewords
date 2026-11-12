@@ -5,6 +5,12 @@ import { getBuildIdeaById } from "@/data/buildIdeas";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getQuestById } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
+import {
+  getWeaponTierById,
+  getWeaponTierIndex,
+  weaponTiers,
+  WeaponTierId,
+} from "@/data/weapons";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
 import { getTodayDateString, getYesterdayDateString } from "@/lib/date";
 import { getDecorationUnlockIds } from "@/lib/decorationUnlocks";
@@ -187,6 +193,8 @@ type GameStore = GameState & {
   completeDailyAdventure: (plan: DailyAdventurePlan) => boolean;
   recordWrongWord: (wordId: string) => void;
   defeatMonster: (wordId: string) => RewardResult | null;
+  /** Spend recipe mats + unlock weapon after a successful speak-craft. */
+  craftWeapon: (weaponId: WeaponTierId) => RewardResult | null;
   completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
   recordSpeakAttempt: () => void;
   syncDecorationUnlocks: () => void;
@@ -557,6 +565,64 @@ export const useGameStore = create<GameStore>()(
               [wordId]: 0,
             },
             ...touchLearningDay(state),
+          };
+          return { ...next, ...withDecorationSync(next) };
+        });
+
+        return rewardResult;
+      },
+
+      craftWeapon: (weaponId) => {
+        const tier = getWeaponTierById(weaponId);
+        if (!tier) return null;
+
+        const state = get();
+        if (state.unlockedIds.includes(weaponId)) {
+          return {
+            rewards: [],
+            unlocks: [],
+            isFirstCompletion: false,
+          };
+        }
+
+        const tierIndex = getWeaponTierIndex(weaponId);
+        if (tierIndex > 0) {
+          const previous = weaponTiers[tierIndex - 1];
+          if (previous && !state.unlockedIds.includes(previous.id)) {
+            return null;
+          }
+        }
+
+        for (const cost of tier.costs) {
+          if (state.resources[cost.resource] < cost.amount) {
+            return null;
+          }
+        }
+
+        const craftRewards: Reward[] = [
+          { type: "xp", xp: tier.craftXp },
+          { type: "unlock", unlockId: weaponId },
+        ];
+        const rewardResult: RewardResult = {
+          rewards: craftRewards,
+          unlocks: [weaponId],
+          isFirstCompletion: true,
+        };
+
+        set((current) => {
+          const nextResources = { ...current.resources };
+          for (const cost of tier.costs) {
+            nextResources[cost.resource] -= cost.amount;
+          }
+          const nextUnlocked = current.unlockedIds.includes(weaponId)
+            ? current.unlockedIds
+            : [...current.unlockedIds, weaponId];
+          const next: GameState = {
+            ...current,
+            resources: nextResources,
+            unlockedIds: nextUnlocked,
+            xp: current.xp + tier.craftXp,
+            ...touchLearningDay(current),
           };
           return { ...next, ...withDecorationSync(next) };
         });

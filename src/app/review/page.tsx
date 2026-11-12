@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
 
+import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
 import { WordMonsterCard } from "@/components/WordMonsterCard";
 import { WILD_MONSTER_WORD_IDS } from "@/data/monsterDrops";
 import { getVocabularyById } from "@/data/vocabulary";
+import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -13,7 +14,7 @@ export default function ReviewPage() {
   const wrongWordCounts = useGameStore((s) => s.wrongWordCounts);
   const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
   const resources = useGameStore((s) => s.resources);
-  const roomBlocks = useGameStore((s) => s.roomBlocks);
+  const unlockedIds = useGameStore((s) => s.unlockedIds);
 
   const wildMonsters = WILD_MONSTER_WORD_IDS.filter(
     (wordId) => !defeatedMonsterIds.includes(wordId),
@@ -31,12 +32,7 @@ export default function ReviewPage() {
     .sort((a, b) => b[1] - a[1]);
 
   const hasAny = wildMonsters.length > 0 || wrongMonsters.length > 0;
-  const buildMaterials = useMemo(
-    () => resources.wood + resources.stone,
-    [resources.wood, resources.stone],
-  );
-  const placedCount = Object.keys(roomBlocks).length;
-  const showSettleNudge = buildMaterials > 0;
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
 
   return (
     <main className="space-y-6">
@@ -49,46 +45,30 @@ export default function ReviewPage() {
         </p>
       </section>
 
-      {showSettleNudge ? (
-        <section className="mw-card border-[var(--primary)]/40 bg-primary/10 p-5">
-          <h2 className="text-lg font-black text-primary">
-            回基地建房 Build your home
-          </h2>
-          <p className="mt-1 text-sm font-semibold text-muted">
-            已有木头/石头 ×{buildMaterials}
-            {placedCount > 0 ? ` · 房间已放 ${placedCount} 块` : " · 房间还空着"}
-            <span className="mt-0.5 block text-xs">
-              Wood/stone ready — place planks & cobble in your side-view room
-            </span>
-          </p>
-          <Link href="/" className="mw-btn mw-btn-secondary mt-4 inline-flex">
-            回基地放置方块 → Place blocks
-          </Link>
-        </section>
-      ) : null}
+      <WeaponGoalStrip variant="settle" />
 
       {!hasAny ? (
         <section className="mw-card p-8 text-center">
           <p className="text-4xl">✨</p>
           <p className="mt-4 text-lg font-bold">
-            {buildMaterials > 0
-              ? "怪物清完了 — 回基地用材料建房吧！"
-              : "目前没有怪物，去背包看看材料吧！"}
+            {goal.canCraft
+              ? "怪物清完了 — 材料够了，去合成武器！"
+              : "目前没有怪物，回基地看看武器架吧！"}
           </p>
           <p className="mt-2 text-sm font-semibold text-muted">
-            {buildMaterials > 0
-              ? "No monsters left — settle in and build your room."
-              : "No monsters left — check your inventory for crafting materials."}
+            {goal.canCraft
+              ? "No monsters left — speak-craft your sword."
+              : "No monsters left — check the weapon rack at home."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/" className="mw-btn mw-btn-primary inline-flex">
+            <Link
+              href={goal.primaryCta.href}
+              className="mw-btn mw-btn-primary inline-flex"
+            >
+              {goal.primaryCta.labelCn} →
+            </Link>
+            <Link href="/" className="mw-btn mw-btn-outline inline-flex">
               基地 Home →
-            </Link>
-            <Link href="/inventory" className="mw-btn mw-btn-outline inline-flex">
-              背包 Inventory →
-            </Link>
-            <Link href="/crafting" className="mw-btn mw-btn-secondary inline-flex">
-              合成 Crafting →
             </Link>
           </div>
         </section>

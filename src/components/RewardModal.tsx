@@ -6,6 +6,8 @@ import { GameIcon } from "@/components/GameIcon";
 import { RarityBadge } from "@/components/RarityBadge";
 import { getUnlockableById } from "@/data/unlockables";
 import { assetMap, getResourceIcon } from "@/lib/assets";
+import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
+import { useGameStore } from "@/store/useGameStore";
 import { Reward } from "@/types";
 
 type RewardModalProps = {
@@ -26,14 +28,13 @@ export function RewardModal({
   onClose,
   settleHref = "/",
 }: RewardModalProps) {
+  const unlockedIds = useGameStore((s) => s.unlockedIds);
+  const resources = useGameStore((s) => s.resources);
+
   if (!open) return null;
 
-  const droppedBuildMats = rewards.some(
-    (reward) =>
-      reward.type === "resource" &&
-      (reward.resource === "wood" || reward.resource === "stone") &&
-      (reward.amount ?? 0) > 0,
-  );
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const showWeaponSettle = isFirstCompletion;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -114,27 +115,51 @@ export function RewardModal({
           </div>
         ) : null}
 
+        {showWeaponSettle ? (
+          <div className="mt-5 rounded-lg border border-[var(--panel-border)] bg-black/20 px-4 py-3">
+            <p className="text-xs font-black uppercase tracking-wide text-primary">
+              当前目标 Goal
+            </p>
+            <p className="mt-1 text-base font-black">{goal.stripCn}</p>
+            <p className="text-xs font-semibold text-muted">{goal.stripEn}</p>
+            <p className="mt-2 text-[11px] font-semibold text-muted">
+              {goal.nextPreviewCn}
+            </p>
+          </div>
+        ) : null}
+
         <div className="mt-6 space-y-2">
-          {isFirstCompletion && droppedBuildMats ? (
-            <Link
-              href={settleHref}
+          {showWeaponSettle ? (
+            <>
+              <Link
+                href={goal.primaryCta.href}
+                onClick={onClose}
+                className={`mw-btn w-full ${
+                  goal.primaryCta.kind === "craft"
+                    ? "mw-btn-secondary"
+                    : "mw-btn-primary"
+                }`}
+              >
+                {goal.primaryCta.labelCn}{" "}
+                <span className="opacity-80">{goal.primaryCta.labelEn}</span>
+              </Link>
+              <Link
+                href={settleHref}
+                onClick={onClose}
+                className="mw-btn mw-btn-outline w-full"
+              >
+                回基地 Home
+              </Link>
+            </>
+          ) : (
+            <button
+              type="button"
               onClick={onClose}
-              className="mw-btn mw-btn-secondary w-full"
+              className="mw-btn mw-btn-primary w-full"
             >
-              回基地建房 Build home
-            </Link>
-          ) : null}
-          <button
-            type="button"
-            onClick={onClose}
-            className={`mw-btn w-full ${
-              isFirstCompletion && droppedBuildMats
-                ? "mw-btn-outline"
-                : "mw-btn-primary"
-            }`}
-          >
-            {isFirstCompletion ? "继续冒险 Continue" : "继续 Continue"}
-          </button>
+              继续 Continue
+            </button>
+          )}
         </div>
       </div>
     </div>

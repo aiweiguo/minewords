@@ -95,3 +95,23 @@ export function scoreSpeechAttempt(
     matchedKeywords,
   };
 }
+
+/**
+ * Speak-craft scoring: full phrase OR any one recipe keyword (wood / stick / craft…).
+ * Slightly more lenient than speak-attack so the first wooden sword stays kid-friendly.
+ */
+export function scoreCraftSpeechAttempt(
+  transcript: string,
+  expectedText: string,
+  keywords: string[],
+): { passed: boolean; matchedKeywords: string[] } {
+  const normalized = transcript.toLowerCase();
+  const matchedKeywords = keywords.filter((kw) =>
+    normalized.includes(kw.toLowerCase()),
+  );
+  const expectedMatch = normalized.includes(expectedText.toLowerCase());
+  return {
+    passed: expectedMatch || matchedKeywords.length >= 1,
+    matchedKeywords,
+  };
+}

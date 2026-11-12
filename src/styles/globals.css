@@ -696,6 +696,73 @@ body {
   box-shadow: 0 2px 0 #2c1c12;
 }
 
+.mw-hub-rack-empty {
+  border-style: dashed;
+  opacity: 0.92;
+}
+
+.mw-hub-rack-filled {
+  border-color: #8b6914;
+  background:
+    linear-gradient(180deg, rgba(212, 175, 55, 0.18), transparent 50%),
+    #5c4030;
+}
+
+.mw-hub-rack-ready {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+  box-shadow:
+    0 3px 0 #2c1c12,
+    0 0 0 2px rgba(212, 175, 55, 0.45);
+}
+
+.mw-hub-rack-blade {
+  display: inline-flex;
+  transform: rotate(-18deg);
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+}
+
+.mw-hub-rack-blade-wood {
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35)) sepia(0.45) saturate(1.2);
+}
+
+.mw-hub-rack-blade-stone {
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35)) grayscale(0.35) contrast(1.1);
+}
+
+.mw-hub-rack-ghost {
+  display: inline-flex;
+  transform: rotate(-18deg);
+}
+
+.mw-hub-rack-tier-dots {
+  display: flex;
+  gap: 0.2rem;
+  margin-top: 0.05rem;
+}
+
+.mw-hub-rack-dot {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: rgba(232, 215, 176, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.mw-hub-rack-dot.on {
+  background: #d4af37;
+}
+
+.mw-hub-craft-primary {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+  border-color: #c49a5a;
+  box-shadow:
+    0 3px 0 #2c1c12,
+    0 0 0 2px rgba(196, 154, 90, 0.5);
+  background:
+    linear-gradient(180deg, rgba(196, 154, 90, 0.35), transparent 55%),
+    #5c4030;
+}
+
 .mw-hub-rack-post {
   width: 0.28rem;
   height: 1.7rem;
@@ -703,6 +770,86 @@ body {
   background: linear-gradient(180deg, #a67c52 0%, #5c4030 100%);
   border-radius: 0.1rem;
   box-shadow: 0 1px 0 #2c1c12;
+}
+
+.mw-weapon-goal-strip-hub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  padding: 0.4rem 0.7rem 0.5rem;
+  border-bottom: 2px solid rgba(90, 64, 48, 0.45);
+  background:
+    linear-gradient(90deg, rgba(107, 175, 24, 0.12), transparent 55%),
+    rgba(20, 14, 8, 0.35);
+}
+
+.mw-weapon-goal-strip-main {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1 1 10rem;
+}
+
+.mw-weapon-goal-strip-cn {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.mw-weapon-goal-strip-en {
+  margin: 0.05rem 0 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.mw-weapon-goal-bar {
+  position: relative;
+  flex: 1 1 4.5rem;
+  max-width: 7rem;
+  height: 0.45rem;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.mw-weapon-goal-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #6baf18, #c49a5a);
+  transition: width 0.25s ease;
+}
+
+.mw-weapon-goal-cta {
+  flex-shrink: 0;
+  padding: 0.28rem 0.55rem;
+  border: 2px solid #5a4030;
+  border-radius: 0.25rem;
+  background: linear-gradient(180deg, #6baf18 0%, #4f8a10 100%);
+  color: #f4f8ec;
+  font-size: 0.72rem;
+  font-weight: 900;
+  box-shadow: 0 2px 0 #2c1c12;
+}
+
+.mw-weapon-goal-cta-craft {
+  background: linear-gradient(180deg, #c49a5a 0%, #8b6914 100%);
+  border-color: #6b4423;
+}
+
+.mw-weapon-goal-strip-settle {
+  padding: 1rem 1.15rem;
+  border: 3px solid var(--panel-wood);
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, rgba(107, 175, 24, 0.12), transparent 60%),
+    var(--card);
+  box-shadow: 0 3px 0 #4a3728;
 }
 
 .mw-hub-craft-top {
@@ -1142,6 +1289,8 @@ body {
   .mw-hub-torch::before,
   .mw-hub-blade,
   .mw-hub-door-primary,
+  .mw-hub-craft-primary,
+  .mw-hub-rack-ready,
   .mw-hub-pickers-ready .mw-block-picker-ready {
     animation: none !important;
   }
