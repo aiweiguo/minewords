@@ -135,6 +135,8 @@ export const vocabularyIconMap: Record<string, string> = {
   creeper: assetMap.creeper,
   skeleton: assetMap.skeleton,
   spider: assetMap.skeleton,
+  witch: assetMap.creeper,
+  enderman: assetMap.skeleton,
   villager: assetMap.star,
   mine: assetMap.pickaxe,
   build: assetMap.axe,

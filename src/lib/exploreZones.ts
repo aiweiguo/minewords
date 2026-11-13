@@ -114,8 +114,8 @@ function buildMaterialBias(
       { type: "resource", resource: "stone", amount: focusAmount(wordId, "stone") },
       { type: "resource", resource: "wood", amount: 1 },
     ];
-    // Creeper keeps a visible emerald so trade currency shows up before iron.
-    if (wordId === "creeper") {
+    // Creeper / witch keep a visible emerald so trade currency shows up before iron.
+    if (wordId === "creeper" || wordId === "witch") {
       drops.push({ type: "resource", resource: "emerald", amount: 1 });
     }
     return drops;
@@ -129,7 +129,10 @@ function buildMaterialBias(
     drops.push({
       type: "resource",
       resource: "emerald",
-      amount: wordId === "creeper" || wordId === "blaze" ? 2 : 1,
+      amount:
+        wordId === "creeper" || wordId === "blaze" || wordId === "enderman"
+          ? 2
+          : 1,
     });
     return drops;
   }
@@ -145,7 +148,7 @@ function buildMaterialBias(
       {
         type: "resource",
         resource: "emerald",
-        amount: wordId === "blaze" ? 2 : 1,
+        amount: wordId === "crystal" ? 2 : 1,
       },
     ];
   }
@@ -157,22 +160,25 @@ function buildMaterialBias(
 function focusAmount(wordId: string, focus: ResourceType): number {
   if (focus === "wood") {
     if (wordId === "zombie") return 3;
+    if (wordId === "wolf") return 3;
     if (wordId === "spider") return 2;
     return 2;
   }
   if (focus === "stone") {
     if (wordId === "skeleton") return 3;
+    if (wordId === "witch") return 3;
     if (wordId === "creeper") return 4;
     return 3;
   }
   if (focus === "iron") {
     if (wordId === "blaze") return 3;
+    if (wordId === "enderman") return 3;
     if (wordId === "creeper") return 3;
     return 2;
   }
   if (focus === "diamond") {
-    // Scarcer than iron — recipe needs 2 diamonds; a few fights clear the goal.
-    if (wordId === "blaze") return 1;
+    // Scarcer than iron — recipe needs 2 diamonds; crystal unique drops a bit more.
+    if (wordId === "crystal") return 2;
     if (wordId === "skeleton") return 1;
     return 1;
   }

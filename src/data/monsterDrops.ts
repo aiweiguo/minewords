@@ -8,6 +8,10 @@ export const WILD_MONSTER_WORD_IDS = [
   "skeleton",
   "creeper",
   "blaze",
+  "wolf",
+  "witch",
+  "enderman",
+  "crystal",
 ] as const;
 
 const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
@@ -20,6 +24,11 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "wood", amount: 2 },
     { type: "xp", xp: 8 },
   ],
+  wolf: [
+    { type: "resource", resource: "wood", amount: 3 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 11 },
+  ],
   skeleton: [
     { type: "resource", resource: "stone", amount: 3 },
     { type: "resource", resource: "iron", amount: 1 },
@@ -30,11 +39,27 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "emerald", amount: 2 },
     { type: "xp", xp: 15 },
   ],
+  witch: [
+    { type: "resource", resource: "stone", amount: 3 },
+    { type: "resource", resource: "emerald", amount: 2 },
+    { type: "xp", xp: 14 },
+  ],
   blaze: [
     { type: "resource", resource: "iron", amount: 3 },
     { type: "resource", resource: "stone", amount: 1 },
     { type: "resource", resource: "emerald", amount: 1 },
     { type: "xp", xp: 18 },
+  ],
+  enderman: [
+    { type: "resource", resource: "iron", amount: 3 },
+    { type: "resource", resource: "emerald", amount: 2 },
+    { type: "xp", xp: 20 },
+  ],
+  crystal: [
+    { type: "resource", resource: "diamond", amount: 2 },
+    { type: "resource", resource: "iron", amount: 1 },
+    { type: "resource", resource: "emerald", amount: 2 },
+    { type: "xp", xp: 22 },
   ],
 };
 
