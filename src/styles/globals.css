@@ -2564,3 +2564,66 @@ body {
     animation: none;
   }
 }
+
+/* MW-56: mic-path confirm demotion (collapsed + long-press) */
+.mw-mic-confirm-demoted {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mw-mic-confirm-collapse {
+  align-self: flex-start;
+  padding: 0.15rem 0;
+}
+
+.mw-mic-confirm-hold {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  -webkit-user-select: none;
+}
+
+.mw-mic-confirm-hold::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--mw-hold-progress, 0%);
+  background: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  transition: none;
+}
+
+.mw-mic-confirm-hold-label {
+  position: relative;
+  z-index: 1;
+}
+
+.mw-mic-confirm-nudge {
+  border-radius: 0.75rem;
+  background: rgba(120, 53, 15, 0.35);
+  color: #fde68a;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  animation: mw-mic-nudge-in 0.35s ease;
+}
+
+@keyframes mw-mic-nudge-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-mic-confirm-nudge {
+    animation: none;
+  }
+}
