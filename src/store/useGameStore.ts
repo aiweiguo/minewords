@@ -31,6 +31,10 @@ import {
   resolveSelectedExploreZoneId,
 } from "@/lib/exploreZones";
 import {
+  GAME_STATE_STORAGE_KEY,
+  partializeGameState,
+} from "@/lib/progressBackup";
+import {
   buildRewardResult,
   getErrandProgress,
   getFightErrandIdsForResource,
@@ -192,6 +196,50 @@ function migrateSpeakIds(saved: Partial<GameState>): {
   return { completedSpeakIds, completedBuildIdeaIds };
 }
 
+/** Shared by zustand persist `merge` and parent-page import (MW-46). */
+export function mergePersistedGameState<T extends GameState>(
+  persisted: unknown,
+  current: T,
+): T {
+  if (persisted == null || typeof persisted !== "object") {
+    return current;
+  }
+  const saved = persisted as Partial<GameState>;
+  const speakMigration = migrateSpeakIds(saved);
+  const unlockedIds = saved.unlockedIds ?? current.unlockedIds;
+  const dailyStats = normalizeDailyStats(saved.dailyStats);
+  const mergedState: GameState = {
+    ...current,
+    ...saved,
+    resources: { ...defaultResources, ...saved.resources },
+    roomBlocks: saved.roomBlocks ?? {},
+    selectedExploreZoneId: resolveSelectedExploreZoneId(
+      saved.selectedExploreZoneId ?? current.selectedExploreZoneId,
+      unlockedIds,
+    ),
+    errandProgress: saved.errandProgress ?? {},
+    discoveredWordIds: saved.discoveredWordIds ?? [],
+    learnedWordIds: saved.learnedWordIds ?? [],
+    completedGuideIds: saved.completedGuideIds ?? [],
+    completedBuildIdeaIds: speakMigration.completedBuildIdeaIds,
+    completedSpeakIds: speakMigration.completedSpeakIds,
+    wrongWordCounts: saved.wrongWordCounts ?? {},
+    defeatedMonsterIds: saved.defeatedMonsterIds ?? [],
+    learningStreak: saved.learningStreak ?? 0,
+    lastActiveDate: saved.lastActiveDate ?? "",
+    dailyStats,
+    weekSpeakStats: normalizeWeekSpeakStats(saved.weekSpeakStats, dailyStats),
+    // Missing key = never coached (show once). Only markOnboardingSeen flips this.
+    hasSeenOnboarding: saved.hasSeenOnboarding ?? false,
+  };
+
+  return {
+    ...current,
+    ...mergedState,
+    ...withDecorationSync(mergedState),
+  };
+}
+
 function applyWordMasteredState(state: GameState, wordId: string): GameState {
   const dailyStats = normalizeDailyStats(state.dailyStats);
   const newlyMastered = !state.masteredWordIds.includes(wordId);
@@ -281,6 +329,8 @@ type GameStore = GameState & {
   recordCorrectAnswer: (options?: { practiceMode?: boolean }) => void;
   markOnboardingSeen: () => void;
   resetProgress: () => void;
+  /** Replace local progress from a parsed backup (MW-46). */
+  importProgress: (saved: Partial<GameState>) => void;
 };
 
 function applyRewardList(state: GameState, rewards: Reward[]): Partial<GameState> {
@@ -954,76 +1004,18 @@ export const useGameStore = create<GameStore>()(
           dailyStats: createDailyStats(),
           weekSpeakStats: createWeekSpeakStats(),
         }),
+
+      importProgress: (saved) =>
+        set((current) => mergePersistedGameState(saved, current)),
     }),
     {
-      name: "minewords-game-state",
+      name: GAME_STATE_STORAGE_KEY,
       merge: (persisted, current) => {
         // Zustand calls merge(undefined, current) when storage is empty.
         // Must not throw — a throw aborts hydration and hasHydrated stays false.
-        if (persisted == null || typeof persisted !== "object") {
-          return current;
-        }
-        const saved = persisted as Partial<GameState>;
-        const speakMigration = migrateSpeakIds(saved);
-        const unlockedIds = saved.unlockedIds ?? current.unlockedIds;
-        const dailyStats = normalizeDailyStats(saved.dailyStats);
-        const mergedState: GameState = {
-          ...current,
-          ...saved,
-          resources: { ...defaultResources, ...saved.resources },
-          roomBlocks: saved.roomBlocks ?? {},
-          selectedExploreZoneId: resolveSelectedExploreZoneId(
-            saved.selectedExploreZoneId ?? current.selectedExploreZoneId,
-            unlockedIds,
-          ),
-          errandProgress: saved.errandProgress ?? {},
-          discoveredWordIds: saved.discoveredWordIds ?? [],
-          learnedWordIds: saved.learnedWordIds ?? [],
-          completedGuideIds: saved.completedGuideIds ?? [],
-          completedBuildIdeaIds: speakMigration.completedBuildIdeaIds,
-          completedSpeakIds: speakMigration.completedSpeakIds,
-          wrongWordCounts: saved.wrongWordCounts ?? {},
-          defeatedMonsterIds: saved.defeatedMonsterIds ?? [],
-          learningStreak: saved.learningStreak ?? 0,
-          lastActiveDate: saved.lastActiveDate ?? "",
-          dailyStats,
-          weekSpeakStats: normalizeWeekSpeakStats(
-            saved.weekSpeakStats,
-            dailyStats,
-          ),
-          // Missing key = never coached (show once). Only markOnboardingSeen flips this.
-          hasSeenOnboarding: saved.hasSeenOnboarding ?? false,
-        };
-
-        return {
-          ...current,
-          ...mergedState,
-          ...withDecorationSync(mergedState),
-        };
+        return mergePersistedGameState(persisted, current);
       },
-      partialize: (state) => ({
-        playerName: state.playerName,
-        xp: state.xp,
-        resources: state.resources,
-        roomBlocks: state.roomBlocks,
-        selectedExploreZoneId: state.selectedExploreZoneId,
-        completedQuestIds: state.completedQuestIds,
-        errandProgress: state.errandProgress,
-        unlockedIds: state.unlockedIds,
-        masteredWordIds: state.masteredWordIds,
-        discoveredWordIds: state.discoveredWordIds,
-        learnedWordIds: state.learnedWordIds,
-        completedGuideIds: state.completedGuideIds,
-        completedBuildIdeaIds: state.completedBuildIdeaIds,
-        completedSpeakIds: state.completedSpeakIds,
-        wrongWordCounts: state.wrongWordCounts,
-        defeatedMonsterIds: state.defeatedMonsterIds,
-        learningStreak: state.learningStreak,
-        lastActiveDate: state.lastActiveDate,
-        dailyStats: state.dailyStats,
-        weekSpeakStats: state.weekSpeakStats,
-        hasSeenOnboarding: state.hasSeenOnboarding,
-      }),
+      partialize: (state) => partializeGameState(state),
     },
   ),
 );

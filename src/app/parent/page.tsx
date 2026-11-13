@@ -13,6 +13,7 @@ import {
   isMostlyConfirmToday,
   isMostlyConfirmWeek,
 } from "@/lib/followConfirm";
+import { ProgressBackupPanel } from "@/components/ProgressBackupPanel";
 import { getTonightThreeThings } from "@/lib/parentTonight";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { normalizeWeekSpeakStats, useGameStore } from "@/store/useGameStore";
@@ -184,6 +185,8 @@ export default function ParentPage() {
           iPhone / Safari 等常无语音识别：请换 Chrome，或让孩子走完听+跟读再确认。
         </p>
       </section>
+
+      <ProgressBackupPanel />
 
       <section className="mw-card p-5" aria-labelledby="mw-parent-tools">
         <h2 id="mw-parent-tools" className="text-xl font-black">
