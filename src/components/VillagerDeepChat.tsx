@@ -172,7 +172,7 @@ export function VillagerDeepChat() {
           </p>
           <h2 className="mt-1 text-xl font-black">和村民聊聊</h2>
           <p className="text-sm font-semibold text-muted">
-            开口 2～3 轮，再挑报价交易 — Speak-trade, not a separate speak page.
+            开口几轮（含农场词），再挑报价交易 — Speak-trade, not a quiz island.
           </p>
         </div>
         <span className="mw-hub-villager" aria-hidden>

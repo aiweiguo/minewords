@@ -1,3 +1,4 @@
+import { baseDecorations } from "@/data/baseDecorations";
 import { getTradeNudgeForGoal } from "@/data/trades";
 import {
   getWeaponTierById,
@@ -8,6 +9,7 @@ import {
   WeaponTierId,
 } from "@/data/weapons";
 import {
+  countLitDecorations,
   getWeeklyChallengeProgress,
   WeeklyChallengeContext,
   WeeklyChallengeProgress,
@@ -181,6 +183,37 @@ function lineCompleteHomeSnapshot(
   const { challenge } = weekly;
 
   if (weekly.done) {
+    // MW-57: when weekly isn't the focus, gently nudge unlit word decorations.
+    const lit = countLitDecorations(
+      extras.learnedWordIds ?? [],
+      extras.masteredWordIds ?? [],
+      extras.unlockedIds ?? [],
+    );
+    const unlit = Math.max(0, baseDecorations.length - lit);
+    if (unlit > 0) {
+      return {
+        goal: top ?? null,
+        equipped,
+        status: "line-complete",
+        missing: [],
+        primaryMissing: null,
+        canCraft: false,
+        canTrade: false,
+        homeFill,
+        weekly,
+        stripCn: `${badge} · 再点亮 1 个家装 · ${lit}/${baseDecorations.length}`,
+        stripEn: `${badgeEn} · light 1 more decor · ${lit}/${baseDecorations.length}`,
+        primaryCta: {
+          href: "/#decorate",
+          labelCn: "去点亮",
+          labelEn: "Light decor",
+          kind: "home",
+        },
+        nextPreviewCn: `${challenge.doneStripCn} · 开口打怪/交易可点亮墙上装饰`,
+        nextPreviewEn: `${challenge.doneStripEn} · fight/trade words light wall decor`,
+      };
+    }
+
     return {
       goal: top ?? null,
       equipped,

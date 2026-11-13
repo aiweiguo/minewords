@@ -1,3 +1,4 @@
+import { getDecorSpeakRungOverride } from "@/data/decorationSpeak";
 import { ExploreZoneId, getExploreZoneById } from "@/data/exploreZones";
 import { getVocabularyById } from "@/data/vocabulary";
 
@@ -62,31 +63,47 @@ export function getAttackSpeechLadder(
     promptEn: "A single word hits — but for less damage!",
   };
 
+  const phraseWeave = getDecorSpeakRungOverride(wordId, "phrase");
+  const phraseExpected = phraseWeave?.expectedText ?? `Attack ${name}`;
+  const phraseKeywords = phraseWeave?.keywords ?? ["attack", name];
   const phrasePrompt: AttackSpeechPrompt = {
     rung: "phrase",
-    expectedText: `Attack ${name}`,
-    keywords: ["attack", name],
-    hintCn: `说短句：Attack ${name}`,
-    hintEn: `Say a short phrase: Attack ${name}`,
-    demoText: `Attack ${name}`,
+    expectedText: phraseExpected,
+    keywords: phraseKeywords,
+    hintCn: phraseWeave?.hintCn ?? `说短句：Attack ${name}`,
+    hintEn: phraseWeave?.hintEn ?? `Say a short phrase: Attack ${name}`,
+    demoText: phraseExpected,
     manualLabelCn: "我说出了短句",
     manualLabelEn: "I said the phrase",
-    promptCn: "说短句，伤害更大！",
-    promptEn: "Say the short phrase for more damage!",
+    promptCn: phraseWeave
+      ? "说短句（含家装词），伤害更大！"
+      : "说短句，伤害更大！",
+    promptEn: phraseWeave
+      ? "Say the short phrase (home-decor word) for more damage!"
+      : "Say the short phrase for more damage!",
   };
 
-  const sentenceText = `I attack the ${name} with ${material}`;
+  const sentenceWeave = getDecorSpeakRungOverride(wordId, "sentence");
+  const sentenceText =
+    sentenceWeave?.expectedText ?? `I attack the ${name} with ${material}`;
+  const sentenceKeywords =
+    sentenceWeave?.keywords ?? ["attack", name, material];
   const sentencePrompt: AttackSpeechPrompt = {
     rung: "sentence",
     expectedText: sentenceText,
-    keywords: ["attack", name, material],
-    hintCn: `说完整句：${sentenceText}`,
-    hintEn: `Say a full sentence: ${sentenceText}`,
+    keywords: sentenceKeywords,
+    hintCn: sentenceWeave?.hintCn ?? `说完整句：${sentenceText}`,
+    hintEn:
+      sentenceWeave?.hintEn ?? `Say a full sentence: ${sentenceText}`,
     demoText: sentenceText,
     manualLabelCn: "我说出了句子",
     manualLabelEn: "I said the sentence",
-    promptCn: "说完整句子，打满伤害！",
-    promptEn: "Say the full English sentence for max damage!",
+    promptCn: sentenceWeave
+      ? "说完整句子（含家装词），打满伤害！"
+      : "说完整句子，打满伤害！",
+    promptEn: sentenceWeave
+      ? "Full sentence with a home-decor word — max damage!"
+      : "Say the full English sentence for max damage!",
   };
 
   return {

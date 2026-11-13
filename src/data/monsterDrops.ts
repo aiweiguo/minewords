@@ -1,3 +1,4 @@
+import { MONSTER_DECOR_SPEAK } from "@/data/decorationSpeak";
 import { getVocabularyById } from "@/data/vocabulary";
 import { Reward, ResourceType } from "@/types";
 
@@ -17,14 +18,25 @@ export const WILD_MONSTER_WORD_IDS = [
   "dragon",
 ] as const;
 
-/**
- * Extra dictionary words marked learned on first defeat (still no new vocab rows).
- * Sheep → wool feeds the hub wool placeable / bed craft keywords.
- */
-export const MONSTER_BONUS_LEARN_WORD_IDS: Partial<Record<string, readonly string[]>> =
-  {
+function buildMonsterBonusLearnWordIds(): Partial<
+  Record<string, readonly string[]>
+> {
+  const map: Record<string, string[]> = {
+    // Sheep → wool feeds hub wool placeable (MW-52 / MW-55).
     sheep: ["wool"],
   };
+  for (const [monsterId, weave] of Object.entries(MONSTER_DECOR_SPEAK)) {
+    if (!weave) continue;
+    map[monsterId] = [...(map[monsterId] ?? []), ...weave.learnWordIds];
+  }
+  return map;
+}
+
+/**
+ * Extra dictionary words marked learned on first defeat (still no new vocab rows).
+ * MW-57 decor weaves come from `decorationSpeak.ts` (speak-surface prompts).
+ */
+export const MONSTER_BONUS_LEARN_WORD_IDS = buildMonsterBonusLearnWordIds();
 
 const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
   zombie: [

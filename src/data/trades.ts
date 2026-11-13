@@ -103,6 +103,40 @@ export const tradeOffers: TradeOffer[] = [
     craftXp: 10,
     icon: assetMap.iron,
   },
+  // MW-57: decoration words that never hit fight prompts (ocean dock / cozy bed).
+  {
+    id: "boat-for-ocean",
+    title: "Trade for a Boat",
+    titleCn: "换小船去海边",
+    npcLine: "Want to sail the ocean? Trade wood for a boat tip — say boat!",
+    npcLineCn: "想去海边？用木头换主意，开口说 boat / ocean！",
+    costs: [{ resource: "wood", amount: 3 }],
+    gains: [{ resource: "emerald", amount: 1 }],
+    expectedSpeech: "I want a boat for the ocean",
+    speechKeywords: ["boat", "ocean", "swim"],
+    speechHintCn: "至少两个词，如 boat ocean；或整句 I want a boat for the ocean",
+    speechHintEn:
+      "Say at least two of boat/ocean/swim, or the full sentence",
+    wordIds: ["boat", "ocean", "swim"],
+    craftXp: 8,
+    icon: assetMap.wood,
+  },
+  {
+    id: "bed-to-sleep",
+    title: "Ask for a Bed",
+    titleCn: "开口要一张床",
+    npcLine: "Home needs a cozy bed — say bed and sleep!",
+    npcLineCn: "家里要温暖小床？开口说 bed / sleep！",
+    costs: [{ resource: "wood", amount: 2 }],
+    gains: [{ resource: "emerald", amount: 1 }],
+    expectedSpeech: "I need a bed to sleep",
+    speechKeywords: ["bed", "sleep", "need"],
+    speechHintCn: "至少两个词，如 bed sleep；或整句 I need a bed to sleep",
+    speechHintEn: "Say at least two keywords (e.g. bed sleep) or the full sentence",
+    wordIds: ["bed", "sleep"],
+    craftXp: 7,
+    icon: assetMap.wood,
+  },
 ];
 
 export function getTradeOfferById(id: string): TradeOffer | undefined {

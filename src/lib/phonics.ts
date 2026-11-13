@@ -1,6 +1,7 @@
+import { getDecorBonusLearnWordIds } from "@/data/decorationSpeak";
+import { getTradeOfferById } from "@/data/trades";
 import { getVocabularyById } from "@/data/vocabulary";
 import { getWeaponTierById, WeaponTierId } from "@/data/weapons";
-import { getTradeOfferById } from "@/data/trades";
 
 /** Kid-facing grapheme digraphs / trigraphs for sound chunks. */
 const MULTI_LETTER_CHUNKS = [
@@ -234,9 +235,11 @@ export function pickMissFocusWordId(
   return notHeard[0] ?? unknown[0] ?? null;
 }
 
-/** Ordered vocab ids for a speak-attack encounter (monster word). */
+/** Ordered vocab ids for a speak-attack encounter (monster + MW-57 decor weaves). */
 export function listAttackFocusWordIds(wordId: string): string[] {
-  return wordId ? [wordId] : [];
+  if (!wordId) return [];
+  const bonus = getDecorBonusLearnWordIds(wordId);
+  return [wordId, ...bonus];
 }
 
 /** Ordered vocab ids for craft recipe costs + speech keywords. */

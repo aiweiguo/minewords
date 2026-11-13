@@ -164,7 +164,12 @@ export function craftSpeechMinKeywords(weaponId: string): number {
   return weaponId === "iron-sword" || weaponId === "diamond-sword" ? 2 : 1;
 }
 
-/** Diamond-path trades need ≥2 keywords; wood→emerald funnel stays lenient. */
+/** Diamond-path + MW-57 decor trades need ≥2 keywords; wood→emerald stays lenient. */
 export function tradeSpeechMinKeywords(offerId: string): number {
-  return offerId === "buy-diamonds" || offerId === "iron-for-diamond" ? 2 : 1;
+  return offerId === "buy-diamonds" ||
+    offerId === "iron-for-diamond" ||
+    offerId === "boat-for-ocean" ||
+    offerId === "bed-to-sleep"
+    ? 2
+    : 1;
 }
