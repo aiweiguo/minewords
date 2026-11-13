@@ -39,10 +39,18 @@ export function RewardModal({
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
   const roomBlocks = useGameStore((s) => s.roomBlocks);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
+  const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
 
   if (!open) return null;
 
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks, {
+    learnedWordIds,
+    masteredWordIds,
+    unlockedIds,
+    defeatedMonsterIds,
+  });
   const hasLoot = rewards.length > 0 || unlocks.length > 0;
   const showWeaponSettle = hasLoot || isFirstCompletion;
   const forceCraftCta = goal.canCraft;

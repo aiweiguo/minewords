@@ -7,6 +7,11 @@ import {
   WeaponTier,
   WeaponTierId,
 } from "@/data/weapons";
+import {
+  getWeeklyChallengeProgress,
+  WeeklyChallengeContext,
+  WeeklyChallengeProgress,
+} from "@/lib/weeklyChallenge";
 import { ResourceType, RoomBlocks, RoomSlotId } from "@/types";
 
 export type WeaponGoalStatus =
@@ -45,7 +50,12 @@ export type WeaponGoalSnapshot = {
   nextPreviewEn: string;
   /** Post-diamond home decorate progress (hub room slots). */
   homeFill: HomeFillProgress | null;
+  /** Post-home-full Monday-rotating challenge (MW-55). */
+  weekly: WeeklyChallengeProgress | null;
 };
+
+/** Optional progress for weekly challenges after home is full. */
+export type WeaponGoalExtras = Partial<WeeklyChallengeContext>;
 
 /** Hub side-view room slots kids can fill with plank/cobble/glass/wool (MW-41 → MW-52). */
 export const HOME_ROOM_SLOTS: RoomSlotId[] = [
@@ -128,6 +138,7 @@ function lineCompleteHomeSnapshot(
   equipped: WeaponTier | null,
   top: WeaponTier | undefined,
   homeFill: HomeFillProgress,
+  extras: WeaponGoalExtras = {},
 ): WeaponGoalSnapshot {
   const badge = equipped
     ? `${equipped.nameCn}已挂上 · 武装线完成`
@@ -146,6 +157,7 @@ function lineCompleteHomeSnapshot(
       canCraft: false,
       canTrade: false,
       homeFill,
+      weekly: null,
       stripCn: `${badge} · 还差 ${homeFill.empty} 个家装位`,
       stripEn: `${badgeEn} · ${homeFill.empty} home slots left`,
       primaryCta: {
@@ -159,6 +171,39 @@ function lineCompleteHomeSnapshot(
     };
   }
 
+  const weekly = getWeeklyChallengeProgress({
+    learnedWordIds: extras.learnedWordIds ?? [],
+    masteredWordIds: extras.masteredWordIds ?? [],
+    unlockedIds: extras.unlockedIds ?? [],
+    defeatedMonsterIds: extras.defeatedMonsterIds ?? [],
+    villagerChatTurnsDone: extras.villagerChatTurnsDone ?? 0,
+  });
+  const { challenge } = weekly;
+
+  if (weekly.done) {
+    return {
+      goal: top ?? null,
+      equipped,
+      status: "line-complete",
+      missing: [],
+      primaryMissing: null,
+      canCraft: false,
+      canTrade: false,
+      homeFill,
+      weekly,
+      stripCn: `${badge} · ${challenge.doneStripCn}`,
+      stripEn: `${badgeEn} · ${challenge.doneStripEn}`,
+      primaryCta: {
+        href: "/explore",
+        labelCn: "继续探险",
+        labelEn: "Keep exploring",
+        kind: "fight",
+      },
+      nextPreviewCn: "下周换新挑战 · 想探险就出门打怪",
+      nextPreviewEn: "New challenge next week · explore when you want",
+    };
+  }
+
   return {
     goal: top ?? null,
     equipped,
@@ -168,16 +213,12 @@ function lineCompleteHomeSnapshot(
     canCraft: false,
     canTrade: false,
     homeFill,
-    stripCn: `${badge} · 家已装满`,
-    stripEn: `${badgeEn} · home filled`,
-    primaryCta: {
-      href: "/#decorate",
-      labelCn: "回我家看看",
-      labelEn: "Visit home",
-      kind: "home",
-    },
-    nextPreviewCn: "家装满了 · 想探险就出门打怪",
-    nextPreviewEn: "Home complete · explore when you want",
+    weekly,
+    stripCn: `${badge} · ${challenge.stripCn}`,
+    stripEn: `${badgeEn} · ${challenge.stripEn}`,
+    primaryCta: challenge.primaryCta,
+    nextPreviewCn: `${challenge.nextPreviewCn} · ${weekly.have}/${weekly.need}`,
+    nextPreviewEn: `${challenge.nextPreviewEn} · ${weekly.have}/${weekly.need}`,
   };
 }
 
@@ -185,6 +226,7 @@ export function getWeaponGoalSnapshot(
   unlockedIds: string[],
   resources: Record<ResourceType, number>,
   roomBlocks: RoomBlocks = {},
+  extras: WeaponGoalExtras = {},
 ): WeaponGoalSnapshot {
   const equipped = getEquippedWeapon(unlockedIds);
   const goal = getCurrentWeaponGoal(unlockedIds);
@@ -192,7 +234,10 @@ export function getWeaponGoalSnapshot(
 
   if (!goal) {
     const top = weaponTiers[weaponTiers.length - 1];
-    return lineCompleteHomeSnapshot(equipped, top, homeFill);
+    return lineCompleteHomeSnapshot(equipped, top, homeFill, {
+      ...extras,
+      unlockedIds: extras.unlockedIds ?? unlockedIds,
+    });
   }
 
   const missing = missingCosts(goal.costs, resources);
@@ -210,6 +255,7 @@ export function getWeaponGoalSnapshot(
       canCraft: true,
       canTrade: false,
       homeFill: null,
+      weekly: null,
       stripCn: `材料够了！去合成${goal.goalLabelCn}`,
       stripEn: `Ready — craft the ${goal.name}`,
       primaryCta: {
@@ -235,6 +281,7 @@ export function getWeaponGoalSnapshot(
       canCraft: false,
       canTrade: true,
       homeFill: null,
+      weekly: null,
       stripCn: tradeNudge.stripCn,
       stripEn: tradeNudge.stripEn,
       primaryCta: {
@@ -258,6 +305,7 @@ export function getWeaponGoalSnapshot(
     canCraft: false,
     canTrade: false,
     homeFill: null,
+    weekly: null,
     stripCn: missingDiamond
       ? `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)} · 打矿脉或攒绿宝石去交易`
       : `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)}`,

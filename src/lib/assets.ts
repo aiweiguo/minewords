@@ -45,6 +45,9 @@ export const resourceAssetMap: Record<ResourceType, string> = {
   emerald: assetMap.emerald,
   diamond: assetMap.diamond,
   netherite: assetMap.diamond,
+  // MW-55 placeables — reuse word icons until dedicated resource art exists.
+  wool: assetMap.star,
+  glass: assetMap.emerald,
 };
 
 export const mapAreaBackgrounds: Record<MapArea, string> = {

@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
+import { countCompletedVillagerChatTurns } from "@/data/villagerChat";
 import {
   getGoalResourceProgress,
   getWeaponGoalSnapshot,
@@ -25,24 +27,61 @@ export function WeaponGoalStrip({
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
   const roomBlocks = useGameStore((s) => s.roomBlocks);
-  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
+  const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
+  const [villagerChatTurnsDone, setVillagerChatTurnsDone] = useState(0);
+
+  useEffect(() => {
+    setVillagerChatTurnsDone(countCompletedVillagerChatTurns());
+  }, []);
+
+  const snapshot = getWeaponGoalSnapshot(
+    unlockedIds,
+    resources,
+    roomBlocks,
+    {
+      learnedWordIds,
+      masteredWordIds,
+      unlockedIds,
+      defeatedMonsterIds,
+      villagerChatTurnsDone,
+    },
+  );
   const goal = snapshot.goal;
   const resourceProgress =
     goal && snapshot.status !== "line-complete"
       ? getGoalResourceProgress(goal, resources)
       : null;
   const homeProgress =
-    snapshot.status === "line-complete" && snapshot.homeFill
+    snapshot.status === "line-complete" &&
+    snapshot.homeFill &&
+    snapshot.homeFill.empty > 0
       ? snapshot.homeFill
       : null;
-  const barHave = resourceProgress?.have ?? homeProgress?.filled ?? 0;
+  const weeklyProgress =
+    snapshot.status === "line-complete" &&
+    snapshot.weekly &&
+    (snapshot.homeFill?.empty ?? 0) === 0
+      ? snapshot.weekly
+      : null;
+  const barHave =
+    resourceProgress?.have ??
+    homeProgress?.filled ??
+    weeklyProgress?.have ??
+    0;
   const barNeed =
-    resourceProgress?.need ?? homeProgress?.total ?? 0;
+    resourceProgress?.need ??
+    homeProgress?.total ??
+    weeklyProgress?.need ??
+    0;
   const barLabel = resourceProgress
     ? `${resourceProgress.resource} ${resourceProgress.have}/${resourceProgress.need}`
     : homeProgress
       ? `home ${homeProgress.filled}/${homeProgress.total}`
-      : null;
+      : weeklyProgress
+        ? `weekly ${weeklyProgress.have}/${weeklyProgress.need}`
+        : null;
 
   if (variant === "hub") {
     return (
@@ -107,6 +146,12 @@ export function WeaponGoalStrip({
       {homeProgress ? (
         <p className="mt-2 text-sm font-bold">
           家装位 {homeProgress.filled}/{homeProgress.total}
+        </p>
+      ) : null}
+      {weeklyProgress ? (
+        <p className="mt-2 text-sm font-bold">
+          本周挑战 {weeklyProgress.have}/{weeklyProgress.need}
+          {weeklyProgress.done ? " · 完成" : ""}
         </p>
       ) : null}
       {barLabel && barNeed > 0 ? (

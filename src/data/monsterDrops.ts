@@ -42,8 +42,9 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "xp", xp: 11 },
   ],
   sheep: [
-    { type: "resource", resource: "wood", amount: 2 },
-    { type: "resource", resource: "stone", amount: 1 },
+    // MW-55: wool inventory feeds hub wool placeable (not wood-as-wool).
+    { type: "resource", resource: "wool", amount: 2 },
+    { type: "resource", resource: "wood", amount: 1 },
     { type: "xp", xp: 9 },
   ],
   skeleton: [
@@ -76,6 +77,8 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "diamond", amount: 2 },
     { type: "resource", resource: "iron", amount: 1 },
     { type: "resource", resource: "emerald", amount: 2 },
+    // MW-55: glass inventory feeds hub glass placeable.
+    { type: "resource", resource: "glass", amount: 1 },
     { type: "xp", xp: 22 },
   ],
   dragon: [

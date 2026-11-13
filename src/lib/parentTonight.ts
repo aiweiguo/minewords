@@ -99,6 +99,12 @@ function followWordId(input: TonightProgressInput): string | null {
     input.unlockedIds,
     input.resources,
     input.roomBlocks,
+    {
+      learnedWordIds: input.learnedWordIds,
+      masteredWordIds: input.masteredWordIds,
+      unlockedIds: input.unlockedIds,
+      defeatedMonsterIds: input.defeatedMonsterIds,
+    },
   );
 
   if (goal.status === "ready" && goal.goal) {
@@ -161,7 +167,12 @@ function nextDecorationWord(input: TonightProgressInput): string | null {
 function canPlaceHomeBlock(input: TonightProgressInput): boolean {
   const home = getHomeFillProgress(input.roomBlocks);
   if (home.empty <= 0) return false;
-  return (input.resources.wood ?? 0) >= 1 || (input.resources.stone ?? 0) >= 1;
+  return (
+    (input.resources.wood ?? 0) >= 1 ||
+    (input.resources.stone ?? 0) >= 1 ||
+    (input.resources.glass ?? 0) >= 1 ||
+    (input.resources.wool ?? 0) >= 1
+  );
 }
 
 function buildCandidates(input: TonightProgressInput): TonightThing[] {
@@ -169,9 +180,35 @@ function buildCandidates(input: TonightProgressInput): TonightThing[] {
     input.unlockedIds,
     input.resources,
     input.roomBlocks,
+    {
+      learnedWordIds: input.learnedWordIds,
+      masteredWordIds: input.masteredWordIds,
+      unlockedIds: input.unlockedIds,
+      defeatedMonsterIds: input.defeatedMonsterIds,
+    },
   );
   const home = getHomeFillProgress(input.roomBlocks);
   const candidates: TonightThing[] = [];
+
+  if (
+    goal.status === "line-complete" &&
+    home.empty === 0 &&
+    goal.weekly &&
+    !goal.weekly.done
+  ) {
+    candidates.push({
+      id: `weekly-${goal.weekly.challenge.id}`,
+      labelCn: goal.weekly.challenge.primaryCta.labelCn,
+      detailCn: `${goal.weekly.challenge.stripCn}（${goal.weekly.have}/${goal.weekly.need}）`,
+      href: goal.weekly.challenge.primaryCta.href,
+      kind:
+        goal.weekly.challenge.primaryCta.kind === "home"
+          ? "home"
+          : goal.weekly.challenge.primaryCta.kind === "trade"
+            ? "trade"
+            : "fight",
+    });
+  }
 
   if (goal.status === "ready" && goal.goal) {
     candidates.push({
