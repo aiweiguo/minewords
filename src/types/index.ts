@@ -37,6 +37,7 @@ export type MapArea =
   | "forest"
   | "cave"
   | "mines"
+  | "crystal"
   | "village"
   | "nether"
   | "end"
@@ -111,10 +112,12 @@ export type MaterialErrand = {
   /** Weapon tier this errand feeds (wooden-sword, stone-sword, …). */
   weaponId: string;
   goal: ErrandGoal;
-  /** After claim, nudge back into the craft / explore loop. */
-  nudge: "explore" | "craft";
+  /** After claim, nudge back into the craft / explore / trade loop. */
+  nudge: "explore" | "craft" | "trade";
   /** Explore zone hint for fight errands. */
   exploreZoneId?: "forest" | "cave" | "mines" | "crystal";
+  /** Trade offer hint for emerald-buy-diamond bypass errands. */
+  tradeOfferId?: string;
 };
 
 export type Quest = {

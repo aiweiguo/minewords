@@ -36,6 +36,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const tier = getWeaponTierById(weaponId);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
   const craftWeapon = useGameStore((s) => s.craftWeapon);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
@@ -80,7 +81,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const cueVisible = showPhonicsCue(unknownWordId);
 
   const owned = unlockedIds.includes(weaponId);
-  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources);
+  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
   const isCurrentGoal = snapshot.goal?.id === weaponId;
   const tierIndex = getWeaponTierIndex(weaponId);
   const previousTier = tierIndex > 0 ? weaponTiers[tierIndex - 1] : null;
@@ -211,11 +212,16 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Link href="/" className="mw-btn mw-btn-primary">
-              回基地看武器架
+              {snapshot.status === "line-complete" &&
+              (snapshot.homeFill?.empty ?? 0) > 0
+                ? `装扮我家 · 还差 ${snapshot.homeFill?.empty} 位`
+                : "回基地看武器架"}
             </Link>
-            <Link href="/explore" className="mw-btn mw-btn-outline">
-              继续打怪
-            </Link>
+            {snapshot.status === "line-complete" ? null : (
+              <Link href="/explore" className="mw-btn mw-btn-outline">
+                继续打怪
+              </Link>
+            )}
           </div>
         </div>
       ) : (

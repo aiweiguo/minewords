@@ -65,6 +65,7 @@ export const unlockables: Unlockable[] = [
     icon: assetMap.sword,
     image: assetMap.diamond,
     rarity: "legendary",
+    questId: "craft-diamond-sword-errand",
     unlockHintCn: "开口合成钻石剑后解锁",
   },
   {
@@ -115,6 +116,7 @@ export const unlockables: Unlockable[] = [
     description: "Speak-craft the diamond sword.",
     icon: assetMap.diamond,
     rarity: "epic",
+    questId: "craft-diamond-sword-errand",
     unlockHintCn: "开口合成钻石剑后解锁",
   },
   {
@@ -146,6 +148,16 @@ export const unlockables: Unlockable[] = [
     icon: backgroundMap.battle,
     rarity: "rare",
     questId: "iron-fights-for-sword",
+  },
+  {
+    id: "crystal-map",
+    type: "map",
+    name: "Crystal Depths",
+    nameCn: "钻石矿脉",
+    description: "Fight for diamond in the crystal depths.",
+    icon: backgroundMap.cave,
+    rarity: "legendary",
+    questId: "crystal-fights-for-sword",
   },
   {
     id: "village-map",

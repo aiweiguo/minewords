@@ -23,6 +23,7 @@ export function QuestRunner({ quest, practiceMode, onComplete }: QuestRunnerProp
   const errandProgress = useGameStore((state) => state.errandProgress);
   const resources = useGameStore((state) => state.resources);
   const unlockedIds = useGameStore((state) => state.unlockedIds);
+  const roomBlocks = useGameStore((state) => state.roomBlocks);
   const completedQuestIds = useGameStore((state) => state.completedQuestIds);
   const [claimError, setClaimError] = useState<string | null>(null);
 
@@ -32,7 +33,7 @@ export function QuestRunner({ quest, practiceMode, onComplete }: QuestRunnerProp
     unlockedIds,
     completedQuestIds,
   });
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
   const completed = completedQuestIds.includes(quest.id);
   const pct =
     progress && progress.target > 0
@@ -64,14 +65,21 @@ export function QuestRunner({ quest, practiceMode, onComplete }: QuestRunnerProp
     );
   }
 
+  const tradeHref = quest.errand.tradeOfferId
+    ? `/trade?offer=${quest.errand.tradeOfferId}`
+    : "/trade";
   const postClaimHref =
-    quest.errand.nudge === "craft" || goal.canCraft
-      ? `/crafting/${quest.errand.weaponId}`
-      : "/explore";
+    quest.errand.nudge === "trade"
+      ? tradeHref
+      : quest.errand.nudge === "craft" || goal.canCraft
+        ? `/crafting/${quest.errand.weaponId}`
+        : "/explore";
   const postClaimLabel =
-    quest.errand.nudge === "craft" || goal.canCraft
-      ? "去合成武器"
-      : "继续打怪凑材料";
+    quest.errand.nudge === "trade"
+      ? "去交易买钻石"
+      : quest.errand.nudge === "craft" || goal.canCraft
+        ? "去合成武器"
+        : "继续打怪凑材料";
 
   return (
     <section className="mw-card space-y-5 p-6">
@@ -142,6 +150,10 @@ export function QuestRunner({ quest, practiceMode, onComplete }: QuestRunnerProp
               className="mw-btn mw-btn-outline w-full"
             >
               看看配方 Craft
+            </Link>
+          ) : quest.errand.nudge === "trade" ? (
+            <Link href={tradeHref} className="mw-btn mw-btn-outline w-full">
+              去交易 Trade
             </Link>
           ) : (
             <Link href="/" className="mw-btn mw-btn-outline w-full">

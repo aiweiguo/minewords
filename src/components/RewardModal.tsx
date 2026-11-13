@@ -38,10 +38,11 @@ export function RewardModal({
 }: RewardModalProps) {
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
 
   if (!open) return null;
 
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
   const hasLoot = rewards.length > 0 || unlocks.length > 0;
   const showWeaponSettle = hasLoot || isFirstCompletion;
   const forceCraftCta = goal.canCraft;

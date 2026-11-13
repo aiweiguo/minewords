@@ -24,11 +24,24 @@ export function WeaponGoalStrip({
 }: WeaponGoalStripProps) {
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
-  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
+  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
   const goal = snapshot.goal;
-  const progress =
+  const resourceProgress =
     goal && snapshot.status !== "line-complete"
       ? getGoalResourceProgress(goal, resources)
+      : null;
+  const homeProgress =
+    snapshot.status === "line-complete" && snapshot.homeFill
+      ? snapshot.homeFill
+      : null;
+  const barHave = resourceProgress?.have ?? homeProgress?.filled ?? 0;
+  const barNeed =
+    resourceProgress?.need ?? homeProgress?.total ?? 0;
+  const barLabel = resourceProgress
+    ? `${resourceProgress.resource} ${resourceProgress.have}/${resourceProgress.need}`
+    : homeProgress
+      ? `home ${homeProgress.filled}/${homeProgress.total}`
       : null;
 
   if (variant === "hub") {
@@ -46,15 +59,12 @@ export function WeaponGoalStrip({
             <p className="mw-weapon-goal-strip-en truncate">{snapshot.stripEn}</p>
           </div>
         </div>
-        {progress ? (
-          <div
-            className="mw-weapon-goal-bar"
-            aria-label={`${progress.resource} ${progress.have}/${progress.need}`}
-          >
+        {barLabel && barNeed > 0 ? (
+          <div className="mw-weapon-goal-bar" aria-label={barLabel}>
             <span
               className="mw-weapon-goal-bar-fill"
               style={{
-                width: `${Math.round((progress.have / progress.need) * 100)}%`,
+                width: `${Math.round((barHave / barNeed) * 100)}%`,
               }}
             />
           </div>
@@ -67,7 +77,9 @@ export function WeaponGoalStrip({
                 ? "mw-weapon-goal-cta-craft"
                 : snapshot.primaryCta.kind === "trade"
                   ? "mw-weapon-goal-cta-trade"
-                  : ""
+                  : snapshot.primaryCta.kind === "home"
+                    ? "mw-weapon-goal-cta-home"
+                    : ""
             }`}
           >
             {snapshot.primaryCta.labelCn}
@@ -86,17 +98,23 @@ export function WeaponGoalStrip({
       </p>
       <p className="mt-1 text-lg font-black">{snapshot.stripCn}</p>
       <p className="text-sm font-semibold text-muted">{snapshot.stripEn}</p>
-      {progress ? (
+      {resourceProgress ? (
         <p className="mt-2 text-sm font-bold">
-          {progress.resource} {progress.have}/{progress.need}
+          {resourceProgress.resource} {resourceProgress.have}/
+          {resourceProgress.need}
         </p>
       ) : null}
-      {progress ? (
+      {homeProgress ? (
+        <p className="mt-2 text-sm font-bold">
+          家装位 {homeProgress.filled}/{homeProgress.total}
+        </p>
+      ) : null}
+      {barLabel && barNeed > 0 ? (
         <div className="mw-weapon-goal-bar mt-2">
           <span
             className="mw-weapon-goal-bar-fill"
             style={{
-              width: `${Math.round((progress.have / progress.need) * 100)}%`,
+              width: `${Math.round((barHave / barNeed) * 100)}%`,
             }}
           />
         </div>

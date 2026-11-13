@@ -22,6 +22,7 @@ export default function QuestDetailPage({ params }: QuestDetailPageProps) {
   const xp = useGameStore((state) => state.xp);
   const resources = useGameStore((state) => state.resources);
   const unlockedIds = useGameStore((state) => state.unlockedIds);
+  const roomBlocks = useGameStore((state) => state.roomBlocks);
   const completedQuestIds = useGameStore((state) => state.completedQuestIds);
 
   const [showRewardModal, setShowRewardModal] = useState(false);
@@ -40,11 +41,15 @@ export default function QuestDetailPage({ params }: QuestDetailPageProps) {
   }
 
   const locked = status === "locked";
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
   const settleHref =
-    quest.errand?.nudge === "craft" || goal.canCraft
-      ? `/crafting/${quest.errand?.weaponId ?? goal.goal?.id ?? ""}`
-      : "/explore";
+    quest.errand?.nudge === "trade"
+      ? quest.errand.tradeOfferId
+        ? `/trade?offer=${quest.errand.tradeOfferId}`
+        : "/trade"
+      : quest.errand?.nudge === "craft" || goal.canCraft
+        ? `/crafting/${quest.errand?.weaponId ?? goal.goal?.id ?? ""}`
+        : "/explore";
 
   function handleComplete(firstCompletion: boolean) {
     setIsFirstCompletion(firstCompletion);

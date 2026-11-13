@@ -21,7 +21,8 @@ type TradePageClientProps = {
 export function TradePageClient({ initialOfferId }: TradePageClientProps) {
   const resources = useGameStore((s) => s.resources);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
   const chasingDiamond =
     goal.goal?.id === "diamond-sword" && goal.status === "gather";
 

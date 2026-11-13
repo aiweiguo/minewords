@@ -110,8 +110,8 @@ export const weaponTiers: WeaponTier[] = [
     speechHintCn: "说交易式长句：Can I craft a diamond sword?（含 craft / diamond / sword）",
     speechHintEn: "Say a trade-style sentence with craft, diamond, or sword",
     craftXp: 32,
-    nextPreviewCn: "缺钻石时可去交易：Can I buy diamonds?",
-    nextPreviewEn: "Short on diamonds? Trade: Can I buy diamonds?",
+    nextPreviewCn: "挂上后下一目标：装扮我家 · 铺满基地",
+    nextPreviewEn: "After this: decorate home · fill the base",
     rackTone: "diamond",
   },
 ];

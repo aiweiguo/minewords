@@ -158,6 +158,7 @@ export const craftingRecipes: CraftingRecipe[] = [
       "开口说 Can I craft a diamond sword? 合成钻石剑（消耗 2 diamond + 1 wood）。",
     keywordIds: ["diamond", "sword", "stick", "craft"],
     relatedGuideId: "diamond-sword-guide",
+    relatedQuestId: "craft-diamond-sword-errand",
   },
   {
     id: "shield",

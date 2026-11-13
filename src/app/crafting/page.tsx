@@ -15,7 +15,8 @@ export default function CraftingPage() {
   const [practiceOpen, setPracticeOpen] = useState(false);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const resources = useGameStore((s) => s.resources);
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
 
   const results = useMemo(() => searchCraftingRecipes(query), [query]);
   const otherResults = results.filter(

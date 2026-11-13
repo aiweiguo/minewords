@@ -106,7 +106,8 @@ export function MapZoneCard({
           <div className="space-y-3 border-t border-[#d9e2cc] p-4">
             {zone.mapArea === "forest" ||
             zone.mapArea === "cave" ||
-            zone.mapArea === "mines" ? (
+            zone.mapArea === "mines" ||
+            zone.mapArea === "crystal" ? (
               <Link href="/explore" className="mw-btn mw-btn-primary w-full text-sm">
                 出门打怪 Speak Attack →
               </Link>
@@ -114,6 +115,14 @@ export function MapZoneCard({
             {zone.mapArea === "battle" ? (
               <Link href="/crafting" className="mw-btn mw-btn-primary w-full text-sm">
                 去工作台合成 Craft →
+              </Link>
+            ) : null}
+            {zone.mapArea === "village" ? (
+              <Link
+                href="/trade?offer=buy-diamonds"
+                className="mw-btn mw-btn-primary w-full text-sm"
+              >
+                去交易买钻 Trade →
               </Link>
             ) : null}
             {zone.questIds.map((questId) => {
