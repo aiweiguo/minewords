@@ -22,6 +22,7 @@ import {
   scoreSpeechAfterPhonics,
 } from "@/lib/phonics";
 import {
+  craftSpeechMinKeywords,
   isSpeechRecognitionSupported,
   listenOnce,
   scoreCraftSpeechAttempt,
@@ -140,6 +141,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
             transcript,
             weapon.expectedSpeech,
             weapon.speechKeywords,
+            craftSpeechMinKeywords(weaponId),
           );
       setPassed(score.passed);
       if (score.passed) {

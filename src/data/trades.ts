@@ -21,7 +21,10 @@ export type TradeOffer = {
   gains: TradeCost[];
   /** Phrase kids can say; also used for TTS demo. */
   expectedSpeech: string;
-  /** Lenient keywords — one hit is enough (same as speak-craft). */
+  /**
+   * Speech keywords for speak-trade.
+   * Early funnel (wood→emerald): 1 hit. Diamond-path offers (P2-5): ≥2 or full phrase.
+   */
   speechKeywords: string[];
   speechHintCn: string;
   speechHintEn: string;
@@ -74,9 +77,11 @@ export const tradeOffers: TradeOffer[] = [
     costs: [{ resource: "emerald", amount: 3 }],
     gains: [{ resource: "diamond", amount: 1 }],
     expectedSpeech: "Can I buy diamonds?",
-    speechKeywords: ["buy", "diamond", "diamonds", "please", "trade", "sword"],
-    speechHintCn: "说 buy / diamond / sword，或 Can I buy diamonds?",
-    speechHintEn: "Say buy, diamond, sword, or Can I buy diamonds?",
+    // "diamonds" omitted — "diamond" already matches via includes (avoid double-count).
+    speechKeywords: ["buy", "diamond", "please", "trade", "sword"],
+    speechHintCn: "至少两个词，如 buy diamond；或整句 Can I buy diamonds?",
+    speechHintEn:
+      "Say at least two keywords (e.g. buy diamond) or Can I buy diamonds?",
     wordIds: ["diamond", "trade", "sword"],
     craftXp: 12,
     icon: assetMap.diamond,
@@ -91,8 +96,9 @@ export const tradeOffers: TradeOffer[] = [
     gains: [{ resource: "diamond", amount: 1 }],
     expectedSpeech: "Trade iron for diamond",
     speechKeywords: ["trade", "iron", "diamond", "sword"],
-    speechHintCn: "说 trade / iron / diamond / sword",
-    speechHintEn: "Say trade, iron, diamond, or sword",
+    speechHintCn: "至少两个词，如 trade iron / iron diamond；或整句",
+    speechHintEn:
+      "Say at least two keywords (e.g. trade iron) or the full phrase",
     wordIds: ["trade", "iron", "diamond", "sword"],
     craftXp: 10,
     icon: assetMap.iron,
