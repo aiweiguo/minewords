@@ -12,10 +12,11 @@ import { RoomBlockType } from "@/types";
 /**
  * Kid-facing secondary links only — fight/craft/explore stay on the hub stage.
  * Post-iron 句子训练 (/speak) is appended when iron-sword is unlocked (P2-2 / MW-48).
+ * /map is display-only 区域进度 (P2-3 / MW-49); 出门 adventure exit is /explore only.
  */
 const moreLinksBase = [
   { href: "/quests", label: "材料委托" },
-  { href: "/map", label: "地图" },
+  { href: "/map", label: "区域进度" },
   { href: "/create", label: "创意" },
   { href: "/unlocks", label: "解锁" },
   { href: "/inventory", label: "背包" },
