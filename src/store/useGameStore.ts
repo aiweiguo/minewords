@@ -38,6 +38,7 @@ import {
   canClaimDailyAdventure,
   normalizeSpeakLoop,
 } from "@/lib/dailyAdventureClaim";
+import { resetMicConfirmStreak } from "@/lib/followConfirm";
 import {
   GAME_STATE_STORAGE_KEY,
   partializeGameState,
@@ -368,6 +369,8 @@ type GameStore = GameState & {
   recordDailyAnswer: (correct: boolean) => void;
   recordCorrectAnswer: (options?: { practiceMode?: boolean }) => void;
   markOnboardingSeen: () => void;
+  /** Parent-editable child display name (MW-56). */
+  setPlayerName: (name: string) => void;
   resetProgress: () => void;
   /** Replace local progress from a parsed backup (MW-46). */
   importProgress: (saved: Partial<GameState>) => void;
@@ -1005,6 +1008,8 @@ export const useGameStore = create<GameStore>()(
 
       recordSpeakCompletion: () =>
         set((state) => {
+          // Mic speak wins — clear Chrome demotion confirm streak (MW-56).
+          resetMicConfirmStreak();
           const dailyStats = normalizeDailyStats(state.dailyStats);
           const weekSpeakStats = normalizeWeekSpeakStats(
             state.weekSpeakStats,
@@ -1074,6 +1079,12 @@ export const useGameStore = create<GameStore>()(
         set((state) =>
           state.hasSeenOnboarding ? state : { hasSeenOnboarding: true },
         ),
+
+      setPlayerName: (name) =>
+        set(() => {
+          const trimmed = name.trim().slice(0, 24);
+          return { playerName: trimmed.length > 0 ? trimmed : "Alex" };
+        }),
 
       resetProgress: () =>
         set({

@@ -31,7 +31,6 @@ const lookupLinks = [
 ];
 
 export default function HomePage() {
-  const resetProgress = useGameStore((state) => state.resetProgress);
   const unlockedIds = useGameStore((state) => state.unlockedIds);
   const hasIronSword = unlockedIds.includes("iron-sword");
   const moreLinks = hasIronSword
@@ -138,21 +137,9 @@ export default function HomePage() {
               <Link href="/credits" className="underline">
                 素材致谢
               </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "确定要重置全部进度吗？此操作无法撤销。",
-                    )
-                  ) {
-                    resetProgress();
-                  }
-                }}
-                className="underline"
-              >
-                重置进度（测试）
-              </button>
+              <Link href="/parent" className="underline">
+                家长页可改名 / 备份 / 重置
+              </Link>
             </div>
           </div>
         ) : null}

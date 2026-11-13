@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { guides } from "@/data/guides";
 import { quests } from "@/data/quests";
@@ -20,6 +20,7 @@ import { normalizeWeekSpeakStats, useGameStore } from "@/store/useGameStore";
 
 export default function ParentPage() {
   const playerName = useGameStore((s) => s.playerName);
+  const setPlayerName = useGameStore((s) => s.setPlayerName);
   const xp = useGameStore((s) => s.xp);
   const resources = useGameStore((s) => s.resources);
   const roomBlocks = useGameStore((s) => s.roomBlocks);
@@ -35,6 +36,13 @@ export default function ParentPage() {
   const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const learningStreak = useGameStore((s) => s.learningStreak);
+
+  const [nameDraft, setNameDraft] = useState(playerName);
+  const [nameSaved, setNameSaved] = useState(false);
+
+  useEffect(() => {
+    setNameDraft(playerName);
+  }, [playerName]);
 
   const level = Math.floor(xp / 100) + 1;
 
@@ -102,6 +110,25 @@ export default function ParentPage() {
     weekSpeakStats.speakCompletions,
     weekSpeakStats.confirmCompletions,
   );
+  const todayConfirmShare =
+    todayActive
+      ? confirmSharePercent(
+          dailyStats.speakCompletions,
+          dailyStats.confirmCompletions,
+        )
+      : null;
+  const todayMostlyConfirm =
+    todayActive &&
+    isMostlyConfirmToday(
+      dailyStats.speakCompletions,
+      dailyStats.confirmCompletions,
+    );
+
+  function savePlayerName() {
+    setPlayerName(nameDraft);
+    setNameSaved(true);
+    window.setTimeout(() => setNameSaved(false), 1800);
+  }
 
   return (
     <main className="space-y-6">
@@ -111,6 +138,49 @@ export default function ParentPage() {
         <p className="mt-2 text-sm font-semibold text-muted">
           按当前进度挑好的三件小事——不是成绩仪表盘。
         </p>
+
+        <div className="mt-4 space-y-2">
+          <label
+            htmlFor="mw-parent-child-name"
+            className="block text-sm font-black"
+          >
+            孩子称呼
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <input
+              id="mw-parent-child-name"
+              type="text"
+              maxLength={24}
+              value={nameDraft}
+              onChange={(event) => setNameDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  savePlayerName();
+                }
+              }}
+              className="min-h-11 min-w-[10rem] flex-1 rounded-md border border-[var(--panel-wood)]/60 bg-black/25 px-3 text-sm font-bold text-[var(--foreground)]"
+              placeholder="例如：小明"
+              autoComplete="nickname"
+            />
+            <button
+              type="button"
+              onClick={savePlayerName}
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--panel-wood)]/60 bg-black/20 px-4 py-2 text-sm font-bold text-primary hover:bg-black/35"
+            >
+              保存
+            </button>
+          </div>
+          {nameSaved ? (
+            <p className="text-xs font-bold text-green-200" role="status">
+              已更新称呼
+            </p>
+          ) : (
+            <p className="text-xs font-semibold text-muted">
+              默认是 Alex，可改成你家孩子的名字。
+            </p>
+          )}
+        </div>
       </section>
 
       <section
@@ -139,37 +209,71 @@ export default function ParentPage() {
         </ol>
       </section>
 
-      <section className="mw-card p-5" aria-labelledby="mw-parent-week-ratio">
-        <h2 id="mw-parent-week-ratio" className="text-xl font-black">
-          本周开口 vs 确认
+      <section className="mw-card p-5" aria-labelledby="mw-parent-speak-ratio">
+        <h2 id="mw-parent-speak-ratio" className="text-xl font-black">
+          开口占比
         </h2>
-        {weekConfirmShare !== null ? (
-          <>
-            <ul className="mt-4 space-y-2 text-sm font-semibold">
-              <li>开口过关（麦克风）：{weekSpeakStats.speakCompletions} 次</li>
-              <li>
-                确认过关（含跟读模式）：{weekSpeakStats.confirmCompletions} 次
-              </li>
-              <li>确认占比：{weekConfirmShare}%</li>
-            </ul>
-            <p
-              className={`mt-4 rounded-xl px-4 py-3 text-sm font-black ${
-                weekMostlyConfirm
-                  ? "bg-amber-900/40 text-amber-100"
-                  : "bg-green-900/30 text-green-100"
-              }`}
-              role="status"
-            >
-              {weekMostlyConfirm
-                ? "本周是否主要靠确认过关：是 — 建议换 Chrome 开口，或陪孩子真的跟读。"
-                : "本周是否主要靠确认过关：否 — 开口过关占多数，很好！"}
-            </p>
-          </>
-        ) : (
-          <p className="mt-4 text-sm text-muted">
-            本周还没有开口或确认过关记录（从本周一开始累计）。
-          </p>
-        )}
+        <p className="mt-2 text-sm font-semibold text-muted">
+          开口说英语才是正玩法。确认占比偏高时，换 Chrome 陪孩子真开口。
+        </p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <h3 className="text-sm font-black">今天</h3>
+            {todayConfirmShare !== null ? (
+              <>
+                <ul className="mt-2 space-y-1 text-sm font-semibold">
+                  <li>开口：{dailyStats.speakCompletions} 次</li>
+                  <li>确认：{dailyStats.confirmCompletions} 次</li>
+                  <li>确认占比：{todayConfirmShare}%</li>
+                </ul>
+                <p
+                  className={`mt-3 rounded-xl px-3 py-2 text-xs font-black ${
+                    todayMostlyConfirm
+                      ? "bg-amber-900/40 text-amber-100"
+                      : "bg-green-900/30 text-green-100"
+                  }`}
+                  role="status"
+                >
+                  {todayMostlyConfirm
+                    ? "今天主要靠确认 — 多开口打"
+                    : "今天开口占多数，很好！"}
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-muted">今天还没有过关记录。</p>
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-sm font-black">本周</h3>
+            {weekConfirmShare !== null ? (
+              <>
+                <ul className="mt-2 space-y-1 text-sm font-semibold">
+                  <li>开口：{weekSpeakStats.speakCompletions} 次</li>
+                  <li>确认：{weekSpeakStats.confirmCompletions} 次</li>
+                  <li>确认占比：{weekConfirmShare}%</li>
+                </ul>
+                <p
+                  className={`mt-3 rounded-xl px-3 py-2 text-xs font-black ${
+                    weekMostlyConfirm
+                      ? "bg-amber-900/40 text-amber-100"
+                      : "bg-green-900/30 text-green-100"
+                  }`}
+                  role="status"
+                >
+                  {weekMostlyConfirm
+                    ? "本周主要靠确认 — 建议换 Chrome 开口"
+                    : "本周开口占多数，很好！"}
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-muted">
+                本周还没有开口或确认记录。
+              </p>
+            )}
+          </div>
+        </div>
       </section>
 
       <section className="mw-card p-5" aria-labelledby="mw-parent-device-note">
@@ -178,8 +282,8 @@ export default function ParentPage() {
         </h2>
         <p className="mt-3 text-sm font-semibold leading-relaxed">
           推荐用 <strong>Chrome</strong>（桌面或 Android）开口打怪、合成、交易。
-          没有麦克风或浏览器不支持语音时，会进入「跟读模式」：先听 TTS、跟读倒计时，再允许点确认——
-          <strong>开口说英语才是正玩法</strong>。
+          有麦时确认已降为次级（展开 + 长按）。没有麦克风时仍走「跟读模式」：听
+          TTS、跟读倒计时，再点确认。
         </p>
         <p className="mt-2 text-sm font-semibold text-muted leading-relaxed">
           iPhone / Safari 等常无语音识别：请换 Chrome，或让孩子走完听+跟读再确认。
@@ -217,80 +321,6 @@ export default function ParentPage() {
         <p className="mt-2 text-sm font-semibold text-amber-200">{reviewSummary}</p>
       </section>
 
-      <section className="mw-card p-5" aria-labelledby="mw-parent-confirm-rate">
-        <h2 id="mw-parent-confirm-rate" className="text-xl font-black">
-          今日开口 vs 确认
-        </h2>
-        {todayActive &&
-        dailyStats.speakCompletions + dailyStats.confirmCompletions > 0 ? (
-          <>
-            <ul className="mt-4 space-y-2 text-sm font-semibold">
-              <li>开口过关（麦克风）：{dailyStats.speakCompletions} 次</li>
-              <li>确认过关（含跟读模式）：{dailyStats.confirmCompletions} 次</li>
-            </ul>
-            <p
-              className={`mt-4 rounded-xl px-4 py-3 text-sm font-black ${
-                isMostlyConfirmToday(
-                  dailyStats.speakCompletions,
-                  dailyStats.confirmCompletions,
-                )
-                  ? "bg-amber-900/40 text-amber-100"
-                  : "bg-green-900/30 text-green-100"
-              }`}
-              role="status"
-            >
-              {isMostlyConfirmToday(
-                dailyStats.speakCompletions,
-                dailyStats.confirmCompletions,
-              )
-                ? "今日是否主要靠确认过关：是 — 建议换 Chrome 开口，或陪孩子真的跟读。"
-                : "今日是否主要靠确认过关：否 — 开口过关占多数，很好！"}
-            </p>
-          </>
-        ) : (
-          <p className="mt-4 text-sm text-muted">
-            今天还没有开口或确认过关记录。
-          </p>
-        )}
-      </section>
-
-      <section className="mw-card p-5">
-        <h2 className="text-xl font-black">今日概览</h2>
-        {todayActive ? (
-          <ul className="mt-4 space-y-2 text-sm font-semibold">
-            <li>完成委托：{dailyStats.completedQuests} 个</li>
-            <li>领取创意：{dailyStats.buildIdeasClaimed} 个</li>
-            <li>完成冒险：{dailyStats.adventuresCompleted} 次</li>
-            <li>答对题数：{dailyStats.correctAnswers} 题</li>
-            <li>新学单词：{dailyStats.learnedWords} 个</li>
-            <li>口语尝试：{dailyStats.speakAttempts} 次</li>
-            <li>开口过关：{dailyStats.speakCompletions} 次</li>
-            <li>确认过关：{dailyStats.confirmCompletions} 次</li>
-            <li>
-              今日冒险：{dailyStats.dailyAdventureCompleted ? "已完成 ✓" : "未完成"}
-            </li>
-          </ul>
-        ) : (
-          <p className="mt-4 text-sm text-muted">今天还没有学习记录，打开 App 开始吧。</p>
-        )}
-      </section>
-
-      <section className="mw-card p-5">
-        <h2 className="text-xl font-black">总体进度</h2>
-        <ul className="mt-4 space-y-2 text-sm font-semibold">
-          <li>等级：Lv {level}</li>
-          <li>总 XP：{xp}</li>
-          <li>连续学习：{learningStreak} 天</li>
-          <li>已完成委托：{completedQuestIds.length} / {quests.length}</li>
-          <li>已完成攻略：{completedGuideIds.length} / {guides.length}</li>
-          <li>已完成口语场景：{completedSpeakIds.length} / {speakScenarios.length}</li>
-          <li>已发现单词：{discoveredWordIds.length} / {vocabulary.length}</li>
-          <li>已学习单词：{learnedWordIds.length}</li>
-          <li>已掌握单词：{masteredWordIds.length}</li>
-          <li>已击败错词怪：{defeatedMonsterIds.length} 个</li>
-        </ul>
-      </section>
-
       {masteredWords.length > 0 ? (
         <section className="mw-card p-5">
           <h2 className="text-xl font-black">已掌握</h2>
@@ -321,6 +351,68 @@ export default function ParentPage() {
           </Link>
         </section>
       ) : null}
+
+      <details className="mw-card p-5">
+        <summary className="cursor-pointer text-xl font-black">
+          更多进度明细（旧指标）
+        </summary>
+        <p className="mt-2 text-sm font-semibold text-muted">
+          委托 / 攻略 / 口语场景等岛指标已折叠，需要时再看。
+        </p>
+
+        <section className="mt-4" aria-labelledby="mw-parent-today-detail">
+          <h3 id="mw-parent-today-detail" className="text-base font-black">
+            今日概览
+          </h3>
+          {todayActive ? (
+            <ul className="mt-2 space-y-2 text-sm font-semibold">
+              <li>完成委托：{dailyStats.completedQuests} 个</li>
+              <li>领取创意：{dailyStats.buildIdeasClaimed} 个</li>
+              <li>完成冒险：{dailyStats.adventuresCompleted} 次</li>
+              <li>答对题数：{dailyStats.correctAnswers} 题</li>
+              <li>新学单词：{dailyStats.learnedWords} 个</li>
+              <li>口语尝试：{dailyStats.speakAttempts} 次</li>
+              <li>开口过关：{dailyStats.speakCompletions} 次</li>
+              <li>确认过关：{dailyStats.confirmCompletions} 次</li>
+              <li>
+                今日冒险：
+                {dailyStats.dailyAdventureCompleted ? "已完成 ✓" : "未完成"}
+              </li>
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-muted">
+              今天还没有学习记录，打开 App 开始吧。
+            </p>
+          )}
+        </section>
+
+        <section className="mt-4" aria-labelledby="mw-parent-overall-detail">
+          <h3 id="mw-parent-overall-detail" className="text-base font-black">
+            总体进度
+          </h3>
+          <ul className="mt-2 space-y-2 text-sm font-semibold">
+            <li>等级：Lv {level}</li>
+            <li>总 XP：{xp}</li>
+            <li>连续学习：{learningStreak} 天</li>
+            <li>
+              已完成委托：{completedQuestIds.length} / {quests.length}
+            </li>
+            <li>
+              已完成攻略：{completedGuideIds.length} / {guides.length}
+            </li>
+            <li>
+              已完成口语场景：{completedSpeakIds.length} /{" "}
+              {speakScenarios.length}
+            </li>
+            <li>
+              已发现单词：{discoveredWordIds.length} / {vocabulary.length}
+            </li>
+            <li>已学习单词：{learnedWordIds.length}</li>
+            <li>已掌握单词：{masteredWordIds.length}</li>
+            <li>已击败错词怪：{defeatedMonsterIds.length} 个</li>
+          </ul>
+        </section>
+      </details>
 
       <div className="text-center">
         <Link href="/" className="text-sm font-bold text-primary underline">

@@ -16,6 +16,7 @@ type Status =
 
 export function ProgressBackupPanel() {
   const importProgress = useGameStore((s) => s.importProgress);
+  const resetProgress = useGameStore((s) => s.resetProgress);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
@@ -75,16 +76,28 @@ export function ProgressBackupPanel() {
     }
   }
 
+  function handleReset() {
+    const confirmed = window.confirm(
+      "确定要重置全部进度吗？此操作无法撤销。建议先导出备份。",
+    );
+    if (!confirmed) return;
+    resetProgress();
+    setStatus({
+      kind: "ok",
+      message: "进度已重置。回基地可从头开始。",
+    });
+  }
+
   return (
     <section className="mw-card p-5" aria-labelledby="mw-parent-backup">
       <h2 id="mw-parent-backup" className="text-xl font-black">
-        进度备份
+        进度备份与重置
       </h2>
       <p className="mt-2 text-sm font-semibold leading-relaxed">
         无账号、换机请备份。进度只存在本机浏览器，没有云同步或登录。
       </p>
       <p className="mt-2 text-sm font-semibold text-muted leading-relaxed">
-        导出 JSON（minewords-game-state），换设备后在本页导入即可恢复。
+        导出 JSON（minewords-game-state），换设备后在本页导入即可恢复。重置请先备份。
       </p>
 
       <div className="mt-4 flex flex-wrap gap-3">
@@ -101,6 +114,13 @@ export function ProgressBackupPanel() {
           className="inline-flex min-h-11 items-center rounded-md border border-[var(--panel-wood)]/60 bg-black/20 px-4 py-2 text-sm font-bold text-primary hover:bg-black/35"
         >
           导入进度
+        </button>
+        <button
+          type="button"
+          onClick={handleReset}
+          className="inline-flex min-h-11 items-center rounded-md border border-amber-700/50 bg-amber-950/30 px-4 py-2 text-sm font-bold text-amber-100 hover:bg-amber-950/50"
+        >
+          重置全部进度
         </button>
         <input
           ref={fileInputRef}

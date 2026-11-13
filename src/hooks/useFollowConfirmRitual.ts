@@ -11,7 +11,8 @@ import { isSpeechRecognitionSupported } from "@/lib/speechRecognition";
 
 /**
  * Soft path when Web Speech is missing: play TTS → follow countdown → unlock confirm.
- * When mic/recognition works, confirm stays immediately available (mic preferred).
+ * When mic/recognition works, softPath=false and FollowConfirmControls demotes
+ * confirm (collapsed + long-press; MW-56) — mic speak stays primary.
  */
 export function useFollowConfirmRitual(demoText: string) {
   // Default locked (soft path on) until mount detects Web Speech — avoids a
