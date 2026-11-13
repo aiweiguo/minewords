@@ -9,10 +9,12 @@ import { OnboardingCoach } from "@/components/OnboardingCoach";
 import { useGameStore } from "@/store/useGameStore";
 import { RoomBlockType } from "@/types";
 
-/** Kid-facing secondary links only — fight/craft/explore stay on the hub stage. */
-const moreLinks = [
+/**
+ * Kid-facing secondary links only — fight/craft/explore stay on the hub stage.
+ * Post-iron 句子训练 (/speak) is appended when iron-sword is unlocked (P2-2 / MW-48).
+ */
+const moreLinksBase = [
   { href: "/quests", label: "材料委托" },
-  { href: "/speak", label: "口语" },
   { href: "/map", label: "地图" },
   { href: "/create", label: "创意" },
   { href: "/unlocks", label: "解锁" },
@@ -29,6 +31,15 @@ const lookupLinks = [
 
 export default function HomePage() {
   const resetProgress = useGameStore((state) => state.resetProgress);
+  const unlockedIds = useGameStore((state) => state.unlockedIds);
+  const hasIronSword = unlockedIds.includes("iron-sword");
+  const moreLinks = hasIronSword
+    ? [
+        ...moreLinksBase.slice(0, 1),
+        { href: "/speak", label: "句子训练" },
+        ...moreLinksBase.slice(1),
+      ]
+    : moreLinksBase;
   const [moreOpen, setMoreOpen] = useState(false);
   const [lookupOpen, setLookupOpen] = useState(false);
   const [decorateOpen, setDecorateOpen] = useState(false);
