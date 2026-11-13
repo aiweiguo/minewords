@@ -52,6 +52,17 @@ export const villagerChatTurns: VillagerChatTurn[] = [
     speechHintEn: "Say trade, buy, or Let's trade",
     wordIds: ["trade", "villager"],
   },
+  // MW-57: optional deep-chat beat for farm words (not on fight surface).
+  {
+    id: "villager-farm",
+    npcLine: "Growing a mini farm? Say farm, wheat, or carrot!",
+    npcLineCn: "要种迷你农场吗？开口说 farm / wheat / carrot！",
+    expectedSpeech: "I want to farm wheat",
+    speechKeywords: ["farm", "wheat", "carrot"],
+    speechHintCn: "说 farm / wheat / carrot，或整句 I want to farm wheat",
+    speechHintEn: "Say farm, wheat, carrot, or I want to farm wheat",
+    wordIds: ["farm", "wheat", "carrot"],
+  },
 ];
 
 export function getVillagerChatTurn(index: number): VillagerChatTurn | undefined {

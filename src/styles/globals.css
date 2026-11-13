@@ -261,6 +261,39 @@ body {
   filter: drop-shadow(0 0 8px rgba(107, 175, 24, 0.45));
 }
 
+@keyframes mw-deco-lit-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* MW-57: brief hub toast when a word decoration lights — not a card stack. */
+.mw-deco-lit-toast {
+  margin: 0.35rem 0.75rem 0;
+  border-radius: 0.75rem;
+  border: 2px solid #6baf18;
+  background: linear-gradient(180deg, #eef8df 0%, #d8eec0 100%);
+  padding: 0.45rem 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #1a3a0a;
+  animation: mw-deco-lit-pop 2.8s ease-out both;
+  pointer-events: none;
+}
+
 @keyframes mw-home-cta-pulse {
   0%,
   100% {

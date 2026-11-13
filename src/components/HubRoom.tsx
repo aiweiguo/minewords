@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DailyAdventurePanel } from "@/components/DailyAdventurePanel";
 import { GameIcon } from "@/components/GameIcon";
@@ -86,6 +86,8 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const [flashSlot, setFlashSlot] = useState<RoomSlotId | null>(null);
   const [hint, setHint] = useState<string | null>(null);
   const [villagerChatTurnsDone, setVillagerChatTurnsDone] = useState(0);
+  const [decorToast, setDecorToast] = useState<string | null>(null);
+  const seenDecorIdsRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     setVillagerChatTurnsDone(countCompletedVillagerChatTurns());
@@ -96,6 +98,26 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       isDecorationUnlocked(deco, learnedWordIds, masteredWordIds) ||
       unlockedIds.includes(deco.id),
   );
+  const litDecorKey = placedDecorations.map((d) => d.id).join("|");
+
+  // MW-57: short celebrate when a word decoration newly lights (not a card).
+  useEffect(() => {
+    const litIds = litDecorKey ? litDecorKey.split("|") : [];
+    if (seenDecorIdsRef.current === null) {
+      seenDecorIdsRef.current = new Set(litIds);
+      return;
+    }
+    const fresh = litIds.filter((id) => !seenDecorIdsRef.current!.has(id));
+    if (fresh.length === 0) return;
+    for (const id of litIds) seenDecorIdsRef.current.add(id);
+    const newest = baseDecorations.find(
+      (d) => d.id === fresh[fresh.length - 1],
+    );
+    if (!newest) return;
+    setDecorToast(`${newest.emoji} 点亮了 ${newest.nameCn}！`);
+    const timer = window.setTimeout(() => setDecorToast(null), 2800);
+    return () => window.clearTimeout(timer);
+  }, [litDecorKey]);
 
   const cost = ROOM_BLOCK_COST[selectedBlock];
   const canAfford = resources[cost.resource] >= cost.amount;
@@ -200,6 +222,11 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       </header>
 
       <WeaponGoalStrip variant="hub" className="relative z-[2]" />
+      {decorToast ? (
+        <p className="mw-deco-lit-toast relative z-[3]" role="status">
+          {decorToast}
+        </p>
+      ) : null}
       <DailyAdventurePanel variant="hub" />
 
       <div className="mw-hub-stage-wrap relative z-[1]">
