@@ -161,6 +161,7 @@ function focusAmount(wordId: string, focus: ResourceType): number {
   if (focus === "wood") {
     if (wordId === "zombie") return 3;
     if (wordId === "wolf") return 3;
+    if (wordId === "pig") return 3;
     if (wordId === "sheep") return 2;
     if (wordId === "spider") return 2;
     return 2;

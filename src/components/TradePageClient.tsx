@@ -40,9 +40,12 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
     <main className="space-y-6">
       <section className="mw-card p-5">
         <h1 className="text-3xl font-black text-primary">Village Trade</h1>
-        <p className="mt-1 text-xl font-bold">村庄 · 开口交易</p>
+        <p className="mt-1 text-xl font-bold">村庄 · 找村民</p>
         <p className="mt-2 text-sm font-semibold text-muted">
-          先和村民聊聊（含农场词），再说买 / 换：木头、船、床、绿宝石、铁、钻石。
+          出门到村：先和村民深聊（含农场词），再说买 / 换：木头、船、床、绿宝石、铁、钻石。
+        </p>
+        <p className="mt-1 text-xs font-semibold text-muted">
+          和基地「找村民」是同一条路 · 也可从出门选区进村
         </p>
         {chasingDiamond ? (
           <p className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-900/25 px-3 py-2 text-sm font-bold text-emerald-100">

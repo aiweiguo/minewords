@@ -55,6 +55,26 @@ export const WEEKLY_CHALLENGE_ROTATION: WeeklyChallengeDef[] = [
       kind: "fight",
     },
   },
+  // MW-58: forest pig feeds crafting-corner decor words.
+  {
+    id: "pig-craft",
+    kind: "zone-monster",
+    target: 1,
+    monsterId: "pig",
+    exploreZoneId: "forest",
+    stripCn: "本周挑战 · 森林开口打猪（学 craft/plank）",
+    stripEn: "Weekly · defeat a pig in the forest",
+    doneStripCn: "本周挑战完成 · 打过猪了",
+    doneStripEn: "Weekly done · pig defeated",
+    nextPreviewCn: "下周换挑战 · 打猪学合成角词语",
+    nextPreviewEn: "Next week rotates · pig teaches craft words",
+    primaryCta: {
+      href: "/explore",
+      labelCn: "去打猪",
+      labelEn: "Fight pig",
+      kind: "fight",
+    },
+  },
   {
     id: "villager-3",
     kind: "villager-chat",

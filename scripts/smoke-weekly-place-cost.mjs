@@ -37,6 +37,8 @@ assert.ok(crystalDrops.includes("glass"), "crystal drops glass");
 
 const ROTATION = [
   { id: "sheep-wool", kind: "zone-monster", monsterId: "sheep", target: 1 },
+  // MW-58: pig craft-corner week
+  { id: "pig-craft", kind: "zone-monster", monsterId: "pig", target: 1 },
   { id: "villager-3", kind: "villager-chat", target: 3 },
   { id: "light-3-decor", kind: "light-decor", target: 3 },
   { id: "witch-cave", kind: "zone-monster", monsterId: "witch", target: 1 },

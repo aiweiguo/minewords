@@ -16,6 +16,8 @@ export const WILD_MONSTER_WORD_IDS = [
   // MW-52 / P2-6: existing encyclopedia mobs pulled into the fight loop.
   "sheep",
   "dragon",
+  // MW-58 / P1-2: forest pig (crafting-corner decor words; no new dict row).
+  "pig",
 ] as const;
 
 function buildMonsterBonusLearnWordIds(): Partial<
@@ -58,6 +60,12 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "wool", amount: 2 },
     { type: "resource", resource: "wood", amount: 1 },
     { type: "xp", xp: 9 },
+  ],
+  pig: [
+    // MW-58: wood-biased drops feed forest craft goals + crafting-corner words.
+    { type: "resource", resource: "wood", amount: 3 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 10 },
   ],
   skeleton: [
     { type: "resource", resource: "stone", amount: 3 },

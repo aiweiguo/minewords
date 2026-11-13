@@ -36,13 +36,13 @@ export const exploreZones: ExploreZone[] = [
     id: "forest",
     name: "Forest",
     nameCn: "森林",
-    blurbCn: "僵尸·蜘蛛·狼·羊 · 狼学 tame/friend · 单词起步",
-    blurbEn: "Word attack · wolf teaches tame/friend",
+    blurbCn: "僵尸·蜘蛛·狼·羊·猪 · 猪学 craft/plank · 单词起步",
+    blurbEn: "Word · pig teaches craft/plank/stick",
     focusResource: "wood",
     focusLabelCn: "木头",
     requiredWeaponId: null,
-    // MW-44: +wolf · MW-52: +sheep (encyclopedia → fight; unlocks wool home block).
-    wildMonsterIds: ["zombie", "spider", "wolf", "sheep"],
+    // MW-44: +wolf · MW-52: +sheep · MW-58: +pig (crafting-corner decor words).
+    wildMonsterIds: ["zombie", "spider", "wolf", "sheep", "pig"],
     background: backgroundMap.forest,
     tone: "forest",
     attackSpeech: "word",
@@ -51,12 +51,12 @@ export const exploreZones: ExploreZone[] = [
     id: "cave",
     name: "Cave",
     nameCn: "洞穴",
-    blurbCn: "骷髅·苦力怕·女巫 · 女巫学 torch/light · 短句起步",
-    blurbEn: "Phrase attack · witch teaches torch/light",
+    blurbCn: "骷髅·苦力怕·女巫 · 骷髅学 chest · 短句起步",
+    blurbEn: "Phrase · skeleton chest · witch torch",
     focusResource: "stone",
     focusLabelCn: "石头",
     requiredWeaponId: "wooden-sword",
-    // MW-44: +witch (cave exclusive).
+    // MW-44: +witch · MW-58: skeleton speak thickened for chest decor.
     wildMonsterIds: ["skeleton", "creeper", "witch"],
     background: backgroundMap.cave,
     tone: "cave",
@@ -67,12 +67,12 @@ export const exploreZones: ExploreZone[] = [
     id: "mines",
     name: "Deep Mines",
     nameCn: "深层矿洞",
-    blurbCn: "烈焰人·苦力怕·末影人 · portal/obsidian/nether · 整句打满",
-    blurbEn: "Sentence · enderman portal · blaze nether",
+    blurbCn: "烈焰人·苦力怕·末影人 · 苦力怕学 redstone · 整句打满",
+    blurbEn: "Sentence · creeper redstone · portal/nether",
     focusResource: "iron",
     focusLabelCn: "铁",
     requiredWeaponId: "stone-sword",
-    // MW-44: +enderman (mines exclusive).
+    // MW-44: +enderman · MW-58: creeper speak thickened for redstone lamp.
     wildMonsterIds: ["blaze", "creeper", "enderman"],
     background: backgroundMap.mines,
     tone: "mines",
@@ -89,6 +89,7 @@ export const exploreZones: ExploreZone[] = [
     focusLabelCn: "钻石",
     requiredWeaponId: "iron-sword",
     // MW-44: crystal unique · MW-52: +dragon (already in vocabulary, not a new dict row).
+    // MW-58: skeleton chest weave also lands here when crystal spawns skeleton.
     wildMonsterIds: ["crystal", "skeleton", "dragon"],
     background: backgroundMap.crystal,
     tone: "crystal",
