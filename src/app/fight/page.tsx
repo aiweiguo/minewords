@@ -62,7 +62,7 @@ export default function FightPage() {
         style={
           zone
             ? {
-                backgroundImage: `linear-gradient(100deg, rgba(18, 22, 14, 0.72), rgba(18, 22, 14, 0.55)), url(${zone.background})`,
+                backgroundImage: `url(${zone.background})`,
               }
             : undefined
         }
