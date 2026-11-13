@@ -2587,6 +2587,145 @@ body {
   }
 }
 
+/* MW-60 / P2-2: once-per-milestone diamond / home-full celebration */
+.mw-milestone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(8, 12, 6, 0.78);
+  backdrop-filter: blur(5px);
+  animation: mw-map-enter 0.45s ease both;
+}
+
+.mw-milestone-panel {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  padding: 1.4rem 1.25rem 1.25rem;
+  overflow: hidden;
+}
+
+.mw-milestone-hero {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.4rem;
+  min-height: 3.5rem;
+}
+
+.mw-milestone-icon {
+  animation: mw-map-pulse 2s ease-in-out infinite;
+}
+
+.mw-milestone-spark {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 1px;
+  background: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.75);
+  animation: mw-coach-spark 1.5s ease-in-out infinite;
+}
+
+.mw-milestone-spark-a {
+  top: 0.1rem;
+  right: calc(50% - 2.6rem);
+}
+
+.mw-milestone-spark-b {
+  bottom: 0.35rem;
+  left: calc(50% - 2.8rem);
+  animation-delay: 0.35s;
+  background: #67e8f9;
+  box-shadow: 0 0 10px rgba(103, 232, 249, 0.7);
+}
+
+.mw-milestone-spark-c {
+  top: 1.1rem;
+  left: calc(50% + 1.9rem);
+  animation-delay: 0.7s;
+  background: #a3e635;
+  box-shadow: 0 0 10px rgba(163, 230, 53, 0.65);
+}
+
+.mw-milestone-brand {
+  margin: 0.2rem 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.mw-milestone-title {
+  margin: 0.25rem 0 0;
+  text-align: center;
+  font-size: 1.65rem;
+  font-weight: 900;
+  line-height: 1.25;
+  background: linear-gradient(90deg, #fde68a, #fef3c7, #67e8f9);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.mw-milestone-title-en {
+  margin: 0.2rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #e8f0d8;
+}
+
+.mw-milestone-lead {
+  margin: 0.65rem 0 0;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #d6e4c3;
+}
+
+.mw-milestone-lead-en {
+  margin: 0.25rem 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.mw-milestone-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1.05rem;
+}
+
+.mw-milestone-cta {
+  animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
+}
+
+@media (max-width: 380px) {
+  .mw-milestone-title {
+    font-size: 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-milestone-overlay,
+  .mw-milestone-icon,
+  .mw-milestone-spark,
+  .mw-milestone-cta {
+    animation: none !important;
+  }
+}
+
 /* MW-42: no-mic follow-then-confirm soft path */
 .mw-follow-confirm {
   display: flex;

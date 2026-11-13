@@ -249,6 +249,14 @@ export type GameState = {
   /** Speak vs confirm clearances since local Monday (Ship B counters). */
   weekSpeakStats: WeekSpeakStats;
   hasSeenOnboarding: boolean;
+  /**
+   * Once-per-milestone hub celebrations (MW-60): diamond sword hung /
+   * home room filled. Missing keys = not yet celebrated.
+   */
+  seenMilestoneCelebrations: {
+    diamondLine?: boolean;
+    homeFull?: boolean;
+  };
 };
 
 export type RewardResult = {

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { BaseDecorationPanel } from "@/components/BaseDecorationPanel";
 import { HubRoom } from "@/components/HubRoom";
+import { MilestoneCelebration } from "@/components/MilestoneCelebration";
 import { OnboardingCoach } from "@/components/OnboardingCoach";
 import { useGameStore } from "@/store/useGameStore";
 import { RoomBlockType } from "@/types";
@@ -68,6 +69,7 @@ export default function HomePage() {
   return (
     <main className="mw-hub-home">
       <OnboardingCoach />
+      <MilestoneCelebration />
       <HubRoom
         selectedBlock={selectedBlock}
         onSelectBlock={setSelectedBlock}
