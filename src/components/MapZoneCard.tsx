@@ -120,10 +120,10 @@ export function MapZoneCard({
             ) : null}
             {zone.mapArea === "village" ? (
               <Link
-                href="/trade?offer=buy-diamonds"
+                href="/trade"
                 className="mw-btn mw-btn-outline w-full text-sm"
               >
-                去交易买钻 →
+                去村庄找村民 →
               </Link>
             ) : null}
             {zone.questIds.map((questId) => {

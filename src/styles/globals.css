@@ -1791,6 +1791,16 @@ body {
   .mw-explore-portals {
     grid-template-columns: 1fr 1fr 1fr 1fr;
   }
+
+  /* MW-58: village sits under the four fight portals as a spatial destination. */
+  .mw-explore-portal-village-row {
+    grid-column: 1 / -1;
+    min-height: 7.5rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.45rem 0.85rem;
+  }
 }
 
 .mw-explore-portal {
@@ -1902,6 +1912,31 @@ body {
       transparent 0 10px,
       rgba(224, 247, 255, 0.06) 10px 12px
     );
+}
+
+/* MW-58: village explore entry — warm stall wash, Hub villager language. */
+.mw-explore-portal-village {
+  border-color: #8b6914;
+}
+
+.mw-explore-portal-village::after {
+  background:
+    linear-gradient(180deg, rgba(90, 64, 32, 0.12), rgba(28, 18, 10, 0.78)),
+    radial-gradient(ellipse at 25% 35%, rgba(212, 175, 55, 0.28), transparent 55%);
+}
+
+.mw-explore-village-art {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.85rem;
+  transform: scale(1.55);
+  transform-origin: top right;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+}
+
+.mw-explore-portal-cta-village {
+  background: rgba(90, 122, 154, 0.95);
+  color: #f4efdf;
 }
 
 .mw-explore-portal-name {

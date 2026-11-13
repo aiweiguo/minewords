@@ -64,7 +64,7 @@ export const mapZones: MapZone[] = [
     emoji: "🏘️",
     requiredLevel: 2,
     questIds: ["trade-emerald-buy-diamond"],
-    descriptionCn: "攒绿宝石开口买钻；武装主线：木 → 石 → 铁 → 钻石。",
+    descriptionCn: "出门到村找村民：深聊后再开口买钻。武装主线：木 → 石 → 铁 → 钻石。",
   },
   {
     id: "zone-nether",

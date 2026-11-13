@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
 import { ExploreZoneId } from "@/data/exploreZones";
+import { backgroundMap } from "@/lib/assets";
 import { listExploreZoneStates } from "@/lib/exploreZones";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -28,7 +29,7 @@ export function ExploreZonePicker() {
             </span>
             <span>选区域</span>
           </h1>
-          <p className="mw-explore-sub">打怪攒材料 · 喂当前武器目标</p>
+          <p className="mw-explore-sub">打怪攒材料 · 或去村庄找村民</p>
         </div>
         <Link href="/" className="mw-explore-back">
           回基地
@@ -103,12 +104,44 @@ export function ExploreZonePicker() {
                 </Link>
               );
             })}
+
+            {/*
+              MW-58 / P1-2 + light P2-1: spatial「出门到村」entry.
+              Deep chat already lives on /trade; this portal matches Hub「找村民」language
+              instead of treating village as a separate map-only island.
+            */}
+            <Link
+              href="/trade"
+              role="listitem"
+              className="mw-explore-portal mw-explore-portal-open mw-explore-portal-village mw-explore-portal-village-row"
+              style={{ backgroundImage: `url(${backgroundMap.village})` }}
+            >
+              <span className="mw-explore-village-art" aria-hidden>
+                <span className="mw-hub-villager">
+                  <span className="mw-hub-villager-head" />
+                  <span className="mw-hub-villager-body" />
+                </span>
+              </span>
+              <span className="mw-explore-portal-name">
+                村庄
+                <span className="mw-explore-portal-en">Village</span>
+              </span>
+              <span className="mw-explore-portal-blurb">
+                找村民 · 深聊再开口交易
+              </span>
+              <span className="mw-explore-portal-focus">
+                和基地「找村民」同一条开口路
+              </span>
+              <span className="mw-explore-portal-cta mw-explore-portal-cta-village">
+                去找村民 →
+              </span>
+            </Link>
           </div>
         </div>
       </div>
 
       <p className="mw-explore-hint relative z-[2]" role="status">
-        木阶森林 → 洞穴 → 矿洞 → 钻石矿脉（铁剑解锁）。同一只怪说得越完整，伤害越大。
+        木阶森林 → 洞穴 → 矿洞 → 钻石矿脉（铁剑解锁）。村庄随时可去找村民深聊交易。
       </p>
     </section>
   );

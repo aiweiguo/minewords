@@ -29,8 +29,9 @@ export type DecorSpeakWeave = {
 
 /**
  * Per-monster speak weaves (thinnest decoration gaps first).
- * Forest wolf → dog house · cave witch → torch · mines enderman/blaze → portal
- * frame · crystal dragon → enchant table (diamond already on trade/crystal drops).
+ * Forest wolf → dog house · forest pig → crafting corner · cave witch → torch ·
+ * cave skeleton → chest · mines enderman/blaze → portal · mines creeper → redstone
+ * lamp · crystal dragon → enchant table (diamond already on trade/crystal drops).
  */
 export const MONSTER_DECOR_SPEAK: Partial<Record<string, DecorSpeakWeave>> = {
   wolf: {
@@ -49,6 +50,23 @@ export const MONSTER_DECOR_SPEAK: Partial<Record<string, DecorSpeakWeave>> = {
       hintEn: "Say a full sentence: I tame the wolf as a friend",
     },
   },
+  // MW-58: forest pig → deco-crafting (craft / plank / stick).
+  pig: {
+    zoneId: "forest",
+    learnWordIds: ["craft", "plank", "stick"],
+    phrase: {
+      expectedText: "Craft stick",
+      keywords: ["craft", "stick", "plank", "pig"],
+      hintCn: "说短句：Craft stick",
+      hintEn: "Say a short phrase: Craft stick",
+    },
+    sentence: {
+      expectedText: "I craft a plank stick near the pig",
+      keywords: ["craft", "plank", "stick", "pig"],
+      hintCn: "说完整句：I craft a plank stick near the pig",
+      hintEn: "Say a full sentence: I craft a plank stick near the pig",
+    },
+  },
   witch: {
     zoneId: "cave",
     learnWordIds: ["torch", "light"],
@@ -63,6 +81,23 @@ export const MONSTER_DECOR_SPEAK: Partial<Record<string, DecorSpeakWeave>> = {
       keywords: ["light", "witch", "torch"],
       hintCn: "说完整句：I light the witch with a torch",
       hintEn: "Say a full sentence: I light the witch with a torch",
+    },
+  },
+  // MW-58: cave skeleton → deco-chest (chest; craft also from pig).
+  skeleton: {
+    zoneId: "cave",
+    learnWordIds: ["chest"],
+    phrase: {
+      expectedText: "Chest skeleton",
+      keywords: ["chest", "skeleton"],
+      hintCn: "说短句：Chest skeleton",
+      hintEn: "Say a short phrase: Chest skeleton",
+    },
+    sentence: {
+      expectedText: "I open the chest near the skeleton",
+      keywords: ["chest", "skeleton", "open"],
+      hintCn: "说完整句：I open the chest near the skeleton",
+      hintEn: "Say a full sentence: I open the chest near the skeleton",
     },
   },
   enderman: {
@@ -95,6 +130,23 @@ export const MONSTER_DECOR_SPEAK: Partial<Record<string, DecorSpeakWeave>> = {
       keywords: ["attack", "blaze", "nether"],
       hintCn: "说完整句：I attack the blaze in the nether",
       hintEn: "Say a full sentence: I attack the blaze in the nether",
+    },
+  },
+  // MW-58: mines creeper → deco-redstone (redstone / button / door).
+  creeper: {
+    zoneId: "mines",
+    learnWordIds: ["redstone", "button", "door"],
+    phrase: {
+      expectedText: "Redstone creeper",
+      keywords: ["redstone", "creeper"],
+      hintCn: "说短句：Redstone creeper",
+      hintEn: "Say a short phrase: Redstone creeper",
+    },
+    sentence: {
+      expectedText: "I fight the creeper by the redstone door",
+      keywords: ["fight", "creeper", "redstone", "door", "button"],
+      hintCn: "说完整句：I fight the creeper by the redstone door",
+      hintEn: "Say a full sentence: I fight the creeper by the redstone door",
     },
   },
   dragon: {

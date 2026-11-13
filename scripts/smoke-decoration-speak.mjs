@@ -32,6 +32,21 @@ assert.match(
   /dragon:[\s\S]*enchant[\s\S]*book/,
   "crystal dragon → enchant/book",
 );
+assert.match(
+  decoSpeak,
+  /pig:[\s\S]*craft[\s\S]*plank[\s\S]*stick/,
+  "forest pig → craft/plank/stick",
+);
+assert.match(
+  decoSpeak,
+  /skeleton:[\s\S]*chest/,
+  "cave skeleton → chest",
+);
+assert.match(
+  decoSpeak,
+  /creeper:[\s\S]*redstone[\s\S]*button[\s\S]*door/,
+  "mines creeper → redstone/button/door",
+);
 
 assert.match(
   monsterDrops,
