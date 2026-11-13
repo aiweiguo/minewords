@@ -45,9 +45,10 @@ export function getErrandProgress(
   const { errand } = quest;
   const completed = opts.completedQuestIds.includes(quest.id);
   const craftHref = `/crafting/${errand.weaponId}`;
-  const exploreHref = errand.exploreZoneId
-    ? `/explore`
-    : "/explore";
+  const exploreHref = "/explore";
+  const tradeHref = errand.tradeOfferId
+    ? `/trade?offer=${errand.tradeOfferId}`
+    : "/trade";
 
   if (errand.goal.type === "defeat-monsters") {
     const current = Math.min(
@@ -71,15 +72,34 @@ export function getErrandProgress(
     const have = opts.resources[errand.goal.resource] ?? 0;
     const current = Math.min(have, errand.goal.amount);
     const ready = have >= errand.goal.amount;
+    const tradePath = errand.nudge === "trade";
     return {
       current,
       target: errand.goal.amount,
       labelCn: `${errand.goal.resource} ${current}/${errand.goal.amount}`,
       labelEn: `${errand.goal.resource} ${current}/${errand.goal.amount}`,
       readyToClaim: ready && !completed,
-      actionHref: ready ? craftHref : exploreHref,
-      actionLabelCn: ready ? "领取并去合成" : "继续攒材料",
-      actionLabelEn: ready ? "Claim · Craft" : "Keep gathering",
+      actionHref: ready
+        ? tradePath
+          ? tradeHref
+          : craftHref
+        : tradePath
+          ? tradeHref
+          : exploreHref,
+      actionLabelCn: ready
+        ? tradePath
+          ? "领取并去交易"
+          : "领取并去合成"
+        : tradePath
+          ? "去交易攒绿宝石"
+          : "继续攒材料",
+      actionLabelEn: ready
+        ? tradePath
+          ? "Claim · Trade"
+          : "Claim · Craft"
+        : tradePath
+          ? "Trade path"
+          : "Keep gathering",
     };
   }
 
@@ -125,6 +145,11 @@ export function getQuestStatus(
   }
   if (quest.errand?.weaponId === "iron-sword") {
     if (!unlockedIds.includes("stone-sword")) {
+      return "locked";
+    }
+  }
+  if (quest.errand?.weaponId === "diamond-sword") {
+    if (!unlockedIds.includes("iron-sword")) {
       return "locked";
     }
   }

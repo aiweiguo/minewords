@@ -120,6 +120,40 @@ const adventureTemplates: Omit<DailyAdventurePlan, "id">[] = [
       { type: "xp", xp: 16 },
     ],
   },
+  {
+    title: "Crystal Diamond Run",
+    titleCn: "矿脉攒钻",
+    descriptionCn: "进钻石矿脉打怪，为钻石剑凑钻。",
+    wordIds: ["diamond", "sword", "craft", "mine", "crystal"],
+    questId: "crystal-fights-for-sword",
+    guideId: "diamond-sword-guide",
+    rewards: [
+      { type: "resource", resource: "diamond", amount: 1 },
+      { type: "xp", xp: 16 },
+    ],
+  },
+  {
+    title: "Diamond Sword Day",
+    titleCn: "钻石剑日",
+    descriptionCn: "推进钻石剑委托：打怪、攒材料、合成。",
+    wordIds: ["diamond", "sword", "craft", "stick", "trade"],
+    questId: "craft-diamond-sword-errand",
+    rewards: [
+      { type: "resource", resource: "diamond", amount: 1 },
+      { type: "xp", xp: 18 },
+    ],
+  },
+  {
+    title: "Emerald Trade Day",
+    titleCn: "绿宝石买钻日",
+    descriptionCn: "攒绿宝石，开口去交易买钻石做剑。",
+    wordIds: ["emerald", "diamond", "trade", "buy", "sword"],
+    questId: "trade-emerald-buy-diamond",
+    rewards: [
+      { type: "resource", resource: "emerald", amount: 2 },
+      { type: "xp", xp: 14 },
+    ],
+  },
 ];
 
 function hashDate(date: string): number {

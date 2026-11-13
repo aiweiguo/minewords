@@ -48,13 +48,18 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const cost = ROOM_BLOCK_COST[selectedBlock];
   const canAfford = resources[cost.resource] >= cost.amount;
   const hasPlaceableMats = resources.wood >= 1 || resources.stone >= 1;
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const roomBlocksForGoal = roomBlocks;
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocksForGoal);
   const craftReady = goal.canCraft;
   const tradeReady = goal.canTrade;
-  const emphasizeFight = !craftReady && !tradeReady && goal.status === "gather";
+  const homeDecorate =
+    goal.status === "line-complete" && (goal.homeFill?.empty ?? 0) > 0;
+  const emphasizeFight =
+    !craftReady && !tradeReady && !homeDecorate && goal.status === "gather";
   const emphasizeCraft = craftReady;
   const emphasizeTrade = tradeReady && !craftReady;
-  const emphasizePlace = hasPlaceableMats && !craftReady && !tradeReady;
+  const emphasizePlace =
+    (hasPlaceableMats && !craftReady && !tradeReady) || homeDecorate;
 
   const equipped = goal.equipped;
   const nextSlot = goal.status === "line-complete" ? null : goal.goal;
@@ -339,11 +344,15 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
             ? hint
             : emphasizeCraft
               ? "材料够了 — 点工作台开口合成武器"
-              : emphasizeFight
-                ? "空武器架 — 点门出门打怪攒材料"
-                : canAfford
-                  ? "点空槽铺地板或墙"
-                  : "换一块有材料的，或点交易开口换稀有材料"}
+              : homeDecorate
+                ? goal.homeFill
+                  ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺家`
+                  : "钻石剑已挂上 — 点空槽装扮我家"
+                : emphasizeFight
+                  ? "空武器架 — 点门出门打怪攒材料"
+                  : canAfford
+                    ? "点空槽铺地板或墙"
+                    : "换一块有材料的，或点交易开口换稀有材料"}
         </p>
       </div>
     </section>

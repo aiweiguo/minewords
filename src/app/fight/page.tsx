@@ -52,7 +52,8 @@ export default function FightPage() {
     .sort((a, b) => b[1] - a[1]);
 
   const hasAny = wildMonsters.length > 0 || wrongMonsters.length > 0;
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
 
   return (
     <main className="space-y-5">

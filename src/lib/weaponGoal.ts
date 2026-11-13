@@ -7,13 +7,19 @@ import {
   WeaponTier,
   WeaponTierId,
 } from "@/data/weapons";
-import { ResourceType } from "@/types";
+import { ResourceType, RoomBlocks, RoomSlotId } from "@/types";
 
 export type WeaponGoalStatus =
   | "gather"
   | "ready"
   | "owned-current"
   | "line-complete";
+
+export type HomeFillProgress = {
+  filled: number;
+  total: number;
+  empty: number;
+};
 
 export type WeaponGoalSnapshot = {
   /** Current target weapon, or highest owned when line is complete. */
@@ -37,7 +43,35 @@ export type WeaponGoalSnapshot = {
   };
   nextPreviewCn: string;
   nextPreviewEn: string;
+  /** Post-diamond home decorate progress (hub room slots). */
+  homeFill: HomeFillProgress | null;
 };
+
+/** Hub side-view room slots kids can fill with plank/cobble (MW-41). */
+export const HOME_ROOM_SLOTS: RoomSlotId[] = [
+  "floor-0",
+  "floor-1",
+  "floor-2",
+  "floor-3",
+  "floor-4",
+  "floor-5",
+  "wall-0",
+  "wall-1",
+  "wall-2",
+  "wall-3",
+];
+
+export function getHomeFillProgress(
+  roomBlocks: RoomBlocks = {},
+): HomeFillProgress {
+  const total = HOME_ROOM_SLOTS.length;
+  const filled = HOME_ROOM_SLOTS.filter((slot) => Boolean(roomBlocks[slot])).length;
+  return {
+    filled,
+    total,
+    empty: Math.max(0, total - filled),
+  };
+}
 
 function missingCosts(
   costs: WeaponCost[],
@@ -90,15 +124,19 @@ function formatMissingCn(missing: WeaponCost[]): string {
     .join(" · ");
 }
 
-export function getWeaponGoalSnapshot(
-  unlockedIds: string[],
-  resources: Record<ResourceType, number>,
+function lineCompleteHomeSnapshot(
+  equipped: WeaponTier | null,
+  top: WeaponTier | undefined,
+  homeFill: HomeFillProgress,
 ): WeaponGoalSnapshot {
-  const equipped = getEquippedWeapon(unlockedIds);
-  const goal = getCurrentWeaponGoal(unlockedIds);
+  const badge = equipped
+    ? `${equipped.nameCn}已挂上 · 武装线完成`
+    : "武器线已完成";
+  const badgeEn = equipped
+    ? `${equipped.name} on the rack · line complete`
+    : "Weapon line complete";
 
-  if (!goal) {
-    const top = weaponTiers[weaponTiers.length - 1];
+  if (homeFill.empty > 0) {
     return {
       goal: top ?? null,
       equipped,
@@ -107,21 +145,54 @@ export function getWeaponGoalSnapshot(
       primaryMissing: null,
       canCraft: false,
       canTrade: false,
-      stripCn: equipped
-        ? `${equipped.nameCn}已挂上武器架 · 继续打怪探险`
-        : "武器线已完成",
-      stripEn: equipped
-        ? `${equipped.name} on the rack · keep exploring`
-        : "Weapon line complete",
+      homeFill,
+      stripCn: `${badge} · 还差 ${homeFill.empty} 个家装位`,
+      stripEn: `${badgeEn} · ${homeFill.empty} home slots left`,
       primaryCta: {
-        href: "/explore",
-        labelCn: "继续打怪",
-        labelEn: "Keep fighting",
-        kind: "fight",
+        href: "/",
+        labelCn: "装扮我家",
+        labelEn: "Decorate home",
+        kind: "home",
       },
-      nextPreviewCn: top?.nextPreviewCn ?? "武器线完成 · 继续打怪探险",
-      nextPreviewEn: top?.nextPreviewEn ?? "Weapon line complete · keep exploring",
+      nextPreviewCn: `家装 ${homeFill.filled}/${homeFill.total} · 用木头/石头铺满基地`,
+      nextPreviewEn: `Home ${homeFill.filled}/${homeFill.total} · fill the base with plank/cobble`,
     };
+  }
+
+  return {
+    goal: top ?? null,
+    equipped,
+    status: "line-complete",
+    missing: [],
+    primaryMissing: null,
+    canCraft: false,
+    canTrade: false,
+    homeFill,
+    stripCn: `${badge} · 家已装满`,
+    stripEn: `${badgeEn} · home filled`,
+    primaryCta: {
+      href: "/",
+      labelCn: "回我家看看",
+      labelEn: "Visit home",
+      kind: "home",
+    },
+    nextPreviewCn: "家装满了 · 想探险就出门打怪",
+    nextPreviewEn: "Home complete · explore when you want",
+  };
+}
+
+export function getWeaponGoalSnapshot(
+  unlockedIds: string[],
+  resources: Record<ResourceType, number>,
+  roomBlocks: RoomBlocks = {},
+): WeaponGoalSnapshot {
+  const equipped = getEquippedWeapon(unlockedIds);
+  const goal = getCurrentWeaponGoal(unlockedIds);
+  const homeFill = getHomeFillProgress(roomBlocks);
+
+  if (!goal) {
+    const top = weaponTiers[weaponTiers.length - 1];
+    return lineCompleteHomeSnapshot(equipped, top, homeFill);
   }
 
   const missing = missingCosts(goal.costs, resources);
@@ -138,6 +209,7 @@ export function getWeaponGoalSnapshot(
       primaryMissing: null,
       canCraft: true,
       canTrade: false,
+      homeFill: null,
       stripCn: `材料够了！去合成${goal.goalLabelCn}`,
       stripEn: `Ready — craft the ${goal.name}`,
       primaryCta: {
@@ -162,6 +234,7 @@ export function getWeaponGoalSnapshot(
       primaryMissing,
       canCraft: false,
       canTrade: true,
+      homeFill: null,
       stripCn: tradeNudge.stripCn,
       stripEn: tradeNudge.stripEn,
       primaryCta: {
@@ -184,6 +257,7 @@ export function getWeaponGoalSnapshot(
     primaryMissing,
     canCraft: false,
     canTrade: false,
+    homeFill: null,
     stripCn: missingDiamond
       ? `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)} · 打矿脉或攒绿宝石去交易`
       : `做一把${goal.goalLabelCn}：还差 ${formatMissingCn(missing)}`,
