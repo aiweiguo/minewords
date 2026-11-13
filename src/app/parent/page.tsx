@@ -7,6 +7,7 @@ import { quests } from "@/data/quests";
 import { getVocabularyById, vocabulary } from "@/data/vocabulary";
 import { speakScenarios } from "@/data/speakScenarios";
 import { getTodayDateString } from "@/lib/dailyAdventure";
+import { isMostlyConfirmToday } from "@/lib/followConfirm";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -73,11 +74,11 @@ export default function ParentPage() {
         </h2>
         <p className="mt-3 text-sm font-semibold leading-relaxed">
           推荐用 <strong>Chrome</strong>（桌面或 Android）开口打怪、合成、交易。
-          没有麦克风或浏览器不支持语音时，可以点「确认」过关——那只是备用；
+          没有麦克风或浏览器不支持语音时，会进入「跟读模式」：先听 TTS、跟读倒计时，再允许点确认——
           <strong>开口说英语才是正玩法</strong>。
         </p>
         <p className="mt-2 text-sm font-semibold text-muted leading-relaxed">
-          iPhone / Safari 等常无语音识别：请换 Chrome，或让孩子尽量开口跟读再点确认。
+          iPhone / Safari 等常无语音识别：请换 Chrome，或让孩子走完听+跟读再确认。
         </p>
       </section>
 
@@ -110,6 +111,43 @@ export default function ParentPage() {
         <p className="mt-2 text-sm font-semibold text-amber-200">{reviewSummary}</p>
       </section>
 
+      <section className="mw-card p-5" aria-labelledby="mw-parent-confirm-rate">
+        <h2 id="mw-parent-confirm-rate" className="text-xl font-black">
+          今日开口 vs 确认
+        </h2>
+        {todayActive &&
+        dailyStats.speakCompletions + dailyStats.confirmCompletions > 0 ? (
+          <>
+            <ul className="mt-4 space-y-2 text-sm font-semibold">
+              <li>开口过关（麦克风）：{dailyStats.speakCompletions} 次</li>
+              <li>确认过关（含跟读模式）：{dailyStats.confirmCompletions} 次</li>
+            </ul>
+            <p
+              className={`mt-4 rounded-xl px-4 py-3 text-sm font-black ${
+                isMostlyConfirmToday(
+                  dailyStats.speakCompletions,
+                  dailyStats.confirmCompletions,
+                )
+                  ? "bg-amber-900/40 text-amber-100"
+                  : "bg-green-900/30 text-green-100"
+              }`}
+              role="status"
+            >
+              {isMostlyConfirmToday(
+                dailyStats.speakCompletions,
+                dailyStats.confirmCompletions,
+              )
+                ? "今日是否主要靠确认过关：是 — 建议换 Chrome 开口，或陪孩子真的跟读。"
+                : "今日是否主要靠确认过关：否 — 开口过关占多数，很好！"}
+            </p>
+          </>
+        ) : (
+          <p className="mt-4 text-sm text-muted">
+            今天还没有开口或确认过关记录。
+          </p>
+        )}
+      </section>
+
       <section className="mw-card p-5">
         <h2 className="text-xl font-black">今日概览</h2>
         {todayActive ? (
@@ -120,6 +158,8 @@ export default function ParentPage() {
             <li>答对题数：{dailyStats.correctAnswers} 题</li>
             <li>新学单词：{dailyStats.learnedWords} 个</li>
             <li>口语尝试：{dailyStats.speakAttempts} 次</li>
+            <li>开口过关：{dailyStats.speakCompletions} 次</li>
+            <li>确认过关：{dailyStats.confirmCompletions} 次</li>
             <li>
               今日冒险：{dailyStats.dailyAdventureCompleted ? "已完成 ✓" : "未完成"}
             </li>

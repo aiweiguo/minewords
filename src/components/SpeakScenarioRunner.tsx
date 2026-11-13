@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { FollowConfirmControls } from "@/components/FollowConfirmControls";
 import { SpeakButton } from "@/components/SpeakButton";
 import { getSentencePatternForKeywords } from "@/data/sentencePatterns";
 import { speakRoleLabels } from "@/data/speakScenarios";
+import { useFollowConfirmRitual } from "@/hooks/useFollowConfirmRitual";
 import {
   isSpeechRecognitionSupported,
   listenOnce,
@@ -26,19 +28,26 @@ const roleStyles = {
 export function SpeakScenarioRunner({ scenario }: SpeakScenarioRunnerProps) {
   const completeSpeakScenario = useGameStore((s) => s.completeSpeakScenario);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const recordSpeakCompletion = useGameStore((s) => s.recordSpeakCompletion);
+  const recordConfirmCompletion = useGameStore((s) => s.recordConfirmCompletion);
   const completedSpeakIds = useGameStore((s) => s.completedSpeakIds);
 
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
+  const [supported, setSupported] = useState(false);
+  const follow = useFollowConfirmRitual(scenario.expectedText);
 
   const roleMeta = speakRoleLabels[scenario.role];
   const completed = completedSpeakIds.includes(scenario.id);
-  const supported = isSpeechRecognitionSupported();
   const sentencePattern = useMemo(
     () => getSentencePatternForKeywords(scenario.keywords),
     [scenario.keywords],
   );
+
+  useEffect(() => {
+    setSupported(isSpeechRecognitionSupported());
+  }, []);
 
   async function handleSpeak() {
     setListening(true);
@@ -56,6 +65,7 @@ export function SpeakScenarioRunner({ scenario }: SpeakScenarioRunnerProps) {
       );
       setPassed(score.passed);
       if (score.passed) {
+        recordSpeakCompletion();
         completeSpeakScenario(scenario.id, scenario.rewardXp);
       }
     } catch {
@@ -64,6 +74,20 @@ export function SpeakScenarioRunner({ scenario }: SpeakScenarioRunnerProps) {
     } finally {
       setListening(false);
     }
+  }
+
+  function handleManualConfirm() {
+    if (completed) return;
+    if (follow.softPath && !follow.canConfirm) return;
+    recordSpeakAttempt();
+    recordConfirmCompletion();
+    completeSpeakScenario(scenario.id, scenario.rewardXp);
+    setPassed(true);
+    setResult(
+      follow.softPath
+        ? "跟读确认：我已跟读完成。"
+        : "手动确认：我已跟读完成。",
+    );
   }
 
   return (
@@ -110,30 +134,40 @@ export function SpeakScenarioRunner({ scenario }: SpeakScenarioRunnerProps) {
         ))}
       </div>
 
-      {supported ? (
-        <button
-          type="button"
+      <div className="mt-6 space-y-2">
+        {supported ? (
+          <button
+            type="button"
+            disabled={listening || completed}
+            onClick={handleSpeak}
+            className="mw-btn mw-btn-primary w-full disabled:opacity-60"
+          >
+            {listening
+              ? "正在听…"
+              : completed
+                ? "已完成 Completed ✓"
+                : "🎤 开始说话 Speak"}
+          </button>
+        ) : null}
+        <FollowConfirmControls
+          softPath={follow.softPath}
+          phase={follow.phase}
+          secondsLeft={follow.secondsLeft}
+          canConfirm={follow.canConfirm}
+          ritualBusy={follow.ritualBusy}
           disabled={listening || completed}
-          onClick={handleSpeak}
-          className="mw-btn mw-btn-primary mt-6 w-full disabled:opacity-60"
-        >
-          {listening ? "正在听…" : completed ? "已完成 Completed ✓" : "🎤 开始说话 Speak"}
-        </button>
-      ) : (
-        <button
-          type="button"
-          disabled={completed}
-          onClick={() => {
-            recordSpeakAttempt();
-            completeSpeakScenario(scenario.id, scenario.rewardXp);
-            setPassed(true);
-            setResult("手动确认：我已跟读完成。");
+          confirmLabel={
+            completed ? "已完成 Completed ✓" : "我已跟读 I said it"
+          }
+          onStartRitual={() => {
+            void follow.startRitual();
           }}
-          className="mw-btn mw-btn-secondary mt-6 w-full disabled:opacity-60"
-        >
-          我已跟读 I said it
-        </button>
-      )}
+          onConfirm={handleManualConfirm}
+          confirmClassName={
+            supported ? "mw-btn-outline" : "mw-btn-secondary"
+          }
+        />
+      </div>
 
       {result ? (
         <p

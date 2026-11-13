@@ -174,6 +174,10 @@ export type DailyStats = {
   dailyAdventureCompleted: boolean;
   dailyAdventureId: string;
   speakAttempts: number;
+  /** Mic / Web Speech successes that cleared a gate today (MW-42). */
+  speakCompletions: number;
+  /** Manual confirm (incl. follow-then-confirm soft path) clearances today. */
+  confirmCompletions: number;
 };
 
 /** Placeable block kinds in the side-view home room (MC-inspired, not official assets). */

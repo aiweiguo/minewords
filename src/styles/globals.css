@@ -2220,3 +2220,49 @@ body {
     animation: none !important;
   }
 }
+
+/* MW-42: no-mic follow-then-confirm soft path */
+.mw-follow-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mw-follow-mode-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(14, 40, 55, 0.55);
+  color: #bae6fd;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  animation: mw-follow-badge-in 0.35s ease;
+}
+
+.mw-follow-mode-hint {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+@keyframes mw-follow-badge-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-follow-mode-badge {
+    animation: none;
+  }
+}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { FollowConfirmControls } from "@/components/FollowConfirmControls";
 import { GameIcon } from "@/components/GameIcon";
 import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { SpeakButton } from "@/components/SpeakButton";
@@ -12,6 +13,7 @@ import {
   weaponTiers,
   WeaponTierId,
 } from "@/data/weapons";
+import { useFollowConfirmRitual } from "@/hooks/useFollowConfirmRitual";
 import { usePhonicsSession } from "@/hooks/usePhonicsSession";
 import {
   getUnknownCraftWordId,
@@ -39,6 +41,8 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const roomBlocks = useGameStore((s) => s.roomBlocks);
   const craftWeapon = useGameStore((s) => s.craftWeapon);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const recordSpeakCompletion = useGameStore((s) => s.recordSpeakCompletion);
+  const recordConfirmCompletion = useGameStore((s) => s.recordConfirmCompletion);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
 
@@ -57,6 +61,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
     resetPhonics,
     showPhonicsCue,
   } = usePhonicsSession();
+  const follow = useFollowConfirmRitual(tier?.expectedSpeech ?? "");
 
   useEffect(() => {
     setSupported(isSpeechRecognitionSupported());
@@ -138,6 +143,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
           );
       setPassed(score.passed);
       if (score.passed) {
+        recordSpeakCompletion();
         applyCraft();
       } else {
         const missFocus = resolveMissPhonicsWordId({
@@ -162,9 +168,13 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
 
   function handleManualCraft() {
     if (!canAfford || owned) return;
+    if (follow.softPath && !follow.canConfirm) return;
     recordSpeakAttempt();
+    recordConfirmCompletion();
     setPassed(true);
-    setResult("手动确认：我已说出配方。");
+    setResult(
+      follow.softPath ? "跟读确认：我已说出配方。" : "手动确认：我已说出配方。",
+    );
     applyCraft();
   }
 
@@ -295,16 +305,22 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
                   {listening ? "正在听… Listening…" : "🎤 开口合成 Craft"}
                 </button>
               ) : null}
-              <button
-                type="button"
+              <FollowConfirmControls
+                softPath={follow.softPath}
+                phase={follow.phase}
+                secondsLeft={follow.secondsLeft}
+                canConfirm={follow.canConfirm}
+                ritualBusy={follow.ritualBusy}
                 disabled={listening}
-                onClick={handleManualCraft}
-                className={`mw-btn w-full disabled:opacity-60 ${
+                confirmLabel="我说出了配方 I said it"
+                onStartRitual={() => {
+                  void follow.startRitual();
+                }}
+                onConfirm={handleManualCraft}
+                confirmClassName={
                   supported ? "mw-btn-outline" : "mw-btn-secondary"
-                }`}
-              >
-                我说出了配方 I said it
-              </button>
+                }
+              />
             </div>
           )}
 

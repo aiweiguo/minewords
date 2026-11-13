@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { FollowConfirmControls } from "@/components/FollowConfirmControls";
 import { GameIcon } from "@/components/GameIcon";
 import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { SpeakButton } from "@/components/SpeakButton";
@@ -11,6 +12,7 @@ import {
   getTradeOfferById,
   TradeOffer,
 } from "@/data/trades";
+import { useFollowConfirmRitual } from "@/hooks/useFollowConfirmRitual";
 import { usePhonicsSession } from "@/hooks/usePhonicsSession";
 import {
   getUnknownTradeWordId,
@@ -35,6 +37,8 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
   const resources = useGameStore((s) => s.resources);
   const executeTrade = useGameStore((s) => s.executeTrade);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const recordSpeakCompletion = useGameStore((s) => s.recordSpeakCompletion);
+  const recordConfirmCompletion = useGameStore((s) => s.recordConfirmCompletion);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
 
@@ -53,6 +57,7 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
     resetPhonics,
     showPhonicsCue,
   } = usePhonicsSession();
+  const follow = useFollowConfirmRitual(offer?.expectedSpeech ?? "");
 
   useEffect(() => {
     setSupported(isSpeechRecognitionSupported());
@@ -124,6 +129,7 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
           );
       setPassed(score.passed);
       if (score.passed) {
+        recordSpeakCompletion();
         applyTrade(offer);
       } else {
         const missFocus = resolveMissPhonicsWordId({
@@ -148,9 +154,15 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
 
   function handleManualTrade() {
     if (!offer || !canAfford) return;
+    if (follow.softPath && !follow.canConfirm) return;
     recordSpeakAttempt();
+    recordConfirmCompletion();
     setPassed(true);
-    setResult("手动确认：我已说出交易句。");
+    setResult(
+      follow.softPath
+        ? "跟读确认：我已说出交易句。"
+        : "手动确认：我已说出交易句。",
+    );
     applyTrade(offer);
   }
 
@@ -304,16 +316,22 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
               {listening ? "正在听… Listening…" : "🎤 开口交易 Trade"}
             </button>
           ) : null}
-          <button
-            type="button"
+          <FollowConfirmControls
+            softPath={follow.softPath}
+            phase={follow.phase}
+            secondsLeft={follow.secondsLeft}
+            canConfirm={follow.canConfirm}
+            ritualBusy={follow.ritualBusy}
             disabled={listening}
-            onClick={handleManualTrade}
-            className={`mw-btn w-full disabled:opacity-60 ${
+            confirmLabel="我说出了交易句 I said it"
+            onStartRitual={() => {
+              void follow.startRitual();
+            }}
+            onConfirm={handleManualTrade}
+            confirmClassName={
               supported ? "mw-btn-outline" : "mw-btn-secondary"
-            }`}
-          >
-            我说出了交易句 I said it
-          </button>
+            }
+          />
         </div>
       )}
 
