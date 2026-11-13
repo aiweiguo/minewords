@@ -48,8 +48,9 @@ export function ExploreZonePicker() {
           <div className="mw-explore-portals">
             {zones.map(({ zone, unlocked, lockCn, lockEn }) => {
               const selected = selectedExploreZoneId === zone.id;
+              // Tone wash lives in CSS (::after); keep art readable under a light veil only.
               const style = {
-                backgroundImage: `linear-gradient(180deg, rgba(18, 22, 14, 0.25), rgba(18, 22, 14, 0.78)), url(${zone.background})`,
+                backgroundImage: `url(${zone.background})`,
               };
 
               if (!unlocked) {

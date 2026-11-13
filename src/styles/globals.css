@@ -1761,6 +1761,22 @@ body {
   overflow: hidden;
 }
 
+/* MW-50: per-zone atmosphere wash so portals don't read as palette-swaps. */
+.mw-explore-portal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(18, 22, 14, 0.18), rgba(18, 22, 14, 0.72));
+}
+
+.mw-explore-portal > * {
+  position: relative;
+  z-index: 1;
+}
+
 .mw-explore-portal-open {
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.12s ease;
@@ -1794,16 +1810,45 @@ body {
   border-color: #3f6b2a;
 }
 
+.mw-explore-portal-forest::after {
+  background:
+    linear-gradient(180deg, rgba(46, 125, 50, 0.12), rgba(20, 40, 12, 0.78)),
+    radial-gradient(ellipse at 30% 20%, rgba(143, 191, 122, 0.35), transparent 55%);
+}
+
 .mw-explore-portal-cave {
   border-color: #4a5560;
 }
 
+.mw-explore-portal-cave::after {
+  background:
+    linear-gradient(180deg, rgba(40, 48, 64, 0.2), rgba(12, 14, 22, 0.82)),
+    radial-gradient(ellipse at 70% 80%, rgba(34, 211, 238, 0.18), transparent 50%);
+}
+
 .mw-explore-portal-mines {
-  border-color: #6b5a3e;
+  border-color: #8b6914;
+}
+
+.mw-explore-portal-mines::after {
+  background:
+    linear-gradient(180deg, rgba(90, 64, 32, 0.22), rgba(22, 14, 8, 0.84)),
+    radial-gradient(ellipse at 50% 30%, rgba(240, 192, 64, 0.28), transparent 55%);
 }
 
 .mw-explore-portal-crystal {
-  border-color: #2a8f9e;
+  border-color: #22d3ee;
+}
+
+.mw-explore-portal-crystal::after {
+  background:
+    linear-gradient(180deg, rgba(6, 40, 64, 0.15), rgba(4, 16, 32, 0.8)),
+    radial-gradient(ellipse at 55% 40%, rgba(103, 232, 249, 0.4), transparent 58%),
+    repeating-linear-gradient(
+      -28deg,
+      transparent 0 10px,
+      rgba(224, 247, 255, 0.06) 10px 12px
+    );
 }
 
 .mw-explore-portal-name {
@@ -1877,17 +1922,65 @@ body {
 }
 
 .mw-explore-fight-banner {
+  position: relative;
+  isolation: isolate;
   background-size: cover;
   background-position: center;
   border: 2px solid #5a4030;
+}
+
+.mw-explore-fight-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, rgba(18, 22, 14, 0.72), rgba(18, 22, 14, 0.55));
+}
+
+.mw-explore-fight-banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.mw-explore-fight-banner-forest {
+  border-color: #3f6b2a;
+}
+
+.mw-explore-fight-banner-forest::before {
+  background:
+    linear-gradient(100deg, rgba(24, 48, 16, 0.7), rgba(40, 72, 28, 0.45)),
+    radial-gradient(ellipse at 20% 30%, rgba(107, 175, 24, 0.25), transparent 55%);
 }
 
 .mw-explore-fight-banner-cave {
   border-color: #4a5560;
 }
 
+.mw-explore-fight-banner-cave::before {
+  background:
+    linear-gradient(100deg, rgba(16, 18, 28, 0.78), rgba(36, 42, 56, 0.5)),
+    radial-gradient(ellipse at 80% 70%, rgba(34, 211, 238, 0.16), transparent 50%);
+}
+
 .mw-explore-fight-banner-mines {
-  border-color: #6b5a3e;
+  border-color: #8b6914;
+}
+
+.mw-explore-fight-banner-mines::before {
+  background:
+    linear-gradient(100deg, rgba(28, 16, 8, 0.8), rgba(72, 48, 20, 0.5)),
+    radial-gradient(ellipse at 50% 20%, rgba(240, 192, 64, 0.28), transparent 55%);
+}
+
+.mw-explore-fight-banner-crystal {
+  border-color: #22d3ee;
+}
+
+.mw-explore-fight-banner-crystal::before {
+  background:
+    linear-gradient(100deg, rgba(4, 20, 40, 0.78), rgba(8, 48, 72, 0.48)),
+    radial-gradient(ellipse at 60% 40%, rgba(103, 232, 249, 0.35), transparent 60%);
 }
 
 /* MW-19 same-monster fluency ladder */

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid slice">
+  <!-- Deep Mines: warm amber shaft + iron veins (not battle-red arena) -->
+  <rect width="320" height="180" fill="#1C140C"/>
+  <rect y="0" width="320" height="36" fill="#2A1C10"/>
+  <rect y="130" width="320" height="50" fill="#3A2818"/>
+  <!-- Tunnel mouth -->
+  <rect x="70" y="40" width="180" height="90" fill="#120C08"/>
+  <rect x="88" y="52" width="144" height="70" fill="#1A120C"/>
+  <!-- Timber supports -->
+  <rect x="78" y="40" width="10" height="90" fill="#6B4423"/>
+  <rect x="232" y="40" width="10" height="90" fill="#6B4423"/>
+  <rect x="78" y="40" width="164" height="10" fill="#8B5A2B"/>
+  <!-- Side rock -->
+  <rect x="0" y="50" width="70" height="80" fill="#2E2218"/>
+  <rect x="250" y="55" width="70" height="75" fill="#2E2218"/>
+  <!-- Iron ore glints -->
+  <rect x="20" y="70" width="14" height="10" fill="#C0C0C8"/>
+  <rect x="28" y="78" width="10" height="8" fill="#8A9AAA"/>
+  <rect x="270" y="85" width="16" height="12" fill="#B8B8C0"/>
+  <rect x="278" y="94" width="10" height="8" fill="#7A8A9A"/>
+  <rect x="40" y="110" width="12" height="8" fill="#A8A8B0" opacity="0.85"/>
+  <!-- Lantern glow -->
+  <rect x="148" y="48" width="24" height="8" fill="#3A2818"/>
+  <rect x="154" y="56" width="12" height="14" fill="#F0C040"/>
+  <rect x="150" y="70" width="20" height="6" fill="#E09020" opacity="0.55"/>
+  <!-- Rail / cart hint -->
+  <rect x="100" y="148" width="120" height="4" fill="#5A5048"/>
+  <rect x="110" y="136" width="36" height="16" fill="#4A3A28"/>
+  <rect x="114" y="140" width="10" height="8" fill="#2A1C10"/>
+  <!-- Ember sparks (mine heat, not fight blood) -->
+  <rect x="160" y="100" width="4" height="4" fill="#FFAA40" opacity="0.7"/>
+  <rect x="190" y="88" width="3" height="3" fill="#FFCC66" opacity="0.55"/>
+</svg>

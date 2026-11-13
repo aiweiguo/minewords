@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid slice">
+  <!-- Crystal Depths: teal-indigo vein with diamond shards (not gray cave) -->
+  <rect width="320" height="180" fill="#061828"/>
+  <rect y="0" width="320" height="40" fill="#0A2038"/>
+  <rect y="120" width="320" height="60" fill="#0C2438"/>
+  <!-- Deep walls -->
+  <rect x="0" y="30" width="50" height="100" fill="#0E2A40"/>
+  <rect x="270" y="35" width="50" height="95" fill="#0E2A40"/>
+  <!-- Crystal clusters — left -->
+  <rect x="28" y="70" width="16" height="50" fill="#22D3EE"/>
+  <rect x="20" y="58" width="12" height="40" fill="#67E8F9"/>
+  <rect x="42" y="62" width="10" height="48" fill="#A5F3FC"/>
+  <!-- Crystal clusters — center -->
+  <rect x="140" y="48" width="28" height="72" fill="#38BDF8"/>
+  <rect x="128" y="40" width="16" height="56" fill="#7DD3FC"/>
+  <rect x="164" y="55" width="14" height="58" fill="#67E8F9"/>
+  <rect x="148" y="32" width="12" height="28" fill="#E0F7FF"/>
+  <!-- Crystal clusters — right -->
+  <rect x="250" y="65" width="20" height="55" fill="#22D3EE"/>
+  <rect x="240" y="55" width="12" height="48" fill="#A5F3FC"/>
+  <rect x="268" y="72" width="10" height="42" fill="#67E8F9"/>
+  <!-- Floor facets / diamond flecks -->
+  <rect x="80" y="140" width="20" height="12" fill="#0EA5E9"/>
+  <rect x="200" y="145" width="16" height="10" fill="#38BDF8"/>
+  <rect x="110" y="155" width="10" height="8" fill="#E0F7FF" opacity="0.7"/>
+  <!-- Soft glow haze -->
+  <rect x="120" y="90" width="60" height="20" fill="#22D3EE" opacity="0.15"/>
+  <rect x="100" y="20" width="8" height="8" fill="#E0F7FF" opacity="0.75"/>
+  <rect x="210" y="28" width="6" height="6" fill="#A5F3FC" opacity="0.7"/>
+  <rect x="60" y="35" width="5" height="5" fill="#67E8F9" opacity="0.55"/>
+</svg>

@@ -74,7 +74,7 @@ export const exploreZones: ExploreZone[] = [
     requiredWeaponId: "stone-sword",
     // MW-44: +enderman (mines exclusive).
     wildMonsterIds: ["blaze", "creeper", "enderman"],
-    background: backgroundMap.battle,
+    background: backgroundMap.mines,
     tone: "mines",
     // MW-19/35: starts at sentence; word/phrase still chip; misses step down to word.
     attackSpeech: "sentence",
@@ -90,7 +90,7 @@ export const exploreZones: ExploreZone[] = [
     requiredWeaponId: "iron-sword",
     // MW-44: crystal = diamond-semantic unique (not a mines/blaze reskin); keep skeleton.
     wildMonsterIds: ["crystal", "skeleton"],
-    background: backgroundMap.cave,
+    background: backgroundMap.crystal,
     tone: "crystal",
     // Same ladder as mines: sentence start, lower rungs chip, miss step-down (MW-35).
     attackSpeech: "sentence",
