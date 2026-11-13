@@ -61,3 +61,20 @@ export function getVillagerChatTurn(index: number): VillagerChatTurn | undefined
 export function villagerChatTurnCount(): number {
   return villagerChatTurns.length;
 }
+
+/** Completed deep-chat turn count from hub localStorage (MW-55 weekly challenge). */
+export function countCompletedVillagerChatTurns(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = window.localStorage.getItem(VILLAGER_CHAT_STORAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return 0;
+    const ids = new Set(
+      parsed.filter((id): id is string => typeof id === "string"),
+    );
+    return villagerChatTurns.filter((turn) => ids.has(turn.id)).length;
+  } catch {
+    return 0;
+  }
+}

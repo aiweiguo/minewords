@@ -68,6 +68,8 @@ const defaultResources: Record<ResourceType, number> = {
   emerald: 0,
   diamond: 0,
   netherite: 0,
+  wool: 0,
+  glass: 0,
 };
 
 /** Cost to place each block type into the home room. */
@@ -77,9 +79,9 @@ export const ROOM_BLOCK_COST: Record<
 > = {
   plank: { resource: "wood", amount: 1 },
   cobble: { resource: "stone", amount: 1 },
-  // MW-52: encyclopedia block words become placeables (same wood/stone sinks).
-  glass: { resource: "wood", amount: 1 },
-  wool: { resource: "wood", amount: 1 },
+  // MW-55: glass/wool use matching inventory — not wood sinks.
+  glass: { resource: "glass", amount: 1 },
+  wool: { resource: "wool", amount: 1 },
 };
 
 /** Placing these block types marks the matching dictionary word learned. */

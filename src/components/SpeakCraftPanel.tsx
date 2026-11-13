@@ -46,6 +46,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const recordConfirmCompletion = useGameStore((s) => s.recordConfirmCompletion);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
+  const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
 
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -87,7 +88,12 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const cueVisible = showPhonicsCue(unknownWordId);
 
   const owned = unlockedIds.includes(weaponId);
-  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
+  const snapshot = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks, {
+    learnedWordIds,
+    masteredWordIds,
+    unlockedIds,
+    defeatedMonsterIds,
+  });
   const isCurrentGoal = snapshot.goal?.id === weaponId;
   const tierIndex = getWeaponTierIndex(weaponId);
   const previousTier = tierIndex > 0 ? weaponTiers[tierIndex - 1] : null;
@@ -223,11 +229,25 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
             {weapon.name} is on your weapon rack.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Link href="/" className="mw-btn mw-btn-primary">
+            <Link
+              href={
+                snapshot.status === "line-complete" &&
+                (snapshot.homeFill?.empty ?? 0) === 0 &&
+                snapshot.weekly &&
+                !snapshot.weekly.done
+                  ? snapshot.primaryCta.href
+                  : "/"
+              }
+              className="mw-btn mw-btn-primary"
+            >
               {snapshot.status === "line-complete" &&
               (snapshot.homeFill?.empty ?? 0) > 0
                 ? `装扮我家 · 还差 ${snapshot.homeFill?.empty} 位`
-                : "回基地看武器架"}
+                : snapshot.status === "line-complete" &&
+                    snapshot.weekly &&
+                    !snapshot.weekly.done
+                  ? snapshot.primaryCta.labelCn
+                  : "回基地看武器架"}
             </Link>
             {snapshot.status === "line-complete" ? null : (
               <Link href="/explore" className="mw-btn mw-btn-outline">

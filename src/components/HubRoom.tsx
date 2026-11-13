@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DailyAdventurePanel } from "@/components/DailyAdventurePanel";
 import { GameIcon } from "@/components/GameIcon";
@@ -11,6 +11,7 @@ import {
   isDecorationUnlocked,
 } from "@/data/baseDecorations";
 import { decorationSceneSlots } from "@/data/decorationSlots";
+import { countCompletedVillagerChatTurns } from "@/data/villagerChat";
 import { weaponTiers } from "@/data/weapons";
 import { assetMap } from "@/lib/assets";
 import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
@@ -28,7 +29,8 @@ const blockMeta: Record<
     labelCn: string;
     labelEn: string;
     className: string;
-    resourceKey: "wood" | "stone";
+    resourceKey: "wood" | "stone" | "glass" | "wool";
+    costLabelCn: string;
   }
 > = {
   plank: {
@@ -36,25 +38,36 @@ const blockMeta: Record<
     labelEn: "plank",
     className: "mw-block-plank",
     resourceKey: "wood",
+    costLabelCn: "木头",
   },
   cobble: {
     labelCn: "圆石",
     labelEn: "cobble",
     className: "mw-block-cobble",
     resourceKey: "stone",
+    costLabelCn: "石头",
   },
   glass: {
     labelCn: "玻璃",
     labelEn: "glass",
     className: "mw-block-glass",
-    resourceKey: "wood",
+    resourceKey: "glass",
+    costLabelCn: "玻璃",
   },
   wool: {
     labelCn: "羊毛",
     labelEn: "wool",
     className: "mw-block-wool",
-    resourceKey: "wood",
+    resourceKey: "wool",
+    costLabelCn: "羊毛",
   },
+};
+
+const COST_HINT_CN: Record<"wood" | "stone" | "glass" | "wool", string> = {
+  wood: "木头",
+  stone: "石头",
+  glass: "玻璃（矿脉水晶怪掉）",
+  wool: "羊毛（森林打羊掉）",
 };
 
 type HubRoomProps = {
@@ -68,9 +81,15 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
+  const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
   const placeRoomBlock = useGameStore((s) => s.placeRoomBlock);
   const [flashSlot, setFlashSlot] = useState<RoomSlotId | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [villagerChatTurnsDone, setVillagerChatTurnsDone] = useState(0);
+
+  useEffect(() => {
+    setVillagerChatTurnsDone(countCompletedVillagerChatTurns());
+  }, []);
 
   const placedDecorations = baseDecorations.filter(
     (deco) =>
@@ -80,9 +99,19 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
 
   const cost = ROOM_BLOCK_COST[selectedBlock];
   const canAfford = resources[cost.resource] >= cost.amount;
-  const hasPlaceableMats = resources.wood >= 1 || resources.stone >= 1;
+  const hasPlaceableMats =
+    resources.wood >= 1 ||
+    resources.stone >= 1 ||
+    resources.glass >= 1 ||
+    resources.wool >= 1;
   const roomBlocksForGoal = roomBlocks;
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocksForGoal);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocksForGoal, {
+    learnedWordIds,
+    masteredWordIds,
+    unlockedIds,
+    defeatedMonsterIds,
+    villagerChatTurnsDone,
+  });
   const craftReady = goal.canCraft;
   const tradeReady = goal.canTrade;
   const homeDecorate =
@@ -104,9 +133,10 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       return;
     }
     if (!canAfford) {
-      setHint(
-        `需要 ${cost.amount} ${cost.resource === "wood" ? "木头" : "石头"}，先出门打怪`,
-      );
+      const needLabel =
+        COST_HINT_CN[cost.resource as keyof typeof COST_HINT_CN] ??
+        cost.resource;
+      setHint(`需要 ${cost.amount} ${needLabel}，先出门打怪`);
       return;
     }
     const ok = placeRoomBlock(slotId, selectedBlock);
@@ -387,7 +417,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                   </span>
                 </span>
                 <span className="text-[11px] font-semibold text-black/70">
-                  {meta.resourceKey === "wood" ? "木头" : "石头"} ×{stock}
+                  {meta.costLabelCn} ×{stock}
                 </span>
               </button>
             );
@@ -409,12 +439,12 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                   ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺木板/圆石/玻璃/羊毛；学词还能点亮房间装饰`
                   : "钻石剑已挂上 — 点空槽装扮我家"
                 : placedDecorations.length > 0 && emphasizeFight
-                  ? "空武器架 — 点门出门打怪；森林打羊可学 wool，家里可铺玻璃/羊毛"
+                  ? "空武器架 — 点门出门打怪；森林打羊掉羊毛，矿脉水晶怪掉玻璃"
                   : emphasizeFight
                     ? "空武器架 — 点门出门打怪攒材料"
                     : canAfford
-                      ? "点空槽铺地板或墙（木板·圆石·玻璃·羊毛）"
-                      : "换一块有材料的，或点交易开口换稀有材料"}
+                      ? "点空槽铺地板或墙（木板耗木·圆石耗石·玻璃耗玻璃·羊毛耗羊毛）"
+                      : "换一块有材料的：羊毛打羊，玻璃打水晶怪"}
         </p>
       </div>
     </section>

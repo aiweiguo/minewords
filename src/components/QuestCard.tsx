@@ -68,6 +68,8 @@ export function QuestCard({
       emerald: 0,
       diamond: 0,
       netherite: 0,
+      wool: 0,
+      glass: 0,
     },
     unlockedIds,
     completedQuestIds,

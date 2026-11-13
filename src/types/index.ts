@@ -79,7 +79,11 @@ export type ResourceType =
   | "gold"
   | "emerald"
   | "diamond"
-  | "netherite";
+  | "netherite"
+  /** Sheep drop → hub wool placeable (MW-55). */
+  | "wool"
+  /** Crystal drop → hub glass placeable (MW-55). */
+  | "glass";
 
 export type Reward = {
   type: "resource" | "xp" | "unlock";

@@ -53,7 +53,14 @@ export default function FightPage() {
 
   const hasAny = wildMonsters.length > 0 || wrongMonsters.length > 0;
   const roomBlocks = useGameStore((s) => s.roomBlocks);
-  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
+  const goal = getWeaponGoalSnapshot(unlockedIds, resources, roomBlocks, {
+    learnedWordIds,
+    masteredWordIds,
+    unlockedIds,
+    defeatedMonsterIds,
+  });
 
   return (
     <main className="space-y-5">

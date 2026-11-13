@@ -13,6 +13,8 @@ const resourceMeta: Record<
   emerald: { label: "Emerald", color: "bg-green-900/40 text-green-100 border-green-700" },
   diamond: { label: "Diamond", color: "bg-cyan-900/40 text-cyan-100 border-cyan-600" },
   netherite: { label: "Netherite", color: "bg-zinc-900/40 text-zinc-100 border-zinc-600" },
+  wool: { label: "Wool", color: "bg-rose-900/40 text-rose-100 border-rose-600" },
+  glass: { label: "Glass", color: "bg-sky-900/40 text-sky-100 border-sky-600" },
 };
 
 type ResourceBadgeProps = {
@@ -53,6 +55,8 @@ export const displayResources: ResourceType[] = [
   "iron",
   "emerald",
   "diamond",
+  "wool",
+  "glass",
 ];
 
 export { resourceMeta };
