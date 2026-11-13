@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
-import { formatDailyRewards, getDailyAdventure, getTodayDateString } from "@/lib/dailyAdventure";
+import {
+  formatDailyRewards,
+  getDailyAdventure,
+  getDailyAdventurePlayHref,
+  getDailyAdventurePlayLabel,
+  getTodayDateString,
+} from "@/lib/dailyAdventure";
 import { canClaimDailyAdventure } from "@/lib/dailyAdventureClaim";
 import { getVocabularyIcon } from "@/lib/assets";
 import { getVocabularyById } from "@/data/vocabulary";
@@ -18,15 +24,17 @@ type DailyAdventurePanelProps = {
 export function DailyAdventurePanel({ variant = "full" }: DailyAdventurePanelProps) {
   const dailyStats = useGameStore((s) => s.dailyStats);
   const learningStreak = useGameStore((s) => s.learningStreak);
-  const completedQuestIds = useGameStore((s) => s.completedQuestIds);
-  const completedGuideIds = useGameStore((s) => s.completedGuideIds);
+  const unlockedIds = useGameStore((s) => s.unlockedIds);
   const completeDailyAdventure = useGameStore((s) => s.completeDailyAdventure);
 
   const today = getTodayDateString();
-  const adventure = getDailyAdventure(today);
+  const adventure = useMemo(
+    () => getDailyAdventure(today, unlockedIds),
+    [today, unlockedIds],
+  );
   const claimCheck = useMemo(
-    () => canClaimDailyAdventure(adventure, completedQuestIds, completedGuideIds),
-    [adventure, completedQuestIds, completedGuideIds],
+    () => canClaimDailyAdventure(adventure, dailyStats.speakLoop),
+    [adventure, dailyStats.speakLoop],
   );
 
   const completed =
@@ -39,16 +47,8 @@ export function DailyAdventurePanel({ variant = "full" }: DailyAdventurePanelPro
     completeDailyAdventure(adventure);
   }
 
-  const playHref = adventure.questId
-    ? `/quests/${adventure.questId}`
-    : adventure.guideId
-      ? `/guides/${adventure.guideId}`
-      : "/explore";
-  const playLabel = adventure.questId
-    ? "去做委托"
-    : adventure.guideId
-      ? "看攻略"
-      : "出门打怪";
+  const playHref = getDailyAdventurePlayHref(adventure);
+  const playLabel = getDailyAdventurePlayLabel(adventure);
 
   if (variant === "hub") {
     return (
@@ -56,6 +56,7 @@ export function DailyAdventurePanel({ variant = "full" }: DailyAdventurePanelPro
         className="mw-hub-daily"
         aria-label="今日冒险"
         data-daily-id={adventure.id}
+        data-daily-action={adventure.actionKind}
       >
         <div className="mw-hub-daily-main">
           {learningStreak > 0 ? (
@@ -71,6 +72,11 @@ export function DailyAdventurePanel({ variant = "full" }: DailyAdventurePanelPro
           <div className="mw-hub-daily-copy min-w-0">
             <p className="mw-hub-daily-kicker">今日冒险</p>
             <p className="mw-hub-daily-title truncate">{adventure.titleCn}</p>
+            {!completed ? (
+              <p className="mw-hub-daily-progress truncate text-xs opacity-80">
+                {claimCheck.progress}/{claimCheck.needed} · {playLabel}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="mw-hub-daily-actions">
@@ -133,21 +139,19 @@ export function DailyAdventurePanel({ variant = "full" }: DailyAdventurePanelPro
       <p className="mt-4 text-sm font-semibold">
         奖励：{formatDailyRewards(adventure.rewards)}
       </p>
+      <p className="mt-1 text-sm font-semibold text-muted">
+        开口进度：{claimCheck.progress}/{claimCheck.needed}（{playLabel}）
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-3">
+        <Link href={playHref} className="mw-btn mw-btn-secondary text-sm">
+          {playLabel}
+        </Link>
         {adventure.guideId ? (
           <Link href={`/guides/${adventure.guideId}`} className="mw-btn mw-btn-outline text-sm">
-            看攻略 + 小测验
+            家长旁路：攻略
           </Link>
         ) : null}
-        {adventure.questId ? (
-          <Link href={`/quests/${adventure.questId}`} className="mw-btn mw-btn-outline text-sm">
-            材料委托
-          </Link>
-        ) : null}
-        <Link href="/explore" className="mw-btn mw-btn-secondary text-sm">
-          出门打怪
-        </Link>
         {!completed ? (
           <button
             type="button"
