@@ -1,35 +1,73 @@
-import { DailyAdventurePlan } from "@/types";
+import {
+  DailyAdventureActionKind,
+  DailyAdventurePlan,
+  DailySpeakLoopCounts,
+} from "@/types";
 
+export const EMPTY_SPEAK_LOOP: DailySpeakLoopCounts = {
+  fight: 0,
+  craft: 0,
+  trade: 0,
+  home: 0,
+};
+
+export function normalizeSpeakLoop(
+  raw?: Partial<DailySpeakLoopCounts> | null,
+): DailySpeakLoopCounts {
+  return {
+    fight: raw?.fight ?? 0,
+    craft: raw?.craft ?? 0,
+    trade: raw?.trade ?? 0,
+    home: raw?.home ?? 0,
+  };
+}
+
+export function bumpSpeakLoop(
+  counts: DailySpeakLoopCounts,
+  kind: DailyAdventureActionKind,
+): DailySpeakLoopCounts {
+  const base = normalizeSpeakLoop(counts);
+  return {
+    ...base,
+    [kind]: base[kind] + 1,
+  };
+}
+
+const ACTION_LABEL_CN: Record<DailyAdventureActionKind, string> = {
+  fight: "开口打怪",
+  craft: "开口合成",
+  trade: "开口交易",
+  home: "铺一块家",
+};
+
+export type DailyAdventureClaimCheck = {
+  ok: boolean;
+  reason: string;
+  progress: number;
+  needed: number;
+};
+
+/**
+ * Claim unlocks only via today's speak/play action counts.
+ * Guide quiz / completedGuideIds are intentionally ignored (MW-54).
+ */
 export function canClaimDailyAdventure(
   plan: DailyAdventurePlan,
-  completedQuestIds: string[],
-  completedGuideIds: string[],
-): { ok: boolean; reason: string } {
-  const questDone = plan.questId ? completedQuestIds.includes(plan.questId) : false;
-  const guideDone = plan.guideId ? completedGuideIds.includes(plan.guideId) : false;
+  speakLoop: Partial<DailySpeakLoopCounts> | undefined,
+): DailyAdventureClaimCheck {
+  const counts = normalizeSpeakLoop(speakLoop);
+  const needed = Math.max(1, plan.actionCount || 1);
+  const progress = counts[plan.actionKind] ?? 0;
 
-  if (plan.questId && plan.guideId) {
-    if (questDone || guideDone) {
-      return { ok: true, reason: "" };
-    }
-    return {
-      ok: false,
-      reason: "请先完成今日冒险的材料委托或攻略小测验，再领取奖励。",
-    };
+  if (progress >= needed) {
+    return { ok: true, reason: "", progress, needed };
   }
 
-  if (plan.questId) {
-    if (questDone) return { ok: true, reason: "" };
-    return { ok: false, reason: "请先完成上方材料委托，再领取今日冒险奖励。" };
-  }
-
-  if (plan.guideId) {
-    if (guideDone) return { ok: true, reason: "" };
-    return { ok: false, reason: "请先完成上方关联攻略小测验，再领取今日冒险奖励。" };
-  }
-
+  const label = ACTION_LABEL_CN[plan.actionKind];
   return {
     ok: false,
-    reason: "今日冒险暂无关联内容，请稍后再试。",
+    reason: `先${label} ${needed} 次再领奖（已完成 ${progress}/${needed}）。攻略小测验不挡领取。`,
+    progress,
+    needed,
   };
 }

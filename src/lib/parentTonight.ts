@@ -1,6 +1,11 @@
 import { baseDecorations, isDecorationUnlocked } from "@/data/baseDecorations";
 import { exploreZones, ExploreZone } from "@/data/exploreZones";
 import { getVocabularyById, vocabulary } from "@/data/vocabulary";
+import {
+  getDailyAdventure,
+  getDailyAdventurePlayHref,
+  getTodayDateString,
+} from "@/lib/dailyAdventure";
 import { isExploreZoneUnlocked } from "@/lib/exploreZones";
 import {
   getHomeFillProgress,
@@ -271,11 +276,15 @@ function buildCandidates(input: TonightProgressInput): TonightThing[] {
 
   const todayActive = input.dailyStats.date.length > 0;
   if (todayActive && !input.dailyStats.dailyAdventureCompleted) {
+    const adventure = getDailyAdventure(
+      getTodayDateString(),
+      input.unlockedIds,
+    );
     candidates.push({
       id: "daily-adventure",
-      labelCn: "完成今日一委托",
-      detailCn: "短局收尾：做完今日冒险再睡觉。",
-      href: "/quests",
+      labelCn: "完成今日开口冒险",
+      detailCn: `短局收尾：${adventure.titleCn}（不开攻略卷子）。`,
+      href: getDailyAdventurePlayHref(adventure),
       kind: "daily",
     });
   }

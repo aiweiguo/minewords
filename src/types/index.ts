@@ -163,6 +163,14 @@ export type Unlockable = {
   requiredCount?: number;
 };
 
+/** Speak/play counters that unlock daily-adventure claim (MW-54). */
+export type DailySpeakLoopCounts = {
+  fight: number;
+  craft: number;
+  trade: number;
+  home: number;
+};
+
 export type DailyStats = {
   date: string;
   completedQuests: number;
@@ -178,7 +186,12 @@ export type DailyStats = {
   speakCompletions: number;
   /** Manual confirm (incl. follow-then-confirm soft path) clearances today. */
   confirmCompletions: number;
+  /** Today's fight·craft·trade·home play actions (MW-54 claim gate). */
+  speakLoop: DailySpeakLoopCounts;
 };
+
+/** Daily adventure speak/play verb (guide quiz never gates claim). */
+export type DailyAdventureActionKind = keyof DailySpeakLoopCounts;
 
 /** Week rollup of Ship B speak/confirm clearances (MW-45 parent ratio). */
 export type WeekSpeakStats = {
@@ -330,7 +343,20 @@ export type DailyAdventurePlan = {
   titleCn: string;
   descriptionCn: string;
   wordIds: string[];
+  /** Speak/play action that unlocks claim — never guide quiz. */
+  actionKind: DailyAdventureActionKind;
+  /** How many of that action today are needed to claim. */
+  actionCount: number;
+  /** Fight zone; template hidden until this zone is unlocked. */
+  exploreZoneId?: string;
+  /**
+   * Weapon that must already be unlocked to offer this template.
+   * Omit for early-game (forest / wood craft / home).
+   */
+  requiredUnlockedWeaponId?: string;
+  /** Soft errand link for copy — not a claim gate. */
   questId?: string;
+  /** Parent sideline only — never gates claim (MW-54). */
   guideId?: string;
   rewards: Reward[];
 };

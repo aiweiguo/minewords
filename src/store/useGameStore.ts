@@ -34,6 +34,11 @@ import {
   resolveSelectedExploreZoneId,
 } from "@/lib/exploreZones";
 import {
+  bumpSpeakLoop,
+  canClaimDailyAdventure,
+  normalizeSpeakLoop,
+} from "@/lib/dailyAdventureClaim";
+import {
   GAME_STATE_STORAGE_KEY,
   partializeGameState,
 } from "@/lib/progressBackup";
@@ -114,6 +119,7 @@ function createDailyStats(): DailyStats {
     speakAttempts: 0,
     speakCompletions: 0,
     confirmCompletions: 0,
+    speakLoop: normalizeSpeakLoop(),
   };
 }
 
@@ -139,6 +145,7 @@ function normalizeDailyStats(stats: Partial<DailyStats> | undefined): DailyStats
       speakCompletions: stats.speakCompletions ?? 0,
       confirmCompletions: stats.confirmCompletions ?? 0,
       masteredTodayIds: stats.masteredTodayIds ?? [],
+      speakLoop: normalizeSpeakLoop(stats.speakLoop),
     };
   }
   return base;
@@ -470,6 +477,7 @@ export const useGameStore = create<GameStore>()(
         };
         const learnWordId = ROOM_BLOCK_LEARN_WORD_ID[blockType];
         set((current) => {
+          const dailyStats = normalizeDailyStats(current.dailyStats);
           const spent: GameState = {
             ...current,
             resources: {
@@ -477,6 +485,11 @@ export const useGameStore = create<GameStore>()(
               [cost.resource]: current.resources[cost.resource] - cost.amount,
             },
             roomBlocks: nextBlocks,
+            dailyStats: {
+              ...dailyStats,
+              speakLoop: bumpSpeakLoop(dailyStats.speakLoop, "home"),
+            },
+            ...touchLearningDay(current),
           };
           const learned = learnWordId
             ? applyWordLearnedState(spent, learnWordId)
@@ -689,9 +702,16 @@ export const useGameStore = create<GameStore>()(
         ) {
           return false;
         }
+        // Claim only via speak/play counters — never guide quiz (MW-54).
+        if (!canClaimDailyAdventure(plan, dailyStats.speakLoop).ok) {
+          return false;
+        }
 
         set((state) => {
           const stats = normalizeDailyStats(state.dailyStats);
+          if (!canClaimDailyAdventure(plan, stats.speakLoop).ok) {
+            return state;
+          }
           const applied = applyRewardList(state, plan.rewards);
           const newLearned = plan.wordIds.filter((id) => !state.learnedWordIds.includes(id));
           const next = {
@@ -759,6 +779,7 @@ export const useGameStore = create<GameStore>()(
           for (const errandId of fightErrandIds) {
             nextErrandProgress[errandId] = (nextErrandProgress[errandId] ?? 0) + 1;
           }
+          const dailyStats = normalizeDailyStats(base.dailyStats);
           const next = {
             ...base,
             ...applied,
@@ -769,6 +790,10 @@ export const useGameStore = create<GameStore>()(
             wrongWordCounts: {
               ...base.wrongWordCounts,
               [wordId]: 0,
+            },
+            dailyStats: {
+              ...dailyStats,
+              speakLoop: bumpSpeakLoop(dailyStats.speakLoop, "fight"),
             },
             ...touchLearningDay(state),
           };
@@ -863,12 +888,17 @@ export const useGameStore = create<GameStore>()(
             return sum + xpReward;
           }, 0);
 
+          const dailyStats = normalizeDailyStats(current.dailyStats);
           const next: GameState = {
             ...current,
             resources: nextResources,
             unlockedIds: nextUnlocked,
             completedQuestIds: [...current.completedQuestIds, ...craftErrandIds],
             xp: current.xp + tier.craftXp + bonusXp,
+            dailyStats: {
+              ...dailyStats,
+              speakLoop: bumpSpeakLoop(dailyStats.speakLoop, "craft"),
+            },
             ...touchLearningDay(current),
           };
           return { ...next, ...withDecorationSync(next) };
@@ -949,6 +979,7 @@ export const useGameStore = create<GameStore>()(
             dailyStats: {
               ...dailyStats,
               learnedWords: dailyStats.learnedWords + newLearned.length,
+              speakLoop: bumpSpeakLoop(dailyStats.speakLoop, "trade"),
             },
             ...touchLearningDay(current),
           };
