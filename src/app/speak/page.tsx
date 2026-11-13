@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { SpeakScenarioRunner } from "@/components/SpeakScenarioRunner";
@@ -13,8 +14,14 @@ import { isSpeechRecognitionSupported } from "@/lib/speechRecognition";
 import { useGameStore } from "@/store/useGameStore";
 import { SpeakRole } from "@/types";
 
+/**
+ * Post-iron sentence practice (P2-2 / MW-48).
+ * Not a parallel kid speech island — hub CTA stays fight/craft/explore.
+ */
 export default function SpeakPage() {
   const completedSpeakIds = useGameStore((s) => s.completedSpeakIds);
+  const unlockedIds = useGameStore((s) => s.unlockedIds);
+  const hasIronSword = unlockedIds.includes("iron-sword");
 
   const [roleFilter, setRoleFilter] = useState<SpeakRole | "all">("all");
   const [activeId, setActiveId] = useState(speakScenarios[0].id);
@@ -36,13 +43,41 @@ export default function SpeakPage() {
     setActiveId(next[0]?.id ?? speakScenarios[0].id);
   }
 
+  if (!hasIronSword) {
+    return (
+      <main className="space-y-6">
+        <section className="mw-card p-5">
+          <h1 className="text-3xl font-black text-primary">Sentence Gym</h1>
+          <p className="mt-1 text-xl font-bold">句子训练场</p>
+          <p className="mt-2 text-sm font-semibold text-muted">
+            这是铁剑之后的加练：先去打怪、合成、出门探险。开口打怪才是主玩法。
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/explore" className="mw-btn mw-btn-primary">
+              出门打怪
+            </Link>
+            <Link href="/crafting" className="mw-btn mw-btn-outline">
+              去合成
+            </Link>
+            <Link href="/" className="mw-btn mw-btn-outline">
+              回基地
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="space-y-6">
       <section className="mw-card p-5">
-        <h1 className="text-3xl font-black text-primary">Speaking Roleplay</h1>
-        <p className="mt-1 text-xl font-bold">口语角色扮演</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+          铁后加练 · 不抢主环
+        </p>
+        <h1 className="mt-1 text-3xl font-black text-primary">Sentence Gym</h1>
+        <p className="mt-1 text-xl font-bold">句子训练场</p>
         <p className="mt-2 text-sm font-semibold text-muted">
-          Steve 教生存、Alex 教建造、村民教交易。跟读句子，匹配关键词即可过关。
+          已经有铁剑了？在这里跟读更长的句子。日常开口仍在打怪、合成、交易里。
         </p>
         {!supported ? (
           <p className="mt-3 rounded-xl bg-amber-100 px-4 py-2 text-sm font-bold text-amber-900">
