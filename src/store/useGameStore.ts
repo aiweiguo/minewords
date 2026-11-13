@@ -254,6 +254,11 @@ export function mergePersistedGameState<T extends GameState>(
     weekSpeakStats: normalizeWeekSpeakStats(saved.weekSpeakStats, dailyStats),
     // Missing key = never coached (show once). Only markOnboardingSeen flips this.
     hasSeenOnboarding: saved.hasSeenOnboarding ?? false,
+    // Missing keys = not yet celebrated (MW-60).
+    seenMilestoneCelebrations: {
+      diamondLine: saved.seenMilestoneCelebrations?.diamondLine ?? false,
+      homeFull: saved.seenMilestoneCelebrations?.homeFull ?? false,
+    },
   };
 
   return {
@@ -326,6 +331,7 @@ const initialState: GameState = {
   dailyStats: createDailyStats(),
   weekSpeakStats: createWeekSpeakStats(),
   hasSeenOnboarding: false,
+  seenMilestoneCelebrations: {},
 };
 
 export type DefeatMonsterOptions = {
@@ -369,6 +375,10 @@ type GameStore = GameState & {
   recordDailyAnswer: (correct: boolean) => void;
   recordCorrectAnswer: (options?: { practiceMode?: boolean }) => void;
   markOnboardingSeen: () => void;
+  /** Persist once-per-milestone celebration dismiss (MW-60). */
+  markMilestoneCelebrationSeen: (
+    kind: "diamondLine" | "homeFull",
+  ) => void;
   /** Parent-editable child display name (MW-56). */
   setPlayerName: (name: string) => void;
   resetProgress: () => void;
@@ -1079,6 +1089,19 @@ export const useGameStore = create<GameStore>()(
         set((state) =>
           state.hasSeenOnboarding ? state : { hasSeenOnboarding: true },
         ),
+
+      markMilestoneCelebrationSeen: (kind) =>
+        set((state) => {
+          if (state.seenMilestoneCelebrations[kind]) {
+            return state;
+          }
+          return {
+            seenMilestoneCelebrations: {
+              ...state.seenMilestoneCelebrations,
+              [kind]: true,
+            },
+          };
+        }),
 
       setPlayerName: (name) =>
         set(() => {

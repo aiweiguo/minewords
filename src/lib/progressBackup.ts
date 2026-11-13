@@ -30,6 +30,7 @@ export type PersistedGameSlice = Pick<
   | "dailyStats"
   | "weekSpeakStats"
   | "hasSeenOnboarding"
+  | "seenMilestoneCelebrations"
 >;
 
 export type ProgressBackupEnvelope = {
@@ -62,6 +63,7 @@ export function partializeGameState(state: GameState): PersistedGameSlice {
     dailyStats: state.dailyStats,
     weekSpeakStats: state.weekSpeakStats,
     hasSeenOnboarding: state.hasSeenOnboarding,
+    seenMilestoneCelebrations: state.seenMilestoneCelebrations,
   };
 }
 
