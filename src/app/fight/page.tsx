@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
 import { WordMonsterCard } from "@/components/WordMonsterCard";
@@ -23,6 +23,7 @@ export default function FightPage() {
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const selectedExploreZoneId = useGameStore((s) => s.selectedExploreZoneId);
   const setSelectedExploreZone = useGameStore((s) => s.setSelectedExploreZone);
+  const [entered, setEntered] = useState(false);
 
   const zoneId = resolveSelectedExploreZoneId(
     selectedExploreZoneId,
@@ -36,6 +37,19 @@ export default function FightPage() {
       setSelectedExploreZone(zoneId);
     }
   }, [selectedExploreZoneId, setSelectedExploreZone, zoneId]);
+
+  useEffect(() => {
+    // MW-68: short land-in beat after explore enter transition.
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setEntered(true);
+      return;
+    }
+    const id = window.requestAnimationFrame(() => setEntered(true));
+    return () => window.cancelAnimationFrame(id);
+  }, []);
 
   // Zone wilds stay fightable (farmable) so craft goals keep getting materials.
   const wildMonsters = [...zoneWildIds];
@@ -63,7 +77,9 @@ export default function FightPage() {
   });
 
   return (
-    <main className="space-y-5">
+    <main
+      className={`mw-fight-page space-y-5${entered ? " mw-fight-page-entered" : ""}`}
+    >
       <section
         className={`mw-explore-fight-banner mw-explore-fight-banner-${zone?.tone ?? "forest"} mw-game-panel overflow-hidden`}
         style={
@@ -125,7 +141,7 @@ export default function FightPage() {
       ) : null}
 
       {wildMonsters.length > 0 ? (
-        <section className="space-y-4">
+        <section className="mw-fight-encounters space-y-4">
           <h2 className="px-1 text-lg font-black">
             {zone?.nameCn ?? "野外"}怪物 Wild Monsters
           </h2>
@@ -145,7 +161,7 @@ export default function FightPage() {
       ) : null}
 
       {wrongMonsters.length > 0 ? (
-        <section className="space-y-4">
+        <section className="mw-fight-encounters space-y-4">
           <h2 className="px-1 text-lg font-black">错词怪物 Wrong-Word Monsters</h2>
           <p className="px-1 text-sm font-semibold text-muted">
             同一个词错 {MONSTER_WRONG_THRESHOLD} 次以上会出现。开口打怪：单词伤小，整句打满。

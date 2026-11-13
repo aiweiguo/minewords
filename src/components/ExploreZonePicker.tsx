@@ -1,21 +1,120 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
-import { ExploreZoneId } from "@/data/exploreZones";
+import { ExploreZone, ExploreZoneId } from "@/data/exploreZones";
 import { backgroundMap } from "@/lib/assets";
 import { listExploreZoneStates } from "@/lib/exploreZones";
+import { getWordMonsterLabel } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
 
+type EnterTarget = {
+  href: string;
+  nameCn: string;
+  nameEn: string;
+  background: string;
+  tone: string;
+};
+
+const ENTER_MS = 900;
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function ZoneScenePreview({
+  monsterIds,
+  locked = false,
+}: {
+  monsterIds: readonly string[];
+  locked?: boolean;
+}) {
+  const shown = monsterIds.slice(0, 4);
+  return (
+    <span
+      className={`mw-explore-portal-scene${locked ? " mw-explore-portal-scene-locked" : ""}`}
+      aria-hidden
+    >
+      <span className="mw-explore-portal-scene-ground" />
+      {shown.map((id, index) => {
+        const label = getWordMonsterLabel(id);
+        return (
+          <span
+            key={id}
+            className="mw-explore-portal-mob"
+            style={{ ["--mw-mob-i" as string]: String(index) }}
+          >
+            {label.emoji}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 export function ExploreZonePicker() {
+  const router = useRouter();
   const unlockedIds = useGameStore((s) => s.unlockedIds);
   const selectedExploreZoneId = useGameStore((s) => s.selectedExploreZoneId);
   const setSelectedExploreZone = useGameStore((s) => s.setSelectedExploreZone);
   const zones = listExploreZoneStates(unlockedIds);
+  const [entering, setEntering] = useState<EnterTarget | null>(null);
+  const enterTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (enterTimer.current != null) {
+        window.clearTimeout(enterTimer.current);
+      }
+    };
+  }, []);
 
   function chooseZone(zoneId: ExploreZoneId) {
     setSelectedExploreZone(zoneId);
+  }
+
+  function startEnter(target: EnterTarget, zoneId?: ExploreZoneId) {
+    if (entering) return;
+    if (zoneId) chooseZone(zoneId);
+    // Always show a short spatial enter beat (MW-68). Reduced-motion only
+    // shortens the dwell; CSS already disables the zoom keyframes.
+    const dwell = prefersReducedMotion() ? 280 : ENTER_MS;
+    setEntering(target);
+    enterTimer.current = window.setTimeout(() => {
+      router.push(target.href);
+    }, dwell);
+  }
+
+  function handleZoneEnter(
+    event: MouseEvent<HTMLAnchorElement>,
+    zone: ExploreZone,
+  ) {
+    event.preventDefault();
+    startEnter(
+      {
+        href: "/fight",
+        nameCn: zone.nameCn,
+        nameEn: zone.name,
+        background: zone.background,
+        tone: zone.tone,
+      },
+      zone.id,
+    );
+  }
+
+  function handleVillageEnter(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    startEnter({
+      href: "/trade",
+      nameCn: "村庄",
+      nameEn: "Village",
+      background: backgroundMap.village,
+      tone: "village",
+    });
   }
 
   return (
@@ -27,9 +126,9 @@ export function ExploreZonePicker() {
             <span className="mw-hub-title-sep" aria-hidden>
               ·
             </span>
-            <span>选区域</span>
+            <span>走进区域</span>
           </h1>
-          <p className="mw-explore-sub">打怪攒材料 · 或去村庄找村民</p>
+          <p className="mw-explore-sub">看一眼里面有谁 · 走进去开口打怪</p>
         </div>
         <Link href="/" className="mw-explore-back">
           回基地
@@ -63,6 +162,10 @@ export function ExploreZonePicker() {
                     style={style}
                     aria-disabled="true"
                   >
+                    <ZoneScenePreview
+                      monsterIds={zone.wildMonsterIds}
+                      locked
+                    />
                     <span className="mw-explore-portal-lock" aria-hidden>
                       🔒
                     </span>
@@ -86,12 +189,13 @@ export function ExploreZonePicker() {
                   key={zone.id}
                   href="/fight"
                   role="listitem"
-                  onClick={() => chooseZone(zone.id)}
+                  onClick={(event) => handleZoneEnter(event, zone)}
                   className={`mw-explore-portal mw-explore-portal-open mw-explore-portal-${zone.tone} ${
                     selected ? "mw-explore-portal-selected" : ""
                   }`}
                   style={style}
                 >
+                  <ZoneScenePreview monsterIds={zone.wildMonsterIds} />
                   <span className="mw-explore-portal-name">
                     {zone.nameCn}
                     <span className="mw-explore-portal-en">{zone.name}</span>
@@ -100,7 +204,7 @@ export function ExploreZonePicker() {
                   <span className="mw-explore-portal-focus">
                     掉落偏 {zone.focusLabelCn} · {zone.blurbEn}
                   </span>
-                  <span className="mw-explore-portal-cta">进入打怪 →</span>
+                  <span className="mw-explore-portal-cta">走进去打怪 →</span>
                 </Link>
               );
             })}
@@ -113,6 +217,7 @@ export function ExploreZonePicker() {
             <Link
               href="/trade"
               role="listitem"
+              onClick={handleVillageEnter}
               className="mw-explore-portal mw-explore-portal-open mw-explore-portal-village mw-explore-portal-village-row"
               style={{ backgroundImage: `url(${backgroundMap.village})` }}
             >
@@ -133,7 +238,7 @@ export function ExploreZonePicker() {
                 和基地「找村民」同一条开口路
               </span>
               <span className="mw-explore-portal-cta mw-explore-portal-cta-village">
-                去找村民 →
+                走进村庄 →
               </span>
             </Link>
           </div>
@@ -143,6 +248,21 @@ export function ExploreZonePicker() {
       <p className="mw-explore-hint relative z-[2]" role="status">
         木阶森林 → 洞穴 → 矿洞 → 钻石矿脉（铁剑解锁）。村庄随时可去找村民深聊交易。
       </p>
+
+      {entering ? (
+        <div
+          className={`mw-explore-enter mw-explore-enter-${entering.tone}`}
+          style={{ backgroundImage: `url(${entering.background})` }}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="mw-explore-enter-veil" />
+          <p className="mw-explore-enter-label">
+            走进 {entering.nameCn}
+            <span className="mw-explore-enter-en">{entering.nameEn}</span>
+          </p>
+        </div>
+      ) : null}
     </section>
   );
 }

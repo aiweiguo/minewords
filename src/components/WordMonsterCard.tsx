@@ -78,6 +78,8 @@ export function WordMonsterCard({
 
   const [listening, setListening] = useState(false);
   const [hitFlash, setHitFlash] = useState(false);
+  const [damageFloat, setDamageFloat] = useState<number | null>(null);
+  const [defeatAnim, setDefeatAnim] = useState(false);
   const [lootChips, setLootChips] = useState<LootChip[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
@@ -126,8 +128,12 @@ export function WordMonsterCard({
     return null;
   }
 
-  function flashHit() {
+  function flashHit(damage?: number) {
     setHitFlash(true);
+    if (typeof damage === "number" && damage > 0) {
+      setDamageFloat(damage);
+      window.setTimeout(() => setDamageFloat(null), 720);
+    }
     window.setTimeout(() => setHitFlash(false), 520);
   }
 
@@ -161,12 +167,14 @@ export function WordMonsterCard({
     window.setTimeout(() => setLootChips([]), 1400);
   }
 
-  function finishEncounter() {
+  function finishEncounter(damage: number) {
     const loot = defeatMonster(wordId, { zoneId, farmable });
     if (!loot) return;
-    flashHit();
+    setDefeatAnim(true);
+    flashHit(damage);
     popLoot(loot.rewards);
-    setRewardResult(loot);
+    // Let the 2D defeat beat play before the reward modal (MW-68 / Ship D).
+    window.setTimeout(() => setRewardResult(loot), 680);
   }
 
   function resolveHit(
@@ -176,7 +184,6 @@ export function WordMonsterCard({
   ) {
     const nextHp = applyDamage(hp, damage);
     setHp(nextHp);
-    flashHit();
     playGameSfx("hit");
     setMissStreak(0);
     setSuggestedRung((current) => raiseSuggestedRung(current, matched));
@@ -186,9 +193,10 @@ export function WordMonsterCard({
         en: "Monster down — loot incoming!",
         kind: "full",
       });
-      finishEncounter();
+      finishEncounter(damage);
       return;
     }
+    flashHit(damage);
     setFeedback(hitFeedback);
   }
 
@@ -218,6 +226,8 @@ export function WordMonsterCard({
     setHp(MONSTER_MAX_HP);
     setSuggestedRung(getStartingSuggestedRung(zoneId));
     setMissStreak(0);
+    setDefeatAnim(false);
+    setDamageFloat(null);
     resetPhonics();
   }
 
@@ -341,7 +351,7 @@ export function WordMonsterCard({
     });
   }
 
-  const defeated = rewardResult !== null;
+  const defeated = defeatAnim || rewardResult !== null;
   const hearts = Array.from({ length: MONSTER_MAX_HP }, (_, index) => {
     const filled = index < hp;
     return filled ? "♥" : "♡";
@@ -369,13 +379,32 @@ export function WordMonsterCard({
             ))}
           </div>
         ) : null}
-        <div className="flex items-center gap-4">
-          <span
-            className={`text-5xl ${hitFlash ? "mw-hit-shake scale-110" : "mw-map-pulse"}`}
-          >
-            {monster.emoji}
-          </span>
-          <div>
+        <div
+          className={`mw-monster-stage mw-monster-stage-${zoneId ?? "forest"}${
+            hitFlash ? " mw-monster-stage-hit" : ""
+          }${defeatAnim ? " mw-monster-stage-defeat" : ""}`}
+        >
+          <div className="mw-monster-arena" aria-hidden>
+            {damageFloat != null ? (
+              <span className="mw-damage-float" key={damageFloat + hp}>
+                -{damageFloat}
+              </span>
+            ) : null}
+            {defeatAnim ? <span className="mw-monster-poof" /> : null}
+            <span
+              className={`mw-monster-sprite ${
+                hitFlash
+                  ? "mw-hit-shake"
+                  : defeatAnim
+                    ? ""
+                    : "mw-monster-idle"
+              }`}
+            >
+              {monster.emoji}
+            </span>
+            <span className="mw-monster-shadow" />
+          </div>
+          <div className="mw-monster-meta">
             <h2 className="text-2xl font-black">{monster.titleCn}</h2>
             <p className="font-bold text-secondary">{monster.title}</p>
             {wild ? (
