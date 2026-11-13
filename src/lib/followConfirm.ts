@@ -11,12 +11,29 @@ export type FollowConfirmPhase =
   | "idle"
   | "playing"
   | "following"
-  | "ready";
+  | "ready"
+  /** TTS failed / silent — kid should tap「再听一遍」. Soft path only. */
+  | "failed";
 
-/** Kid-friendly follow window after TTS ends (~0.45s/word, clamped). */
+/**
+ * Soft-path follow window after TTS ends (MW-61 / P2-5).
+ * Tweak these — not the mic demotion hold (MIC_CONFIRM_HOLD_MS).
+ */
+export const FOLLOW_COUNTDOWN_MS_PER_WORD = 550;
+export const FOLLOW_COUNTDOWN_BASE_MS = 1000;
+export const FOLLOW_COUNTDOWN_MIN_MS = 2200;
+export const FOLLOW_COUNTDOWN_MAX_MS = 6000;
+
+/** Kid-friendly follow window after TTS ends (~0.55s/word, clamped kinder). */
 export function followCountdownMs(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.min(4500, Math.max(1600, words * 450 + 800));
+  return Math.min(
+    FOLLOW_COUNTDOWN_MAX_MS,
+    Math.max(
+      FOLLOW_COUNTDOWN_MIN_MS,
+      words * FOLLOW_COUNTDOWN_MS_PER_WORD + FOLLOW_COUNTDOWN_BASE_MS,
+    ),
+  );
 }
 
 export function followCountdownSeconds(text: string): number {
