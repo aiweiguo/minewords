@@ -94,12 +94,12 @@ export function getMilestoneCelebrationCopy(
     leadCn: snapshot.weekly
       ? snapshot.weekly.done
         ? "家装满了。本周挑战已完成 — 想探险就出门！"
-        : `家装满了。本周挑战：${snapshot.weekly.challenge.stripCn}`
+        : `家装满了。${snapshot.weekly.challenge.stripCn}`
       : "家装满了。回基地看看下一目标。",
     leadEn: snapshot.weekly
       ? snapshot.weekly.done
         ? "Home filled. Weekly done — explore when you want!"
-        : `Home filled. Weekly: ${snapshot.weekly.challenge.stripEn}`
+        : `Home filled. ${snapshot.weekly.challenge.stripEn}`
       : "Home filled. Check the next goal on the hub.",
     ctaLabelCn: snapshot.primaryCta.labelCn,
     ctaLabelEn: snapshot.primaryCta.labelEn,
