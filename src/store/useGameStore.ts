@@ -19,7 +19,11 @@ import {
   WeaponTierId,
 } from "@/data/weapons";
 import { XP_PER_CORRECT_ANSWER } from "@/data/rewards";
-import { getTodayDateString, getYesterdayDateString } from "@/lib/date";
+import {
+  getTodayDateString,
+  getWeekStartDateString,
+  getYesterdayDateString,
+} from "@/lib/date";
 import { getDecorationUnlockIds } from "@/lib/decorationUnlocks";
 import {
   getMonsterDropRewardsForZone,
@@ -41,6 +45,7 @@ import {
   RoomBlockType,
   RoomBlocks,
   RoomSlotId,
+  WeekSpeakStats,
 } from "@/types";
 
 const defaultResources: Record<ResourceType, number> = {
@@ -95,6 +100,16 @@ function createDailyStats(): DailyStats {
   };
 }
 
+function createWeekSpeakStats(
+  seed?: Pick<DailyStats, "speakCompletions" | "confirmCompletions">,
+): WeekSpeakStats {
+  return {
+    weekStart: getWeekStartDateString(),
+    speakCompletions: seed?.speakCompletions ?? 0,
+    confirmCompletions: seed?.confirmCompletions ?? 0,
+  };
+}
+
 function normalizeDailyStats(stats: Partial<DailyStats> | undefined): DailyStats {
   const base = createDailyStats();
   if (stats?.date === getTodayDateString()) {
@@ -110,6 +125,30 @@ function normalizeDailyStats(stats: Partial<DailyStats> | undefined): DailyStats
     };
   }
   return base;
+}
+
+/** Keep Ship B counters for the local Monday–Sunday week; seed from today on first week. */
+export function normalizeWeekSpeakStats(
+  stats: Partial<WeekSpeakStats> | undefined,
+  daily?: DailyStats,
+): WeekSpeakStats {
+  const weekStart = getWeekStartDateString();
+  if (stats?.weekStart === weekStart) {
+    return {
+      weekStart,
+      speakCompletions: stats.speakCompletions ?? 0,
+      confirmCompletions: stats.confirmCompletions ?? 0,
+    };
+  }
+  const today = getTodayDateString();
+  const seed =
+    daily?.date === today
+      ? {
+          speakCompletions: daily.speakCompletions,
+          confirmCompletions: daily.confirmCompletions,
+        }
+      : undefined;
+  return createWeekSpeakStats(seed);
 }
 
 function touchLearningDay(state: GameState): Pick<GameState, "learningStreak" | "lastActiveDate"> {
@@ -196,6 +235,7 @@ const initialState: GameState = {
   learningStreak: 0,
   lastActiveDate: "",
   dailyStats: createDailyStats(),
+  weekSpeakStats: createWeekSpeakStats(),
   hasSeenOnboarding: false,
 };
 
@@ -839,10 +879,18 @@ export const useGameStore = create<GameStore>()(
       recordSpeakCompletion: () =>
         set((state) => {
           const dailyStats = normalizeDailyStats(state.dailyStats);
+          const weekSpeakStats = normalizeWeekSpeakStats(
+            state.weekSpeakStats,
+            dailyStats,
+          );
           return {
             dailyStats: {
               ...dailyStats,
               speakCompletions: dailyStats.speakCompletions + 1,
+            },
+            weekSpeakStats: {
+              ...weekSpeakStats,
+              speakCompletions: weekSpeakStats.speakCompletions + 1,
             },
             ...touchLearningDay(state),
           };
@@ -851,10 +899,18 @@ export const useGameStore = create<GameStore>()(
       recordConfirmCompletion: () =>
         set((state) => {
           const dailyStats = normalizeDailyStats(state.dailyStats);
+          const weekSpeakStats = normalizeWeekSpeakStats(
+            state.weekSpeakStats,
+            dailyStats,
+          );
           return {
             dailyStats: {
               ...dailyStats,
               confirmCompletions: dailyStats.confirmCompletions + 1,
+            },
+            weekSpeakStats: {
+              ...weekSpeakStats,
+              confirmCompletions: weekSpeakStats.confirmCompletions + 1,
             },
             ...touchLearningDay(state),
           };
@@ -896,6 +952,7 @@ export const useGameStore = create<GameStore>()(
         set({
           ...initialState,
           dailyStats: createDailyStats(),
+          weekSpeakStats: createWeekSpeakStats(),
         }),
     }),
     {
@@ -909,6 +966,7 @@ export const useGameStore = create<GameStore>()(
         const saved = persisted as Partial<GameState>;
         const speakMigration = migrateSpeakIds(saved);
         const unlockedIds = saved.unlockedIds ?? current.unlockedIds;
+        const dailyStats = normalizeDailyStats(saved.dailyStats);
         const mergedState: GameState = {
           ...current,
           ...saved,
@@ -928,7 +986,11 @@ export const useGameStore = create<GameStore>()(
           defeatedMonsterIds: saved.defeatedMonsterIds ?? [],
           learningStreak: saved.learningStreak ?? 0,
           lastActiveDate: saved.lastActiveDate ?? "",
-          dailyStats: normalizeDailyStats(saved.dailyStats),
+          dailyStats,
+          weekSpeakStats: normalizeWeekSpeakStats(
+            saved.weekSpeakStats,
+            dailyStats,
+          ),
           // Missing key = never coached (show once). Only markOnboardingSeen flips this.
           hasSeenOnboarding: saved.hasSeenOnboarding ?? false,
         };
@@ -959,6 +1021,7 @@ export const useGameStore = create<GameStore>()(
         learningStreak: state.learningStreak,
         lastActiveDate: state.lastActiveDate,
         dailyStats: state.dailyStats,
+        weekSpeakStats: state.weekSpeakStats,
         hasSeenOnboarding: state.hasSeenOnboarding,
       }),
     },

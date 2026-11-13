@@ -180,6 +180,14 @@ export type DailyStats = {
   confirmCompletions: number;
 };
 
+/** Week rollup of Ship B speak/confirm clearances (MW-45 parent ratio). */
+export type WeekSpeakStats = {
+  /** Local Monday YYYY-MM-DD for this week bucket. */
+  weekStart: string;
+  speakCompletions: number;
+  confirmCompletions: number;
+};
+
 /** Placeable block kinds in the side-view home room (MC-inspired, not official assets). */
 export type RoomBlockType = "plank" | "cobble";
 
@@ -221,6 +229,8 @@ export type GameState = {
   learningStreak: number;
   lastActiveDate: string;
   dailyStats: DailyStats;
+  /** Speak vs confirm clearances since local Monday (Ship B counters). */
+  weekSpeakStats: WeekSpeakStats;
   hasSeenOnboarding: boolean;
 };
 
