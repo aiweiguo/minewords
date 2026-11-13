@@ -29,6 +29,7 @@ const errandData: Quest[] = [
       { type: "resource", resource: "wood", amount: 2 },
       { type: "xp", xp: 8 },
     ],
+    unlocks: ["zombie-fighter", "forest-map"],
   },
   {
     id: "gather-wood-for-sword",
@@ -53,6 +54,7 @@ const errandData: Quest[] = [
       { type: "resource", resource: "wood", amount: 1 },
       { type: "xp", xp: 6 },
     ],
+    unlocks: ["word-miner", "bed-builder"],
   },
   {
     id: "craft-wooden-sword-errand",
@@ -97,6 +99,7 @@ const errandData: Quest[] = [
       { type: "resource", resource: "stone", amount: 2 },
       { type: "xp", xp: 10 },
     ],
+    unlocks: ["cave-map"],
   },
   {
     id: "gather-stone-for-sword",
@@ -166,6 +169,7 @@ const errandData: Quest[] = [
       { type: "resource", resource: "iron", amount: 2 },
       { type: "xp", xp: 12 },
     ],
+    unlocks: ["mines-map"],
   },
   {
     id: "gather-iron-for-sword",

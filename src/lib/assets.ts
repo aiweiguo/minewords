@@ -231,8 +231,6 @@ export const vocabularyIconMap: Record<string, string> = {
 };
 
 export const unlockableAssetMap: Record<string, string> = {
-  "wooden-axe": assetMap.axe,
-  "stone-pickaxe": assetMap.pickaxe,
   "iron-sword": assetMap.sword,
   "diamond-sword": assetMap.sword,
   "wooden-sword": assetMap.sword,
@@ -241,15 +239,11 @@ export const unlockableAssetMap: Record<string, string> = {
   "diamond-speaker": assetMap.diamond,
   "forest-map": backgroundMap.forest,
   "cave-map": backgroundMap.cave,
+  "mines-map": backgroundMap.battle,
   "village-map": backgroundMap.village,
   "bed-builder": assetMap.chest,
   "zombie-fighter": assetMap.zombie,
   "village-trader": assetMap.emerald,
-  "farm-keeper": assetMap.star,
-  "nether-map": backgroundMap.battle,
-  "nether-explorer": assetMap.creeper,
-  "end-map": backgroundMap.battle,
-  "dragon-slayer": assetMap.skeleton,
 };
 
 export function getVocabularyIcon(id: string): string {

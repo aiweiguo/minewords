@@ -675,13 +675,20 @@ export const useGameStore = create<GameStore>()(
           }
         }
 
+        const bonusUnlocks =
+          weaponId === "diamond-sword" ? (["diamond-speaker"] as string[]) : [];
+        const craftUnlocks = [weaponId, ...bonusUnlocks];
         const craftRewards: Reward[] = [
           { type: "xp", xp: tier.craftXp },
           { type: "unlock", unlockId: weaponId },
+          ...bonusUnlocks.map((unlockId) => ({
+            type: "unlock" as const,
+            unlockId,
+          })),
         ];
         const rewardResult: RewardResult = {
           rewards: craftRewards,
-          unlocks: [weaponId],
+          unlocks: craftUnlocks,
           isFirstCompletion: true,
         };
 
@@ -690,9 +697,14 @@ export const useGameStore = create<GameStore>()(
           for (const cost of tier.costs) {
             nextResources[cost.resource] -= cost.amount;
           }
-          const nextUnlocked = current.unlockedIds.includes(weaponId)
+          let nextUnlocked = current.unlockedIds.includes(weaponId)
             ? current.unlockedIds
             : [...current.unlockedIds, weaponId];
+          for (const unlockId of bonusUnlocks) {
+            if (!nextUnlocked.includes(unlockId)) {
+              nextUnlocked = [...nextUnlocked, unlockId];
+            }
+          }
 
           // Auto-claim matching craft-weapon errands so kids don't bounce to a quiz menu.
           const craftErrandIds = quests
@@ -735,6 +747,9 @@ export const useGameStore = create<GameStore>()(
         }
 
         const firstTrade = !state.unlockedIds.includes("village-trader");
+        const tradeUnlockIds = firstTrade
+          ? (["village-trader", "village-map"] as string[])
+          : [];
         const tradeRewards: Reward[] = [
           { type: "xp", xp: offer.craftXp },
           ...offer.gains.map((gain) => ({
@@ -742,14 +757,15 @@ export const useGameStore = create<GameStore>()(
             resource: gain.resource,
             amount: gain.amount,
           })),
+          ...tradeUnlockIds.map((unlockId) => ({
+            type: "unlock" as const,
+            unlockId,
+          })),
         ];
-        if (firstTrade) {
-          tradeRewards.push({ type: "unlock", unlockId: "village-trader" });
-        }
 
         const rewardResult: RewardResult = {
           rewards: tradeRewards,
-          unlocks: firstTrade ? ["village-trader"] : [],
+          unlocks: tradeUnlockIds,
           isFirstCompletion: firstTrade,
         };
 
@@ -763,11 +779,12 @@ export const useGameStore = create<GameStore>()(
               (nextResources[gain.resource] ?? 0) + gain.amount;
           }
 
-          const nextUnlocked = firstTrade
-            ? current.unlockedIds.includes("village-trader")
-              ? current.unlockedIds
-              : [...current.unlockedIds, "village-trader"]
-            : current.unlockedIds;
+          let nextUnlocked = current.unlockedIds;
+          for (const unlockId of tradeUnlockIds) {
+            if (!nextUnlocked.includes(unlockId)) {
+              nextUnlocked = [...nextUnlocked, unlockId];
+            }
+          }
 
           const dailyStats = normalizeDailyStats(current.dailyStats);
           const newLearned = offer.wordIds.filter(
