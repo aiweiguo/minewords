@@ -1,20 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { guides } from "@/data/guides";
 import { quests } from "@/data/quests";
 import { getVocabularyById, vocabulary } from "@/data/vocabulary";
 import { speakScenarios } from "@/data/speakScenarios";
 import { getTodayDateString } from "@/lib/dailyAdventure";
-import { isMostlyConfirmToday } from "@/lib/followConfirm";
+import {
+  confirmSharePercent,
+  isMostlyConfirmToday,
+  isMostlyConfirmWeek,
+} from "@/lib/followConfirm";
+import { getTonightThreeThings } from "@/lib/parentTonight";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
-import { useGameStore } from "@/store/useGameStore";
+import { normalizeWeekSpeakStats, useGameStore } from "@/store/useGameStore";
 
 export default function ParentPage() {
   const playerName = useGameStore((s) => s.playerName);
   const xp = useGameStore((s) => s.xp);
+  const resources = useGameStore((s) => s.resources);
+  const roomBlocks = useGameStore((s) => s.roomBlocks);
   const dailyStats = useGameStore((s) => s.dailyStats);
+  const weekSpeakStatsRaw = useGameStore((s) => s.weekSpeakStats);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const discoveredWordIds = useGameStore((s) => s.discoveredWordIds);
@@ -23,6 +32,7 @@ export default function ParentPage() {
   const completedSpeakIds = useGameStore((s) => s.completedSpeakIds);
   const wrongWordCounts = useGameStore((s) => s.wrongWordCounts);
   const defeatedMonsterIds = useGameStore((s) => s.defeatedMonsterIds);
+  const unlockedIds = useGameStore((s) => s.unlockedIds);
   const learningStreak = useGameStore((s) => s.learningStreak);
 
   const level = Math.floor(xp / 100) + 1;
@@ -58,14 +68,107 @@ export default function ParentPage() {
       ? `需要复习：${reviewWords.map((w) => w!.english).join(", ")}`
       : "目前没有活跃错词怪物。";
 
+  const tonightThree = useMemo(
+    () =>
+      getTonightThreeThings({
+        unlockedIds,
+        resources,
+        roomBlocks,
+        wrongWordCounts,
+        defeatedMonsterIds,
+        learnedWordIds,
+        masteredWordIds,
+        dailyStats,
+      }),
+    [
+      unlockedIds,
+      resources,
+      roomBlocks,
+      wrongWordCounts,
+      defeatedMonsterIds,
+      learnedWordIds,
+      masteredWordIds,
+      dailyStats,
+    ],
+  );
+
+  const weekSpeakStats = normalizeWeekSpeakStats(weekSpeakStatsRaw, dailyStats);
+  const weekConfirmShare = confirmSharePercent(
+    weekSpeakStats.speakCompletions,
+    weekSpeakStats.confirmCompletions,
+  );
+  const weekMostlyConfirm = isMostlyConfirmWeek(
+    weekSpeakStats.speakCompletions,
+    weekSpeakStats.confirmCompletions,
+  );
+
   return (
     <main className="space-y-6">
       <section className="mw-card p-5">
-        <h1 className="text-3xl font-black text-primary">Parent Summary</h1>
-        <p className="mt-1 text-xl font-bold">家长学习报告</p>
+        <h1 className="text-3xl font-black text-primary">今晚三件事</h1>
+        <p className="mt-1 text-xl font-bold">陪 {playerName} 的行动清单</p>
         <p className="mt-2 text-sm font-semibold text-muted">
-          简单查看 {playerName} 的学习进度（本地数据，无账号同步）
+          按当前进度挑好的三件小事——不是成绩仪表盘。
         </p>
+      </section>
+
+      <section
+        className="mw-card mw-reward-panel p-5"
+        aria-labelledby="mw-parent-tonight"
+      >
+        <h2 id="mw-parent-tonight" className="sr-only">
+          今晚三件事列表
+        </h2>
+        <ol className="space-y-4">
+          {tonightThree.map((thing, index) => (
+            <li key={thing.id}>
+              <Link
+                href={thing.href}
+                className="block rounded-xl border border-[var(--panel-wood)]/50 bg-black/20 px-4 py-3 transition hover:bg-black/35"
+              >
+                <p className="text-sm font-black text-primary">
+                  {index + 1}. {thing.labelCn}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-muted">
+                  {thing.detailCn}
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mw-card p-5" aria-labelledby="mw-parent-week-ratio">
+        <h2 id="mw-parent-week-ratio" className="text-xl font-black">
+          本周开口 vs 确认
+        </h2>
+        {weekConfirmShare !== null ? (
+          <>
+            <ul className="mt-4 space-y-2 text-sm font-semibold">
+              <li>开口过关（麦克风）：{weekSpeakStats.speakCompletions} 次</li>
+              <li>
+                确认过关（含跟读模式）：{weekSpeakStats.confirmCompletions} 次
+              </li>
+              <li>确认占比：{weekConfirmShare}%</li>
+            </ul>
+            <p
+              className={`mt-4 rounded-xl px-4 py-3 text-sm font-black ${
+                weekMostlyConfirm
+                  ? "bg-amber-900/40 text-amber-100"
+                  : "bg-green-900/30 text-green-100"
+              }`}
+              role="status"
+            >
+              {weekMostlyConfirm
+                ? "本周是否主要靠确认过关：是 — 建议换 Chrome 开口，或陪孩子真的跟读。"
+                : "本周是否主要靠确认过关：否 — 开口过关占多数，很好！"}
+            </p>
+          </>
+        ) : (
+          <p className="mt-4 text-sm text-muted">
+            本周还没有开口或确认过关记录（从本周一开始累计）。
+          </p>
+        )}
       </section>
 
       <section className="mw-card p-5" aria-labelledby="mw-parent-device-note">
