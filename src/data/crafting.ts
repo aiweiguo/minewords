@@ -40,9 +40,23 @@ export const craftingRecipes: CraftingRecipe[] = [
     ],
     simpleEnglish: "You need three wool and three planks.",
     simpleChinese: "你需要三个羊毛和三个木板。",
-    keywordIds: ["wool", "plank", "bed", "sleep"],
+    // MW-67: shears verb on sheep→wool speak/craft path.
+    keywordIds: ["wool", "plank", "bed", "sleep", "shears"],
     relatedGuideId: "craft-bed",
     relatedQuestId: "gather-wood-for-sword",
+  },
+  {
+    id: "shears",
+    resultEnglish: "Shears",
+    resultChinese: "剪刀",
+    resultWordId: "shears",
+    grid: [
+      [slot("iron", "Iron", "铁"), null],
+      [null, slot("iron", "Iron", "铁")],
+    ],
+    simpleEnglish: "Two iron make shears to get wool from sheep.",
+    simpleChinese: "两个铁合成剪刀，用来剪羊毛。",
+    keywordIds: ["shears", "iron", "sheep", "wool"],
   },
   {
     id: "crafting-table",

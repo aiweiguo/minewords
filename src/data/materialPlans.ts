@@ -79,7 +79,7 @@ export const materialPlans: MaterialPlan[] = [
       { itemId: "wool", english: "Wool", chinese: "羊毛", amount: 3 },
       { itemId: "plank", english: "Plank", chinese: "木板", amount: 3 },
     ],
-    keywordIds: ["wool", "plank", "bed", "sleep"],
+    keywordIds: ["wool", "plank", "bed", "sleep", "shears"],
     queryAliases: ["床", "bed", "做床", "一张床"],
   },
 ];

@@ -39,6 +39,16 @@ assert.match(
 );
 assert.match(
   decoSpeak,
+  /sheep:[\s\S]*shears[\s\S]*wool/,
+  "forest sheep → shears/wool (MW-67)",
+);
+assert.match(
+  decoSpeak,
+  /cat:[\s\S]*tame[\s\S]*friend/,
+  "forest cat → tame/friend (MW-67)",
+);
+assert.match(
+  decoSpeak,
   /skeleton:[\s\S]*chest/,
   "cave skeleton → chest",
 );

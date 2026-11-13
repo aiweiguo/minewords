@@ -18,6 +18,12 @@ export const WILD_MONSTER_WORD_IDS = [
   "dragon",
   // MW-58 / P1-2: forest pig (crafting-corner decor words; no new dict row).
   "pig",
+  // MW-67 / Ship C: existing farm mobs → fight speak + narrative drop words.
+  "cow",
+  "chicken",
+  // MW-67 / Ship C: new speak-serving mobs (wired into wild pool below).
+  "slime",
+  "cat",
 ] as const;
 
 function buildMonsterBonusLearnWordIds(): Partial<
@@ -25,7 +31,11 @@ function buildMonsterBonusLearnWordIds(): Partial<
 > {
   const map: Record<string, string[]> = {
     // Sheep → wool feeds hub wool placeable (MW-52 / MW-55).
+    // Shears weave also merges in via MONSTER_DECOR_SPEAK (MW-67).
     sheep: ["wool"],
+    // MW-67: cow/chicken narrative drops (existing dict rows only).
+    cow: ["beef", "leather"],
+    chicken: ["egg"],
   };
   for (const [monsterId, weave] of Object.entries(MONSTER_DECOR_SPEAK)) {
     if (!weave) continue;
@@ -66,6 +76,29 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "wood", amount: 3 },
     { type: "resource", resource: "stone", amount: 1 },
     { type: "xp", xp: 10 },
+  ],
+  // MW-67: forest farm animals — wood bias; beef/leather/egg via bonus learn.
+  cow: [
+    { type: "resource", resource: "wood", amount: 3 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 10 },
+  ],
+  chicken: [
+    { type: "resource", resource: "wood", amount: 2 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 8 },
+  ],
+  // MW-67: cute low-tier expand forest/cave speak pool.
+  slime: [
+    { type: "resource", resource: "wood", amount: 2 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 8 },
+  ],
+  // MW-67: home-track parallel to wolf (tame/friend weave).
+  cat: [
+    { type: "resource", resource: "wood", amount: 2 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 9 },
   ],
   skeleton: [
     { type: "resource", resource: "stone", amount: 3 },
