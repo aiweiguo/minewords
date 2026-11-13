@@ -152,7 +152,10 @@ export type Unlockable = {
   icon: string;
   image?: string;
   rarity?: Rarity;
+  /** Live errand id; must exist in `quests` when set (MW-39). */
   questId?: string;
+  /** Non-quest unlock copy (trade / speak-craft) shown on /unlocks. */
+  unlockHintCn?: string;
   requiredWordIds?: string[];
   requiredCount?: number;
 };

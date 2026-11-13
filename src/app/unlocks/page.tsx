@@ -84,6 +84,7 @@ export default function UnlocksPage() {
                 <p className="mt-2 flex items-center gap-2 text-sm font-bold text-primary">
                   <GameIcon src={assetMap.lock} alt="Locked" size="xs" />
                   {decorationHint ??
+                    item.unlockHintCn ??
                     getUnlockConditionText(item.questId, quest?.titleCn)}
                 </p>
               </article>
