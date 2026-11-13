@@ -148,7 +148,7 @@ function buildMaterialBias(
       {
         type: "resource",
         resource: "emerald",
-        amount: wordId === "crystal" ? 2 : 1,
+        amount: wordId === "crystal" || wordId === "dragon" ? 2 : 1,
       },
     ];
   }
@@ -161,6 +161,7 @@ function focusAmount(wordId: string, focus: ResourceType): number {
   if (focus === "wood") {
     if (wordId === "zombie") return 3;
     if (wordId === "wolf") return 3;
+    if (wordId === "sheep") return 2;
     if (wordId === "spider") return 2;
     return 2;
   }
@@ -178,6 +179,7 @@ function focusAmount(wordId: string, focus: ResourceType): number {
   }
   if (focus === "diamond") {
     // Scarcer than iron — recipe needs 2 diamonds; crystal unique drops a bit more.
+    if (wordId === "dragon") return 3;
     if (wordId === "crystal") return 2;
     if (wordId === "skeleton") return 1;
     return 1;

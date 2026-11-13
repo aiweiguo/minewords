@@ -189,7 +189,7 @@ export type WeekSpeakStats = {
 };
 
 /** Placeable block kinds in the side-view home room (MC-inspired, not official assets). */
-export type RoomBlockType = "plank" | "cobble";
+export type RoomBlockType = "plank" | "cobble" | "glass" | "wool";
 
 /** Side-view room slots: floor row + lower wall row. */
 export type RoomSlotId =

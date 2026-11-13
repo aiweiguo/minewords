@@ -1149,6 +1149,26 @@ body {
     linear-gradient(180deg, #8c8c8c 0%, #6e6e6e 55%, #585858 100%);
 }
 
+/* MW-52: encyclopedia glass / wool pulled into hub placeables */
+.mw-block-glass {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(236, 250, 255, 0.75) 0%,
+      rgba(170, 220, 235, 0.45) 40%,
+      rgba(120, 185, 205, 0.55) 100%
+    ),
+    linear-gradient(180deg, #8fbfd0 0%, #6a9eb0 55%, #558898 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.mw-block-wool {
+  background:
+    radial-gradient(circle at 28% 30%, #fff6e8 0 16%, transparent 17%),
+    radial-gradient(circle at 72% 58%, #f0dcc0 0 14%, transparent 15%),
+    linear-gradient(180deg, #f3e2c8 0%, #e0c49a 50%, #c9a878 100%);
+}
+
 .mw-room-slot-flash {
   animation: mw-block-place 0.45s ease;
 }
