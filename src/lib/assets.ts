@@ -38,6 +38,7 @@ export const resourceAssetMap: Record<ResourceType, string> = {
   wood: assetMap.wood,
   stone: assetMap.stone,
   iron: assetMap.iron,
+  // Hidden from kid inventory (MW-47); placeholders only — no dedicated art yet.
   gold: assetMap.iron,
   emerald: assetMap.emerald,
   diamond: assetMap.diamond,

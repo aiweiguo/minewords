@@ -71,7 +71,8 @@ const DIFFICULTY_DROPS: Record<1 | 2 | 3, { resource: ResourceType; amount: numb
   ],
   3: [
     { resource: "iron", amount: 2 },
-    { resource: "gold", amount: 1 },
+    // Was gold (MW-47 / P2-1): gold had no goal sink; emerald feeds diamond trade.
+    { resource: "emerald", amount: 1 },
   ],
 };
 
