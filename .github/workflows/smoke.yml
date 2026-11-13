@@ -1,0 +1,25 @@
+# MW-62: cheap Node smoke suite (no browser e2e).
+# Lint is advisory: main already has react-hooks/set-state-in-effect debt
+# from client hydration / speech support probes; smoke is the merge gate.
+name: smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: lint (advisory)
+        continue-on-error: true
+        run: npm run lint
+      - name: smoke
+        run: npm run smoke
