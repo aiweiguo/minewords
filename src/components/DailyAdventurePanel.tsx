@@ -10,8 +10,14 @@ import { getVocabularyIcon } from "@/lib/assets";
 import { getVocabularyById } from "@/data/vocabulary";
 import { useGameStore } from "@/store/useGameStore";
 
-export function DailyAdventurePanel() {
+type DailyAdventurePanelProps = {
+  /** Compact one-job strip for hub; fuller card elsewhere. */
+  variant?: "full" | "hub";
+};
+
+export function DailyAdventurePanel({ variant = "full" }: DailyAdventurePanelProps) {
   const dailyStats = useGameStore((s) => s.dailyStats);
+  const learningStreak = useGameStore((s) => s.learningStreak);
   const completedQuestIds = useGameStore((s) => s.completedQuestIds);
   const completedGuideIds = useGameStore((s) => s.completedGuideIds);
   const completeDailyAdventure = useGameStore((s) => s.completeDailyAdventure);
@@ -31,6 +37,61 @@ export function DailyAdventurePanel() {
   function handleComplete() {
     if (!claimCheck.ok || completed) return;
     completeDailyAdventure(adventure);
+  }
+
+  const playHref = adventure.questId
+    ? `/quests/${adventure.questId}`
+    : adventure.guideId
+      ? `/guides/${adventure.guideId}`
+      : "/explore";
+  const playLabel = adventure.questId
+    ? "去做委托"
+    : adventure.guideId
+      ? "看攻略"
+      : "出门打怪";
+
+  if (variant === "hub") {
+    return (
+      <section
+        className="mw-hub-daily"
+        aria-label="今日冒险"
+        data-daily-id={adventure.id}
+      >
+        <div className="mw-hub-daily-main">
+          {learningStreak > 0 ? (
+            <span
+              className="mw-hub-daily-streak"
+              title={`连续学习 ${learningStreak} 天`}
+              aria-label={`连续学习 ${learningStreak} 天`}
+            >
+              <span aria-hidden>🔥</span>
+              {learningStreak}
+            </span>
+          ) : null}
+          <div className="mw-hub-daily-copy min-w-0">
+            <p className="mw-hub-daily-kicker">今日冒险</p>
+            <p className="mw-hub-daily-title truncate">{adventure.titleCn}</p>
+          </div>
+        </div>
+        <div className="mw-hub-daily-actions">
+          {completed ? (
+            <span className="mw-hub-daily-done">✓ 已完成</span>
+          ) : claimCheck.ok ? (
+            <button
+              type="button"
+              onClick={handleComplete}
+              className="mw-hub-daily-cta mw-hub-daily-cta-claim"
+            >
+              领取奖励
+            </button>
+          ) : (
+            <Link href={playHref} className="mw-hub-daily-cta">
+              {playLabel}
+            </Link>
+          )}
+        </div>
+      </section>
+    );
   }
 
   return (
