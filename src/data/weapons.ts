@@ -23,7 +23,10 @@ export type WeaponTier = {
   costs: WeaponCost[];
   /** Phrase kids can say; also used for TTS demo. */
   expectedSpeech: string;
-  /** Lenient keywords — scoreSpeechAttempt needs ≥2 or full phrase. */
+  /**
+   * Speech keywords for speak-craft.
+   * Wood/stone: 1 hit passes. Iron/diamond (P2-5): ≥2 hits or full phrase.
+   */
   speechKeywords: string[];
   speechHintCn: string;
   speechHintEn: string;
@@ -87,8 +90,8 @@ export const weaponTiers: WeaponTier[] = [
     ],
     expectedSpeech: "I craft an iron sword",
     speechKeywords: ["craft", "iron", "sword"],
-    speechHintCn: "说完整句：I craft an iron sword（含 craft / iron / sword）",
-    speechHintEn: "Say a full sentence with craft, iron, or sword",
+    speechHintCn: "至少两个词，如 iron sword；或整句 I craft an iron sword",
+    speechHintEn: "Say at least two keywords (e.g. iron sword) or the full sentence",
     craftXp: 24,
     nextPreviewCn: "下一阶：钻石剑 · 矿脉掉落或去交易买钻石",
     nextPreviewEn: "Next: diamond sword · mine or trade for diamonds",
@@ -107,8 +110,9 @@ export const weaponTiers: WeaponTier[] = [
     // Trade-style longer sentence (P1 / MW-32) — mirrors speak-trade fluency.
     expectedSpeech: "Can I craft a diamond sword?",
     speechKeywords: ["craft", "diamond", "sword", "buy", "want", "please"],
-    speechHintCn: "说交易式长句：Can I craft a diamond sword?（含 craft / diamond / sword）",
-    speechHintEn: "Say a trade-style sentence with craft, diamond, or sword",
+    speechHintCn: "至少两个词，如 diamond sword；或整句 Can I craft a diamond sword?",
+    speechHintEn:
+      "Say at least two keywords (e.g. diamond sword) or the full sentence",
     craftXp: 32,
     nextPreviewCn: "挂上后下一目标：装扮我家 · 铺满基地",
     nextPreviewEn: "After this: decorate home · fill the base",

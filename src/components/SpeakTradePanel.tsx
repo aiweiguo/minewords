@@ -24,6 +24,7 @@ import {
   isSpeechRecognitionSupported,
   listenOnce,
   scoreTradeSpeechAttempt,
+  tradeSpeechMinKeywords,
 } from "@/lib/speechRecognition";
 import { useGameStore } from "@/store/useGameStore";
 import { RewardResult } from "@/types";
@@ -126,6 +127,7 @@ export function SpeakTradePanel({ tradeId }: SpeakTradePanelProps) {
             transcript,
             offer.expectedSpeech,
             offer.speechKeywords,
+            tradeSpeechMinKeywords(offer.id),
           );
       setPassed(score.passed);
       if (score.passed) {
