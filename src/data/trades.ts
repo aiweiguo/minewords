@@ -63,22 +63,8 @@ export const tradeOffers: TradeOffer[] = [
     craftXp: 6,
     icon: assetMap.wood,
   },
-  {
-    id: "buy-gold",
-    title: "Buy Gold",
-    titleCn: "买金锭",
-    npcLine: "Gold? I can sell you some.",
-    npcLineCn: "金子？我可以卖给你。",
-    costs: [{ resource: "emerald", amount: 2 }],
-    gains: [{ resource: "gold", amount: 1 }],
-    expectedSpeech: "I want to buy gold",
-    speechKeywords: ["buy", "gold", "want", "trade"],
-    speechHintCn: "说 buy / gold，或 I want to buy gold",
-    speechHintEn: "Say buy, gold, or I want to buy gold",
-    wordIds: ["gold", "trade"],
-    craftXp: 8,
-    icon: assetMap.emerald,
-  },
+  // buy-gold removed (MW-47 / P2-1): gold had no craft sink — selling it
+  // burned emeralds into a dead resource. Keep "gold" as vocab only.
   {
     id: "buy-diamonds",
     title: "Buy Diamonds",

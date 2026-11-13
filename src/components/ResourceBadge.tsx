@@ -41,11 +41,16 @@ export function ResourceBadge({
   );
 }
 
+/**
+ * Kid-facing inventory strip (MW-47 / P2-1).
+ * `gold` and `netherite` stay in ResourceType + save state for compatibility,
+ * but are hidden until a real goal spends them — they had no craft/trade sink
+ * and borrowed iron/diamond icons (fake-currency feel).
+ */
 export const displayResources: ResourceType[] = [
   "wood",
   "stone",
   "iron",
-  "gold",
   "emerald",
   "diamond",
 ];
