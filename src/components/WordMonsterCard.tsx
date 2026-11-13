@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { FollowConfirmControls } from "@/components/FollowConfirmControls";
 import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { RewardModal } from "@/components/RewardModal";
 import { SpeakButton } from "@/components/SpeakButton";
 import { ExploreZoneId } from "@/data/exploreZones";
 import { getMonsterDropRewards } from "@/data/monsterDrops";
 import { getVocabularyById } from "@/data/vocabulary";
+import { useFollowConfirmRitual } from "@/hooks/useFollowConfirmRitual";
 import { usePhonicsSession } from "@/hooks/usePhonicsSession";
 import { FluencyRung, FLUENCY_RUNG_ORDER } from "@/lib/attackSpeech";
 import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
@@ -58,6 +60,8 @@ export function WordMonsterCard({
 }: WordMonsterCardProps) {
   const defeatMonster = useGameStore((s) => s.defeatMonster);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const recordSpeakCompletion = useGameStore((s) => s.recordSpeakCompletion);
+  const recordConfirmCompletion = useGameStore((s) => s.recordConfirmCompletion);
   const learnedWordIds = useGameStore((s) => s.learnedWordIds);
   const masteredWordIds = useGameStore((s) => s.masteredWordIds);
   const word = getVocabularyById(wordId);
@@ -106,6 +110,7 @@ export function WordMonsterCard({
     ? getMonsterDropRewardsForZone(wordId, zoneId)
     : getMonsterDropRewards(wordId);
   const attack = getPromptForRung(wordId, suggestedRung, zoneId);
+  const follow = useFollowConfirmRitual(attack.demoText);
 
   if (!word) {
     return null;
@@ -249,6 +254,7 @@ export function WordMonsterCard({
         }
         return;
       }
+      recordSpeakCompletion();
       resolveHit(score.damage, score.rung, {
         cn: score.feedbackCn,
         en: score.feedbackEn,
@@ -268,10 +274,16 @@ export function WordMonsterCard({
   }
 
   function handleManualAttack() {
+    if (follow.softPath && !follow.canConfirm) return;
     recordSpeakAttempt();
+    recordConfirmCompletion();
     const damage = FLUENCY_DAMAGE[suggestedRung];
     const isPartial = damage < MONSTER_MAX_HP;
-    setResult(`手动确认：${attack.manualLabelCn}。`);
+    setResult(
+      follow.softPath
+        ? `跟读确认：${attack.manualLabelCn}。`
+        : `手动确认：${attack.manualLabelCn}。`,
+    );
     resolveHit(damage, suggestedRung, {
       cn: isPartial
         ? suggestedRung === "word"
@@ -453,18 +465,26 @@ export function WordMonsterCard({
                       : "🎤 开口攻击 Attack"}
                 </button>
               ) : null}
-              <button
-                type="button"
+              <FollowConfirmControls
+                softPath={follow.softPath}
+                phase={follow.phase}
+                secondsLeft={follow.secondsLeft}
+                canConfirm={follow.canConfirm}
+                ritualBusy={follow.ritualBusy}
                 disabled={listening || defeated || hp <= 0}
-                onClick={handleManualAttack}
-                className={`mw-btn w-full disabled:opacity-60 ${
+                confirmLabel={
+                  defeated
+                    ? "已击败 Defeated ✓"
+                    : `${attack.manualLabelCn} ${attack.manualLabelEn}`
+                }
+                onStartRitual={() => {
+                  void follow.startRitual();
+                }}
+                onConfirm={handleManualAttack}
+                confirmClassName={
                   supported ? "mw-btn-outline" : "mw-btn-secondary"
-                }`}
-              >
-                {defeated
-                  ? "已击败 Defeated ✓"
-                  : `${attack.manualLabelCn} ${attack.manualLabelEn}`}
-              </button>
+                }
+              />
             </div>
           </>
         )}

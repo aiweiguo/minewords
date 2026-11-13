@@ -90,6 +90,8 @@ function createDailyStats(): DailyStats {
     dailyAdventureCompleted: false,
     dailyAdventureId: "",
     speakAttempts: 0,
+    speakCompletions: 0,
+    confirmCompletions: 0,
   };
 }
 
@@ -102,6 +104,8 @@ function normalizeDailyStats(stats: Partial<DailyStats> | undefined): DailyStats
       buildIdeasClaimed: stats.buildIdeasClaimed ?? 0,
       adventuresCompleted: stats.adventuresCompleted ?? 0,
       speakAttempts: stats.speakAttempts ?? 0,
+      speakCompletions: stats.speakCompletions ?? 0,
+      confirmCompletions: stats.confirmCompletions ?? 0,
       masteredTodayIds: stats.masteredTodayIds ?? [],
     };
   }
@@ -228,6 +232,10 @@ type GameStore = GameState & {
   executeTrade: (tradeId: string) => RewardResult | null;
   completeSpeakScenario: (scenarioId: string, xp: number) => boolean;
   recordSpeakAttempt: () => void;
+  /** Mic speak cleared a gate (attack / craft / trade / phonics / scenario). */
+  recordSpeakCompletion: () => void;
+  /** Manual confirm (or follow-then-confirm) cleared a gate. */
+  recordConfirmCompletion: () => void;
   syncDecorationUnlocks: () => void;
   recordDailyAnswer: (correct: boolean) => void;
   recordCorrectAnswer: (options?: { practiceMode?: boolean }) => void;
@@ -823,6 +831,30 @@ export const useGameStore = create<GameStore>()(
             dailyStats: {
               ...dailyStats,
               speakAttempts: dailyStats.speakAttempts + 1,
+            },
+            ...touchLearningDay(state),
+          };
+        }),
+
+      recordSpeakCompletion: () =>
+        set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          return {
+            dailyStats: {
+              ...dailyStats,
+              speakCompletions: dailyStats.speakCompletions + 1,
+            },
+            ...touchLearningDay(state),
+          };
+        }),
+
+      recordConfirmCompletion: () =>
+        set((state) => {
+          const dailyStats = normalizeDailyStats(state.dailyStats);
+          return {
+            dailyStats: {
+              ...dailyStats,
+              confirmCompletions: dailyStats.confirmCompletions + 1,
             },
             ...touchLearningDay(state),
           };

@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { FollowConfirmControls } from "@/components/FollowConfirmControls";
 import { SpeakButton } from "@/components/SpeakButton";
+import { useFollowConfirmRitual } from "@/hooks/useFollowConfirmRitual";
 import {
   getPhonicsPlan,
   phonicsChunkKey,
@@ -48,6 +50,8 @@ export function PhonicsMoment({
   const markWordLearned = useGameStore((s) => s.markWordLearned);
   const discoverWord = useGameStore((s) => s.discoverWord);
   const recordSpeakAttempt = useGameStore((s) => s.recordSpeakAttempt);
+  const recordSpeakCompletion = useGameStore((s) => s.recordSpeakCompletion);
+  const recordConfirmCompletion = useGameStore((s) => s.recordConfirmCompletion);
 
   const [listening, setListening] = useState(false);
   const [activeChunk, setActiveChunk] = useState<number | null>(null);
@@ -55,6 +59,7 @@ export function PhonicsMoment({
   const [passed, setPassed] = useState(false);
   const [supported, setSupported] = useState(false);
   const completeTimerRef = useRef<number | null>(null);
+  const follow = useFollowConfirmRitual(plan?.demoText ?? "");
 
   useEffect(() => {
     setSupported(isSpeechRecognitionSupported());
@@ -136,6 +141,7 @@ export function PhonicsMoment({
       setHeard(transcript);
       const score = scorePhonicsRepeatAttempt(transcript, plan!.english);
       if (score.passed) {
+        recordSpeakCompletion();
         finishLearn();
       }
     } catch {
@@ -146,8 +152,12 @@ export function PhonicsMoment({
   }
 
   function handleManualRepeat() {
+    if (follow.softPath && !follow.canConfirm) return;
     recordSpeakAttempt();
-    setHeard("手动确认：我跟读了。");
+    recordConfirmCompletion();
+    setHeard(
+      follow.softPath ? "跟读确认：我跟读了。" : "手动确认：我跟读了。",
+    );
     finishLearn();
   }
 
@@ -241,16 +251,24 @@ export function PhonicsMoment({
                 : "🎤 跟读 Repeat"}
           </button>
         ) : null}
-        <button
-          type="button"
+        <FollowConfirmControls
+          softPath={follow.softPath}
+          phase={follow.phase}
+          secondsLeft={follow.secondsLeft}
+          canConfirm={follow.canConfirm}
+          ritualBusy={follow.ritualBusy}
           disabled={listening || passed}
-          onClick={handleManualRepeat}
-          className={`mw-btn w-full disabled:opacity-60 ${
+          confirmLabel={
+            passed ? "跟读成功 ✓" : "我跟读了 I repeated it"
+          }
+          onStartRitual={() => {
+            void follow.startRitual();
+          }}
+          onConfirm={handleManualRepeat}
+          confirmClassName={
             supported ? "mw-btn-outline" : "mw-btn-secondary"
-          }`}
-        >
-          我跟读了 I repeated it
-        </button>
+          }
+        />
       </div>
 
       {heard && !passed ? (
