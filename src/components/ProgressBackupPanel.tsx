@@ -7,6 +7,13 @@ import {
   parseProgressBackup,
   progressBackupFilename,
 } from "@/lib/progressBackup";
+import {
+  formatProgressSummaryLines,
+  summarizeProgress,
+  type ProgressSummary,
+} from "@/lib/progressSummary";
+import { touchActiveSlot } from "@/lib/saveSlots";
+import type { GameState } from "@/types";
 import { useGameStore } from "@/store/useGameStore";
 
 type Status =
@@ -14,11 +21,17 @@ type Status =
   | { kind: "ok"; message: string }
   | { kind: "err"; message: string };
 
+type PendingImport = {
+  state: Partial<GameState>;
+  summary: ProgressSummary;
+};
+
 export function ProgressBackupPanel() {
   const importProgress = useGameStore((s) => s.importProgress);
   const resetProgress = useGameStore((s) => s.resetProgress);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
 
   function handleExport() {
     try {
@@ -39,26 +52,35 @@ export function ProgressBackupPanel() {
     }
   }
 
-  async function applyBackupText(raw: string) {
+  async function stageBackupText(raw: string) {
     const parsed = parseProgressBackup(raw);
     if (!parsed.ok) {
+      setPendingImport(null);
       setStatus({ kind: "err", message: parsed.error });
       return;
     }
 
-    const confirmed = window.confirm(
-      "导入会覆盖本机当前进度，且无法撤销。确定导入吗？",
-    );
-    if (!confirmed) {
-      setStatus({ kind: "idle" });
-      return;
-    }
+    setPendingImport({
+      state: parsed.state,
+      summary: summarizeProgress(parsed.state),
+    });
+    setStatus({ kind: "idle" });
+  }
 
-    importProgress(parsed.state);
+  function confirmImport() {
+    if (!pendingImport) return;
+    importProgress(pendingImport.state);
+    touchActiveSlot(useGameStore.getState());
+    setPendingImport(null);
     setStatus({
       kind: "ok",
       message: "导入成功。刷新或回基地即可看到新进度。",
     });
+  }
+
+  function cancelImport() {
+    setPendingImport(null);
+    setStatus({ kind: "idle" });
   }
 
   async function handleFileChange(fileList: FileList | null) {
@@ -66,8 +88,9 @@ export function ProgressBackupPanel() {
     if (!file) return;
     try {
       const text = await file.text();
-      await applyBackupText(text);
+      await stageBackupText(text);
     } catch {
+      setPendingImport(null);
       setStatus({ kind: "err", message: "读文件失败，请换一个 JSON 再试。" });
     } finally {
       if (fileInputRef.current) {
@@ -78,13 +101,15 @@ export function ProgressBackupPanel() {
 
   function handleReset() {
     const confirmed = window.confirm(
-      "确定要重置全部进度吗？此操作无法撤销。建议先导出备份。",
+      "确定要重置全部进度吗？此操作无法撤销。建议先导出备份。只会清空当前档位。",
     );
     if (!confirmed) return;
     resetProgress();
+    touchActiveSlot(useGameStore.getState());
+    setPendingImport(null);
     setStatus({
       kind: "ok",
-      message: "进度已重置。回基地可从头开始。",
+      message: "当前档位已重置。回基地可从头开始；其他档位不受影响。",
     });
   }
 
@@ -97,7 +122,7 @@ export function ProgressBackupPanel() {
         无账号、换机请备份。进度只存在本机浏览器，没有云同步或登录。
       </p>
       <p className="mt-2 text-sm font-semibold text-muted leading-relaxed">
-        导出 JSON（minewords-game-state），换设备后在本页导入即可恢复。重置请先备份。
+        导出 JSON（minewords-game-state），换设备后在本页导入即可恢复。重置请先备份；导入前会先预览摘要。
       </p>
 
       <div className="mt-4 flex flex-wrap gap-3">
@@ -120,7 +145,7 @@ export function ProgressBackupPanel() {
           onClick={handleReset}
           className="inline-flex min-h-11 items-center rounded-md border border-amber-700/50 bg-amber-950/30 px-4 py-2 text-sm font-bold text-amber-100 hover:bg-amber-950/50"
         >
-          重置全部进度
+          重置当前档位
         </button>
         <input
           ref={fileInputRef}
@@ -131,6 +156,42 @@ export function ProgressBackupPanel() {
           onChange={(event) => handleFileChange(event.target.files)}
         />
       </div>
+
+      {pendingImport ? (
+        <div
+          className="mt-4 rounded-xl border border-amber-700/50 bg-amber-950/30 px-4 py-3"
+          role="dialog"
+          aria-labelledby="mw-import-preview-title"
+        >
+          <p id="mw-import-preview-title" className="text-sm font-black">
+            导入预览 — 确认后会覆盖当前档位
+          </p>
+          <ul className="mt-3 space-y-1 text-sm font-semibold">
+            {formatProgressSummaryLines(pendingImport.summary).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-sm font-semibold text-muted">
+            无法撤销。其他本地档位不会被改写。
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={confirmImport}
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--panel-wood)]/60 bg-black/20 px-4 py-2 text-sm font-bold text-primary hover:bg-black/35"
+            >
+              确认导入
+            </button>
+            <button
+              type="button"
+              onClick={cancelImport}
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--panel-wood)]/40 bg-transparent px-4 py-2 text-sm font-bold text-muted hover:bg-black/20"
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {status.kind !== "idle" ? (
         <p

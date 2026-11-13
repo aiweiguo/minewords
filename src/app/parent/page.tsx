@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { guides } from "@/data/guides";
 import { quests } from "@/data/quests";
@@ -14,7 +14,9 @@ import {
   isMostlyConfirmWeek,
 } from "@/lib/followConfirm";
 import { ProgressBackupPanel } from "@/components/ProgressBackupPanel";
+import { SaveSlotsPanel } from "@/components/SaveSlotsPanel";
 import { getTonightThreeThings } from "@/lib/parentTonight";
+import { syncActiveSlotLabel } from "@/lib/saveSlots";
 import { MONSTER_WRONG_THRESHOLD } from "@/lib/wrongWord";
 import { normalizeWeekSpeakStats, useGameStore } from "@/store/useGameStore";
 
@@ -38,11 +40,14 @@ export default function ParentPage() {
   const learningStreak = useGameStore((s) => s.learningStreak);
 
   const [nameDraft, setNameDraft] = useState(playerName);
+  const [syncedPlayerName, setSyncedPlayerName] = useState(playerName);
   const [nameSaved, setNameSaved] = useState(false);
 
-  useEffect(() => {
+  // Keep draft in sync when slot switch / import changes playerName (no effect).
+  if (playerName !== syncedPlayerName) {
+    setSyncedPlayerName(playerName);
     setNameDraft(playerName);
-  }, [playerName]);
+  }
 
   const level = Math.floor(xp / 100) + 1;
 
@@ -126,6 +131,8 @@ export default function ParentPage() {
 
   function savePlayerName() {
     setPlayerName(nameDraft);
+    const next = nameDraft.trim().slice(0, 24) || "Alex";
+    syncActiveSlotLabel(next);
     setNameSaved(true);
     window.setTimeout(() => setNameSaved(false), 1800);
   }
@@ -289,6 +296,8 @@ export default function ParentPage() {
           iPhone / Safari 等常无语音识别：请换 Chrome，或让孩子走完听+跟读再确认。
         </p>
       </section>
+
+      <SaveSlotsPanel />
 
       <ProgressBackupPanel />
 
