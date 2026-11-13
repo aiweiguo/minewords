@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "smoke": "node scripts/smoke-speech-score.mjs && node scripts/smoke-weapon-goal.mjs && node scripts/smoke-daily-adventure.mjs && node scripts/smoke-weekly-place-cost.mjs",
-    "smoke:all": "npm run smoke && node scripts/smoke-confirm-demote.mjs && node scripts/smoke-decoration-speak.mjs && node scripts/smoke-zone-village-depth.mjs && node scripts/smoke-follow-confirm-polish.mjs && node scripts/smoke-milestone-celebration.mjs && node scripts/smoke-save-slots.mjs && node scripts/smoke-ship-a-speak-feedback.mjs"
+    "smoke:all": "npm run smoke && node scripts/smoke-confirm-demote.mjs && node scripts/smoke-decoration-speak.mjs && node scripts/smoke-zone-village-depth.mjs && node scripts/smoke-follow-confirm-polish.mjs && node scripts/smoke-milestone-celebration.mjs && node scripts/smoke-save-slots.mjs && node scripts/smoke-ship-a-speak-feedback.mjs && node scripts/smoke-ship-b-hub-anchors.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

@@ -845,11 +845,225 @@ body {
   opacity: 0.92;
 }
 
+/* MW-66: empty rack reads as "waiting to hang", not a blank fixture. */
+.mw-hub-rack-waiting {
+  border-color: rgba(168, 124, 60, 0.85);
+  background:
+    linear-gradient(180deg, rgba(232, 215, 176, 0.1), transparent 48%),
+    #4a3828;
+}
+
+.mw-hub-rack-waiting-art {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  min-height: 2rem;
+}
+
+.mw-hub-rack-peg {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.2rem;
+  width: 0.45rem;
+  height: 0.28rem;
+  border-radius: 0.08rem;
+  background: linear-gradient(180deg, #c49a5a, #6b4423);
+  box-shadow: 0 1px 0 #2c1c12;
+}
+
+.mw-hub-rack-peg-b {
+  left: auto;
+  right: 0.2rem;
+}
+
+.mw-hub-rack-wait-chip {
+  display: inline-block;
+  margin-top: 0.05rem;
+  padding: 0.05rem 0.28rem;
+  border-radius: 0.15rem;
+  background: rgba(20, 14, 8, 0.72);
+  color: #e8d7b0;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
 .mw-hub-rack-filled {
   border-color: #8b6914;
   background:
     linear-gradient(180deg, rgba(212, 175, 55, 0.18), transparent 50%),
     #5c4030;
+}
+
+/* MW-66 / Ship B: player silhouette — empty room still reads as「我的房间」. */
+.mw-hub-player {
+  pointer-events: none;
+  position: absolute;
+  left: 3%;
+  bottom: 14%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.14rem;
+}
+
+.mw-hub-player-sparse {
+  animation: mw-hub-player-idle 3.8s ease-in-out infinite;
+}
+
+.mw-hub-player-silhouette {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  transform: scale(1.35);
+  transform-origin: bottom center;
+}
+
+.mw-hub-player-head {
+  width: 0.95rem;
+  height: 0.85rem;
+  border-radius: 0.18rem;
+  background: linear-gradient(180deg, #c4a574 0%, #a88858 100%);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.mw-hub-player-head::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 0.28rem;
+  border-radius: 0.12rem 0.12rem 0 0;
+  background: #3a5a28;
+}
+
+.mw-hub-player-torso {
+  width: 1.2rem;
+  height: 1.15rem;
+  margin-top: 0.08rem;
+  border-radius: 0.12rem;
+  background: linear-gradient(180deg, #4a7a9a 0%, #2f5570 100%);
+}
+
+.mw-hub-player-legs {
+  display: flex;
+  gap: 0.18rem;
+  margin-top: 0.06rem;
+}
+
+.mw-hub-player-legs::before,
+.mw-hub-player-legs::after {
+  content: "";
+  width: 0.42rem;
+  height: 0.85rem;
+  border-radius: 0.08rem;
+  background: linear-gradient(180deg, #3d2e20 0%, #2c1c12 100%);
+}
+
+.mw-hub-player-tag {
+  padding: 0.05rem 0.28rem;
+  border-radius: 0.15rem;
+  background: rgba(20, 14, 8, 0.72);
+  color: #f0e6c8;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+@keyframes mw-hub-player-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* MW-66: decoration progress on the stage — glanceable without deep fold. */
+.mw-hub-decor-meter {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.4rem;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  max-width: 5.5rem;
+  padding: 0.28rem 0.35rem;
+  border: 2px solid rgba(90, 64, 48, 0.75);
+  border-radius: 0.25rem;
+  background: rgba(20, 14, 8, 0.78);
+  color: #f0e6c8;
+  text-decoration: none;
+  box-shadow: 0 2px 0 #1a1208;
+  pointer-events: auto;
+  transition: filter 0.12s ease, transform 0.12s ease;
+}
+
+.mw-hub-decor-meter:hover {
+  filter: brightness(1.08);
+}
+
+.mw-hub-decor-meter:active {
+  transform: translateY(1px);
+}
+
+.mw-hub-decor-meter-empty {
+  border-color: rgba(196, 154, 90, 0.75);
+  animation: mw-hub-decor-meter-nudge 2.8s ease-in-out infinite;
+}
+
+.mw-hub-decor-meter-label {
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.mw-hub-decor-meter-pips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.12rem;
+  max-width: 4.6rem;
+}
+
+.mw-hub-decor-pip {
+  width: 0.32rem;
+  height: 0.32rem;
+  border-radius: 50%;
+  background: rgba(232, 215, 176, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.mw-hub-decor-pip.on {
+  background: #6baf18;
+  box-shadow: 0 0 0 1px rgba(107, 175, 24, 0.45);
+}
+
+.mw-hub-decor-meter-count {
+  font-size: 0.65rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes mw-hub-decor-meter-nudge {
+  0%,
+  100% {
+    box-shadow: 0 2px 0 #1a1208;
+  }
+  50% {
+    box-shadow:
+      0 2px 0 #1a1208,
+      0 0 0 2px rgba(196, 154, 90, 0.35);
+  }
 }
 
 .mw-hub-rack-ready {
@@ -1417,6 +1631,13 @@ body {
   box-shadow: 0 3px 0 #1a1208;
 }
 
+.mw-hub-decorate-awaiting {
+  border-color: rgba(196, 154, 90, 0.65);
+  box-shadow:
+    0 3px 0 #1a1208,
+    0 0 0 1px rgba(196, 154, 90, 0.25);
+}
+
 .mw-hub-decorate-toggle {
   display: flex;
   width: 100%;
@@ -1425,6 +1646,41 @@ body {
   gap: 0.75rem;
   padding: 0.55rem 0.75rem;
   text-align: left;
+}
+
+.mw-hub-decorate-count {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.2rem;
+  background: rgba(107, 175, 24, 0.22);
+  color: #c8f0b0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.mw-hub-decorate-count.empty {
+  background: rgba(196, 154, 90, 0.28);
+  color: #f0e6c8;
+}
+
+.mw-hub-decorate-bar {
+  position: relative;
+  margin-top: 0.35rem;
+  height: 0.4rem;
+  max-width: 11rem;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.mw-hub-decorate-bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  background: linear-gradient(90deg, #6baf18, #c49a5a);
+  transition: width 0.25s ease;
 }
 
 .mw-hub-decorate-body {
@@ -1696,6 +1952,22 @@ body {
     width: 1.55rem;
     height: 2rem;
   }
+
+  .mw-hub-decor-meter {
+    top: 0.25rem;
+    right: 0.25rem;
+    max-width: 4.6rem;
+    padding: 0.22rem 0.28rem;
+  }
+
+  .mw-hub-player {
+    left: 1.5%;
+    bottom: 12%;
+  }
+
+  .mw-hub-player-silhouette {
+    transform: scale(1.15);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1709,7 +1981,9 @@ body {
   .mw-hub-rack-ready,
   .mw-hub-pickers-ready .mw-block-picker-ready,
   .mw-explore-portal-open,
-  .mw-explore-portal-selected {
+  .mw-explore-portal-selected,
+  .mw-hub-player-sparse,
+  .mw-hub-decor-meter-empty {
     animation: none !important;
   }
 }

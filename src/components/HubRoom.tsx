@@ -98,6 +98,10 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       isDecorationUnlocked(deco, learnedWordIds, masteredWordIds) ||
       unlockedIds.includes(deco.id),
   );
+  const litDecorCount = placedDecorations.length;
+  const decorTotal = baseDecorations.length;
+  const roomIsSparse =
+    litDecorCount === 0 && Object.values(roomBlocks).every((b) => !b);
   const litDecorKey = placedDecorations.map((d) => d.id).join("|");
 
   // MW-57: short celebrate when a word decoration newly lights (not a card).
@@ -253,7 +257,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
             </div>
 
             {/* Unlocked word decorations — visible on the live stage */}
-            <div className="mw-hub-decos" aria-hidden={placedDecorations.length === 0}>
+            <div className="mw-hub-decos" aria-hidden={litDecorCount === 0}>
               {placedDecorations.map((deco) => {
                 const index = baseDecorations.findIndex((item) => item.id === deco.id);
                 const slot =
@@ -273,6 +277,45 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               })}
             </div>
 
+            {/* MW-66 / Ship B: empty-room anchors — player silhouette + lived-in stage */}
+            <div
+              className={`mw-hub-player ${roomIsSparse ? "mw-hub-player-sparse" : ""}`}
+              aria-hidden
+            >
+              <span className="mw-hub-player-silhouette">
+                <span className="mw-hub-player-head" />
+                <span className="mw-hub-player-torso" />
+                <span className="mw-hub-player-legs" />
+              </span>
+              <span className="mw-hub-player-tag">我</span>
+            </div>
+
+            <a
+              href="#decorate"
+              className={`mw-hub-decor-meter ${
+                litDecorCount === 0 ? "mw-hub-decor-meter-empty" : ""
+              }`}
+              aria-label={`装扮进度 ${litDecorCount} / ${decorTotal}`}
+              title="学词点亮房间装饰"
+            >
+              <span className="mw-hub-decor-meter-label" aria-hidden>
+                装扮
+              </span>
+              <span className="mw-hub-decor-meter-pips" aria-hidden>
+                {baseDecorations.map((deco) => (
+                  <span
+                    key={deco.id}
+                    className={`mw-hub-decor-pip ${
+                      placedDecorations.some((d) => d.id === deco.id) ? "on" : ""
+                    }`}
+                  />
+                ))}
+              </span>
+              <span className="mw-hub-decor-meter-count">
+                {litDecorCount}/{decorTotal}
+              </span>
+            </a>
+
             <div className="mw-hub-wall-row">
               {ROOM_WALL_SLOTS.map(renderSlot)}
             </div>
@@ -281,14 +324,14 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               <Link
                 href={rackHref}
                 className={`mw-hub-fixture mw-hub-fixture-link mw-hub-prop-rack ${
-                  equipped ? "mw-hub-rack-filled" : "mw-hub-rack-empty"
+                  equipped ? "mw-hub-rack-filled" : "mw-hub-rack-empty mw-hub-rack-waiting"
                 } ${emphasizeCraft ? "mw-hub-rack-ready" : ""}`}
                 title={
                   equipped
                     ? `${equipped.nameCn}已挂上`
                     : nextSlot
-                      ? `目标：${nextSlot.nameCn}`
-                      : "武器架"
+                      ? `待挂：${nextSlot.nameCn}`
+                      : "武器架 · 待挂"
                 }
               >
                 <span className="mw-hub-prop-art" aria-hidden>
@@ -300,18 +343,27 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                       <GameIcon src={equipped.icon} alt="" size="sm" />
                     </span>
                   ) : (
-                    <span className="mw-hub-rack-ghost" aria-hidden>
-                      <GameIcon
-                        src={nextSlot?.icon ?? assetMap.sword}
-                        alt=""
-                        size="sm"
-                        className="opacity-35"
-                      />
+                    <span className="mw-hub-rack-waiting-art">
+                      <span className="mw-hub-rack-peg" />
+                      <span className="mw-hub-rack-ghost">
+                        <GameIcon
+                          src={nextSlot?.icon ?? assetMap.sword}
+                          alt=""
+                          size="sm"
+                          className="opacity-35"
+                        />
+                      </span>
+                      <span className="mw-hub-rack-peg mw-hub-rack-peg-b" />
                     </span>
                   )}
                   <span className="mw-hub-rack-post" />
                 </span>
                 <span className="mw-hub-prop-label">{rackLabel}</span>
+                {!equipped ? (
+                  <span className="mw-hub-rack-wait-chip" aria-hidden>
+                    待挂
+                  </span>
+                ) : null}
                 {!equipped && nextSlot ? (
                   <span className="mw-hub-rack-tier-dots" aria-hidden>
                     {weaponTiers.map((tier) => (
@@ -465,13 +517,15 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                 ? goal.homeFill
                   ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺木板/圆石/玻璃/羊毛；学词还能点亮房间装饰`
                   : "钻石剑已挂上 — 点空槽装扮我家"
-                : placedDecorations.length > 0 && emphasizeFight
-                  ? "空武器架 — 点门出门打怪；森林打羊掉羊毛，矿脉水晶怪掉玻璃"
-                  : emphasizeFight
-                    ? "空武器架 — 点门出门打怪攒材料"
-                    : canAfford
-                      ? "点空槽铺地板或墙（木板耗木·圆石耗石·玻璃耗玻璃·羊毛耗羊毛）"
-                      : "换一块有材料的：羊毛打羊，玻璃打水晶怪"}
+                : roomIsSparse && emphasizeFight
+                  ? "这是我的房间 — 点门出门打怪，攒材料挂剑、铺家"
+                  : litDecorCount > 0 && emphasizeFight
+                    ? "空武器架 — 点门出门打怪；森林打羊掉羊毛，矿脉水晶怪掉玻璃"
+                    : emphasizeFight
+                      ? "空武器架 — 点门出门打怪攒材料"
+                      : canAfford
+                        ? "点空槽铺地板或墙（木板耗木·圆石耗石·玻璃耗玻璃·羊毛耗羊毛）"
+                        : "换一块有材料的：羊毛打羊，玻璃打水晶怪"}
         </p>
       </div>
     </section>

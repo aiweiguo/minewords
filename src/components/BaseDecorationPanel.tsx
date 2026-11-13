@@ -44,19 +44,46 @@ export function BaseDecorationPanel({
   }
 
   if (variant === "hub") {
+    const lit = unlockedDecorations.length;
+    const total = baseDecorations.length;
+    const noneLit = lit === 0;
     return (
-      <section id="decorate" className="mw-hub-decorate scroll-mt-4">
+      <section
+        id="decorate"
+        className={`mw-hub-decorate scroll-mt-4 ${
+          noneLit ? "mw-hub-decorate-awaiting" : ""
+        }`}
+      >
         <button
           type="button"
           aria-expanded={hubOpen}
           onClick={() => setHubOpen(!hubOpen)}
           className="mw-hub-decorate-toggle"
         >
-          <div className="min-w-0 text-left">
-            <h2 className="text-base font-black">装扮基地</h2>
-            <p className="truncate text-xs font-semibold text-muted">
-              已点亮 {unlockedDecorations.length} / {baseDecorations.length} ·
-              学词解锁，家里看得见
+          <div className="min-w-0 flex-1 text-left">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <h2 className="text-base font-black">装扮基地</h2>
+              <span
+                className={`mw-hub-decorate-count ${noneLit ? "empty" : ""}`}
+                aria-label={`已点亮 ${lit} / ${total}`}
+              >
+                {lit}/{total}
+              </span>
+            </div>
+            <div
+              className="mw-hub-decorate-bar"
+              aria-hidden
+              title={`已点亮 ${lit} / ${total}`}
+            >
+              <span
+                className="mw-hub-decorate-bar-fill"
+                style={{ width: `${Math.round((lit / total) * 100)}%` }}
+              />
+            </div>
+            <p className="mt-1 truncate text-xs font-semibold text-muted">
+              {noneLit
+                ? "学词点亮房间装饰 — 进度在房间里也能看到"
+                : `已点亮 ${lit} / ${total} · 学词解锁，家里看得见`}
             </p>
           </div>
           <span className="text-lg font-black text-primary" aria-hidden>
