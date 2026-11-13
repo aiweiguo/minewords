@@ -24,17 +24,36 @@ import { RoomBlockType, RoomSlotId } from "@/types";
 
 const blockMeta: Record<
   RoomBlockType,
-  { labelCn: string; className: string; resourceKey: "wood" | "stone" }
+  {
+    labelCn: string;
+    labelEn: string;
+    className: string;
+    resourceKey: "wood" | "stone";
+  }
 > = {
   plank: {
     labelCn: "木板",
+    labelEn: "plank",
     className: "mw-block-plank",
     resourceKey: "wood",
   },
   cobble: {
     labelCn: "圆石",
+    labelEn: "cobble",
     className: "mw-block-cobble",
     resourceKey: "stone",
+  },
+  glass: {
+    labelCn: "玻璃",
+    labelEn: "glass",
+    className: "mw-block-glass",
+    resourceKey: "wood",
+  },
+  wool: {
+    labelCn: "羊毛",
+    labelEn: "wool",
+    className: "mw-block-wool",
+    resourceKey: "wood",
   },
 };
 
@@ -361,7 +380,12 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                   afford ? "" : "opacity-60"
                 }`}
               >
-                <span className="font-black">{meta.labelCn}</span>
+                <span className="font-black">
+                  {meta.labelCn}
+                  <span className="ml-1 text-[10px] font-bold uppercase tracking-wide opacity-70">
+                    {meta.labelEn}
+                  </span>
+                </span>
                 <span className="text-[11px] font-semibold text-black/70">
                   {meta.resourceKey === "wood" ? "木头" : "石头"} ×{stock}
                 </span>
@@ -382,14 +406,14 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               ? "材料够了 — 点工作台开口合成武器"
               : homeDecorate
                 ? goal.homeFill
-                  ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺家；学词还能点亮房间装饰`
+                  ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺木板/圆石/玻璃/羊毛；学词还能点亮房间装饰`
                   : "钻石剑已挂上 — 点空槽装扮我家"
                 : placedDecorations.length > 0 && emphasizeFight
-                  ? "空武器架 — 点门出门打怪；家里装饰会随学词点亮"
+                  ? "空武器架 — 点门出门打怪；森林打羊可学 wool，家里可铺玻璃/羊毛"
                   : emphasizeFight
                     ? "空武器架 — 点门出门打怪攒材料"
                     : canAfford
-                      ? "点空槽铺地板或墙"
+                      ? "点空槽铺地板或墙（木板·圆石·玻璃·羊毛）"
                       : "换一块有材料的，或点交易开口换稀有材料"}
         </p>
       </div>

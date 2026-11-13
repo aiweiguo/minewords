@@ -47,7 +47,7 @@ export type WeaponGoalSnapshot = {
   homeFill: HomeFillProgress | null;
 };
 
-/** Hub side-view room slots kids can fill with plank/cobble (MW-41). */
+/** Hub side-view room slots kids can fill with plank/cobble/glass/wool (MW-41 → MW-52). */
 export const HOME_ROOM_SLOTS: RoomSlotId[] = [
   "floor-0",
   "floor-1",
@@ -154,8 +154,8 @@ function lineCompleteHomeSnapshot(
         labelEn: "Decorate home",
         kind: "home",
       },
-      nextPreviewCn: `家装 ${homeFill.filled}/${homeFill.total} · 用木头/石头铺满基地`,
-      nextPreviewEn: `Home ${homeFill.filled}/${homeFill.total} · fill the base with plank/cobble`,
+      nextPreviewCn: `家装 ${homeFill.filled}/${homeFill.total} · 用木板/圆石/玻璃/羊毛铺满基地`,
+      nextPreviewEn: `Home ${homeFill.filled}/${homeFill.total} · fill with plank/cobble/glass/wool`,
     };
   }
 

@@ -12,7 +12,19 @@ export const WILD_MONSTER_WORD_IDS = [
   "witch",
   "enderman",
   "crystal",
+  // MW-52 / P2-6: existing encyclopedia mobs pulled into the fight loop.
+  "sheep",
+  "dragon",
 ] as const;
+
+/**
+ * Extra dictionary words marked learned on first defeat (still no new vocab rows).
+ * Sheep → wool feeds the hub wool placeable / bed craft keywords.
+ */
+export const MONSTER_BONUS_LEARN_WORD_IDS: Partial<Record<string, readonly string[]>> =
+  {
+    sheep: ["wool"],
+  };
 
 const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
   zombie: [
@@ -28,6 +40,11 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "wood", amount: 3 },
     { type: "resource", resource: "stone", amount: 1 },
     { type: "xp", xp: 11 },
+  ],
+  sheep: [
+    { type: "resource", resource: "wood", amount: 2 },
+    { type: "resource", resource: "stone", amount: 1 },
+    { type: "xp", xp: 9 },
   ],
   skeleton: [
     { type: "resource", resource: "stone", amount: 3 },
@@ -60,6 +77,12 @@ const FIXED_DROPS: Partial<Record<string, Reward[]>> = {
     { type: "resource", resource: "iron", amount: 1 },
     { type: "resource", resource: "emerald", amount: 2 },
     { type: "xp", xp: 22 },
+  ],
+  dragon: [
+    { type: "resource", resource: "diamond", amount: 3 },
+    { type: "resource", resource: "iron", amount: 2 },
+    { type: "resource", resource: "emerald", amount: 3 },
+    { type: "xp", xp: 28 },
   ],
 };
 

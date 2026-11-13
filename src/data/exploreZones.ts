@@ -36,13 +36,13 @@ export const exploreZones: ExploreZone[] = [
     id: "forest",
     name: "Forest",
     nameCn: "森林",
-    blurbCn: "僵尸·蜘蛛·狼 · 攒木头做木剑 · 单词起步",
-    blurbEn: "Word attack for wood · wolf exclusive",
+    blurbCn: "僵尸·蜘蛛·狼·羊 · 攒木头做木剑 · 单词起步",
+    blurbEn: "Word attack for wood · wolf + sheep",
     focusResource: "wood",
     focusLabelCn: "木头",
     requiredWeaponId: null,
-    // MW-44: +wolf (forest exclusive; already in vocab).
-    wildMonsterIds: ["zombie", "spider", "wolf"],
+    // MW-44: +wolf · MW-52: +sheep (encyclopedia → fight; unlocks wool home block).
+    wildMonsterIds: ["zombie", "spider", "wolf", "sheep"],
     background: backgroundMap.forest,
     tone: "forest",
     attackSpeech: "word",
@@ -83,13 +83,13 @@ export const exploreZones: ExploreZone[] = [
     id: "crystal",
     name: "Crystal Depths",
     nameCn: "钻石矿脉",
-    blurbCn: "水晶怪·骷髅 · 掉钻石做钻石剑 · 整句打满",
-    blurbEn: "Crystal unique · sentence for diamond",
+    blurbCn: "水晶怪·骷髅·龙 · 掉钻石做钻石剑 · 整句打满",
+    blurbEn: "Crystal + dragon · sentence for diamond",
     focusResource: "diamond",
     focusLabelCn: "钻石",
     requiredWeaponId: "iron-sword",
-    // MW-44: crystal = diamond-semantic unique (not a mines/blaze reskin); keep skeleton.
-    wildMonsterIds: ["crystal", "skeleton"],
+    // MW-44: crystal unique · MW-52: +dragon (already in vocabulary, not a new dict row).
+    wildMonsterIds: ["crystal", "skeleton", "dragon"],
     background: backgroundMap.crystal,
     tone: "crystal",
     // Same ladder as mines: sentence start, lower rungs chip, miss step-down (MW-35).

@@ -8,7 +8,10 @@ import {
   getExploreZoneById,
   isExploreZoneId,
 } from "@/data/exploreZones";
-import { getMonsterDropRewards } from "@/data/monsterDrops";
+import {
+  getMonsterDropRewards,
+  MONSTER_BONUS_LEARN_WORD_IDS,
+} from "@/data/monsterDrops";
 import { getQuestById, quests } from "@/data/quests";
 import { getSpeakScenarioById } from "@/data/speakScenarios";
 import { getTradeOfferById } from "@/data/trades";
@@ -69,6 +72,16 @@ export const ROOM_BLOCK_COST: Record<
 > = {
   plank: { resource: "wood", amount: 1 },
   cobble: { resource: "stone", amount: 1 },
+  // MW-52: encyclopedia block words become placeables (same wood/stone sinks).
+  glass: { resource: "wood", amount: 1 },
+  wool: { resource: "wood", amount: 1 },
+};
+
+/** Placing these block types marks the matching dictionary word learned. */
+export const ROOM_BLOCK_LEARN_WORD_ID: Partial<Record<RoomBlockType, string>> = {
+  glass: "glass",
+  wool: "wool",
+  plank: "plank",
 };
 
 export const ROOM_FLOOR_SLOTS: RoomSlotId[] = [
@@ -237,6 +250,24 @@ export function mergePersistedGameState<T extends GameState>(
     ...current,
     ...mergedState,
     ...withDecorationSync(mergedState),
+  };
+}
+
+/** Discover + learn without mastering (placeables / related drop words). */
+function applyWordLearnedState(state: GameState, wordId: string): GameState {
+  const dailyStats = normalizeDailyStats(state.dailyStats);
+  const newlyLearned = !state.learnedWordIds.includes(wordId);
+  if (!newlyLearned && state.discoveredWordIds.includes(wordId)) {
+    return state;
+  }
+  return {
+    ...state,
+    discoveredWordIds: mergeWordIds(state.discoveredWordIds, [wordId]),
+    learnedWordIds: mergeWordIds(state.learnedWordIds, [wordId]),
+    dailyStats: {
+      ...dailyStats,
+      learnedWords: dailyStats.learnedWords + (newlyLearned ? 1 : 0),
+    },
   };
 }
 
@@ -437,12 +468,20 @@ export const useGameStore = create<GameStore>()(
           ...state.roomBlocks,
           [slotId]: blockType,
         };
-        set({
-          resources: {
-            ...state.resources,
-            [cost.resource]: state.resources[cost.resource] - cost.amount,
-          },
-          roomBlocks: nextBlocks,
+        const learnWordId = ROOM_BLOCK_LEARN_WORD_ID[blockType];
+        set((current) => {
+          const spent: GameState = {
+            ...current,
+            resources: {
+              ...current.resources,
+              [cost.resource]: current.resources[cost.resource] - cost.amount,
+            },
+            roomBlocks: nextBlocks,
+          };
+          const learned = learnWordId
+            ? applyWordLearnedState(spent, learnWordId)
+            : spent;
+          return { ...learned, ...withDecorationSync(learned) };
         });
         return true;
       },
@@ -702,9 +741,14 @@ export const useGameStore = create<GameStore>()(
         };
 
         set((state) => {
-          const base = alreadyDefeated
+          let base = alreadyDefeated
             ? state
             : applyWordMasteredState(state, wordId);
+          if (!alreadyDefeated) {
+            for (const bonusId of MONSTER_BONUS_LEARN_WORD_IDS[wordId] ?? []) {
+              base = applyWordLearnedState(base, bonusId);
+            }
+          }
           const applied = applyRewardList(base, dropRewards);
           const fightErrandIds = getFightErrandIdsForResource(
             zone?.focusResource,
