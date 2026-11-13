@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { BaseDecorationPanel } from "@/components/BaseDecorationPanel";
 import { HubRoom } from "@/components/HubRoom";
 import { OnboardingCoach } from "@/components/OnboardingCoach";
 import { useGameStore } from "@/store/useGameStore";
@@ -30,12 +31,22 @@ export default function HomePage() {
   const resetProgress = useGameStore((state) => state.resetProgress);
   const [moreOpen, setMoreOpen] = useState(false);
   const [lookupOpen, setLookupOpen] = useState(false);
+  const [decorateOpen, setDecorateOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<RoomBlockType>("plank");
 
   useEffect(() => {
     function syncHash() {
-      if (window.location.hash === "#more") {
+      const hash = window.location.hash;
+      if (hash === "#more") {
         setMoreOpen(true);
+      }
+      if (hash === "#decorate") {
+        setDecorateOpen(true);
+        window.requestAnimationFrame(() => {
+          document
+            .getElementById("decorate")
+            ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
       }
     }
     syncHash();
@@ -49,6 +60,12 @@ export default function HomePage() {
       <HubRoom
         selectedBlock={selectedBlock}
         onSelectBlock={setSelectedBlock}
+      />
+
+      <BaseDecorationPanel
+        variant="hub"
+        open={decorateOpen}
+        onOpenChange={setDecorateOpen}
       />
 
       <section id="more" className="mw-hub-more scroll-mt-4">

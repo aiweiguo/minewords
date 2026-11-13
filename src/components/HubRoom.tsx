@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { DailyAdventurePanel } from "@/components/DailyAdventurePanel";
 import { GameIcon } from "@/components/GameIcon";
 import { WeaponGoalStrip } from "@/components/WeaponGoalStrip";
+import {
+  baseDecorations,
+  isDecorationUnlocked,
+} from "@/data/baseDecorations";
+import { decorationSceneSlots } from "@/data/decorationSlots";
 import { weaponTiers } from "@/data/weapons";
 import { assetMap } from "@/lib/assets";
 import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
@@ -41,9 +47,17 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const roomBlocks = useGameStore((s) => s.roomBlocks);
   const resources = useGameStore((s) => s.resources);
   const unlockedIds = useGameStore((s) => s.unlockedIds);
+  const learnedWordIds = useGameStore((s) => s.learnedWordIds);
+  const masteredWordIds = useGameStore((s) => s.masteredWordIds);
   const placeRoomBlock = useGameStore((s) => s.placeRoomBlock);
   const [flashSlot, setFlashSlot] = useState<RoomSlotId | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+
+  const placedDecorations = baseDecorations.filter(
+    (deco) =>
+      isDecorationUnlocked(deco, learnedWordIds, masteredWordIds) ||
+      unlockedIds.includes(deco.id),
+  );
 
   const cost = ROOM_BLOCK_COST[selectedBlock];
   const canAfford = resources[cost.resource] >= cost.amount;
@@ -137,6 +151,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       </header>
 
       <WeaponGoalStrip variant="hub" className="relative z-[2]" />
+      <DailyAdventurePanel variant="hub" />
 
       <div className="mw-hub-stage-wrap relative z-[1]">
         <div className="mw-hub-room-stage" role="img" aria-label="侧视房间">
@@ -159,6 +174,27 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
             <div className="mw-hub-backwall" aria-hidden>
               <span className="mw-hub-torch mw-hub-torch-l" />
               <span className="mw-hub-torch mw-hub-torch-r" />
+            </div>
+
+            {/* Unlocked word decorations — visible on the live stage */}
+            <div className="mw-hub-decos" aria-hidden={placedDecorations.length === 0}>
+              {placedDecorations.map((deco) => {
+                const index = baseDecorations.findIndex((item) => item.id === deco.id);
+                const slot =
+                  decorationSceneSlots[
+                    (index >= 0 ? index : 0) % decorationSceneSlots.length
+                  ];
+                return (
+                  <div
+                    key={deco.id}
+                    className={`mw-hub-deco ${slot.className}`}
+                    title={deco.nameCn}
+                  >
+                    <span className="mw-hub-deco-emoji">{deco.emoji}</span>
+                    <span className="mw-hub-deco-label">{deco.nameCn}</span>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mw-hub-wall-row">
@@ -346,13 +382,15 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               ? "材料够了 — 点工作台开口合成武器"
               : homeDecorate
                 ? goal.homeFill
-                  ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺家`
+                  ? `钻石剑已挂上 — 还差 ${goal.homeFill.empty} 个家装位，点空槽铺家；学词还能点亮房间装饰`
                   : "钻石剑已挂上 — 点空槽装扮我家"
-                : emphasizeFight
-                  ? "空武器架 — 点门出门打怪攒材料"
-                  : canAfford
-                    ? "点空槽铺地板或墙"
-                    : "换一块有材料的，或点交易开口换稀有材料"}
+                : placedDecorations.length > 0 && emphasizeFight
+                  ? "空武器架 — 点门出门打怪；家里装饰会随学词点亮"
+                  : emphasizeFight
+                    ? "空武器架 — 点门出门打怪攒材料"
+                    : canAfford
+                      ? "点空槽铺地板或墙"
+                      : "换一块有材料的，或点交易开口换稀有材料"}
         </p>
       </div>
     </section>

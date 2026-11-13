@@ -149,7 +149,7 @@ function lineCompleteHomeSnapshot(
       stripCn: `${badge} · 还差 ${homeFill.empty} 个家装位`,
       stripEn: `${badgeEn} · ${homeFill.empty} home slots left`,
       primaryCta: {
-        href: "/",
+        href: "/#decorate",
         labelCn: "装扮我家",
         labelEn: "Decorate home",
         kind: "home",
@@ -171,7 +171,7 @@ function lineCompleteHomeSnapshot(
     stripCn: `${badge} · 家已装满`,
     stripEn: `${badgeEn} · home filled`,
     primaryCta: {
-      href: "/",
+      href: "/#decorate",
       labelCn: "回我家看看",
       labelEn: "Visit home",
       kind: "home",
