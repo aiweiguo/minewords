@@ -1982,6 +1982,7 @@ body {
   .mw-hub-pickers-ready .mw-block-picker-ready,
   .mw-explore-portal-open,
   .mw-explore-portal-selected,
+  .mw-explore-portal-mob,
   .mw-hub-player-sparse,
   .mw-hub-decor-meter-empty {
     animation: none !important;
@@ -2084,7 +2085,7 @@ body {
   align-items: flex-start;
   justify-content: flex-end;
   gap: 0.2rem;
-  min-height: 9.5rem;
+  min-height: 11.25rem;
   padding: 0.85rem 0.9rem;
   border: 3px solid #3d2a1c;
   border-radius: 0.45rem;
@@ -2096,6 +2097,124 @@ body {
     0 4px 0 #1a120c,
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   overflow: hidden;
+}
+
+/* MW-68 / Ship D — mini scene peek inside each zone portal */
+.mw-explore-portal-scene {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.65rem;
+  right: 0.65rem;
+  height: 3.4rem;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 0.15rem;
+  padding: 0 0.35rem 0.2rem;
+  border-radius: 0.35rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+    linear-gradient(180deg, rgba(12, 18, 10, 0.15), rgba(12, 18, 10, 0.55));
+  box-shadow: inset 0 -10px 0 rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.mw-explore-portal-scene-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.55rem;
+  background: linear-gradient(90deg, rgba(60, 90, 40, 0.7), rgba(40, 60, 30, 0.55));
+}
+
+.mw-explore-portal-mob {
+  position: relative;
+  z-index: 1;
+  font-size: 1.45rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  animation: mw-explore-mob-bob 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--mw-mob-i, 0) * 0.18s);
+  transform-origin: center bottom;
+}
+
+.mw-explore-portal-scene-locked {
+  filter: grayscale(0.45) brightness(0.85);
+}
+
+.mw-explore-portal-scene-locked .mw-explore-portal-mob {
+  animation: none;
+  opacity: 0.72;
+}
+
+@keyframes mw-explore-mob-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* MW-68 — short「走进去」enter wash */
+.mw-explore-enter {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background-size: cover;
+  background-position: center;
+  animation: mw-explore-enter-zoom 0.52s ease-out both;
+}
+
+.mw-explore-enter-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(20, 14, 8, 0.15), rgba(10, 8, 6, 0.72)),
+    linear-gradient(180deg, rgba(18, 22, 14, 0.35), rgba(18, 22, 14, 0.78));
+}
+
+.mw-explore-enter-label {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0.75rem 1.2rem;
+  border: 3px solid #5a4030;
+  border-radius: 0.45rem;
+  background: rgba(20, 14, 8, 0.82);
+  color: #f4efdf;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 0 #1a120c;
+  animation: mw-map-enter 0.35s ease both;
+}
+
+.mw-explore-enter-en {
+  margin-left: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #d4af37;
+}
+
+@keyframes mw-explore-enter-zoom {
+  0% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* MW-50: per-zone atmosphere wash so portals don't read as palette-swaps. */
@@ -3246,12 +3365,237 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .mw-hit-flash-burst,
   .mw-hit-shake,
-  .mw-loot-chip {
+  .mw-loot-chip,
+  .mw-explore-portal-mob,
+  .mw-explore-enter,
+  .mw-explore-enter-label,
+  .mw-monster-idle,
+  .mw-monster-poof,
+  .mw-damage-float,
+  .mw-monster-stage-defeat .mw-monster-sprite,
+  .mw-monster-stage-defeat .mw-monster-shadow,
+  .mw-fight-page {
     animation: none;
   }
 
   .mw-loot-chip {
     opacity: 1;
+  }
+
+  .mw-fight-page {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* MW-68 / Ship D — fight land-in + enlarged monster stage */
+.mw-fight-page {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+}
+
+.mw-fight-page-entered {
+  animation: mw-fight-land 0.48s ease both;
+}
+
+@keyframes mw-fight-land {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mw-monster-stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  justify-items: stretch;
+}
+
+.mw-monster-meta {
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .mw-monster-stage {
+    grid-template-columns: minmax(11rem, 14rem) 1fr;
+    gap: 0.95rem 1.15rem;
+  }
+
+  .mw-monster-meta {
+    text-align: left;
+  }
+}
+
+.mw-monster-arena {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 10.5rem;
+  width: 100%;
+  padding: 1rem 0.5rem 1.15rem;
+  border-radius: 0.55rem;
+  border: 2px solid rgba(90, 64, 48, 0.55);
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(0, 0, 0, 0.28), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.22));
+  overflow: hidden;
+}
+
+.mw-monster-stage-forest .mw-monster-arena {
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(20, 40, 12, 0.35), transparent 60%),
+    linear-gradient(180deg, rgba(107, 175, 24, 0.12), rgba(18, 28, 12, 0.45));
+}
+
+.mw-monster-stage-cave .mw-monster-arena {
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(12, 18, 28, 0.45), transparent 60%),
+    linear-gradient(180deg, rgba(34, 211, 238, 0.1), rgba(12, 14, 22, 0.55));
+}
+
+.mw-monster-stage-mines .mw-monster-arena {
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(40, 24, 8, 0.4), transparent 60%),
+    linear-gradient(180deg, rgba(240, 192, 64, 0.12), rgba(28, 16, 8, 0.55));
+}
+
+.mw-monster-stage-crystal .mw-monster-arena {
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(4, 28, 48, 0.45), transparent 60%),
+    linear-gradient(180deg, rgba(103, 232, 249, 0.16), rgba(4, 16, 32, 0.55));
+}
+
+.mw-monster-sprite {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(5.4rem, 28vw, 7.6rem);
+  line-height: 1;
+  filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.35));
+  transform-origin: center bottom;
+}
+
+.mw-monster-idle {
+  animation: mw-monster-idle 2.2s ease-in-out infinite;
+}
+
+@keyframes mw-monster-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.mw-monster-shadow {
+  position: absolute;
+  z-index: 1;
+  bottom: 0.7rem;
+  left: 50%;
+  width: 4.6rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  filter: blur(1px);
+}
+
+.mw-monster-stage-hit .mw-monster-arena {
+  box-shadow: inset 0 0 0 2px rgba(251, 191, 36, 0.45);
+}
+
+.mw-damage-float {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  z-index: 3;
+  color: #fde68a;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+  animation: mw-damage-float 0.7s ease-out both;
+}
+
+@keyframes mw-damage-float {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px) scale(1);
+  }
+}
+
+.mw-monster-poof {
+  position: absolute;
+  z-index: 3;
+  inset: 18% 12%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 40% 40%, rgba(255, 248, 220, 0.75), transparent 55%),
+    radial-gradient(circle at 70% 55%, rgba(251, 191, 36, 0.45), transparent 50%);
+  animation: mw-monster-poof 0.65s ease-out both;
+  pointer-events: none;
+}
+
+@keyframes mw-monster-poof {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+.mw-monster-stage-defeat .mw-monster-sprite {
+  animation: mw-monster-defeat 0.65s ease-in both;
+}
+
+.mw-monster-stage-defeat .mw-monster-shadow {
+  animation: mw-monster-shadow-out 0.65s ease-in both;
+}
+
+@keyframes mw-monster-defeat {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.08) rotate(-6deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.55) rotate(12deg);
+  }
+}
+
+@keyframes mw-monster-shadow-out {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scaleX(0.4);
   }
 }
 
