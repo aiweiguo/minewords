@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 import { GameIcon } from "@/components/GameIcon";
 import { SpeakTradePanel } from "@/components/SpeakTradePanel";
+import { VillagerDeepChat } from "@/components/VillagerDeepChat";
 import {
   canAffordTrade,
   getTradeOfferById,
@@ -38,10 +39,10 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
   return (
     <main className="space-y-6">
       <section className="mw-card p-5">
-        <h1 className="text-3xl font-black text-primary">Trade</h1>
-        <p className="mt-1 text-xl font-bold">开口交易</p>
+        <h1 className="text-3xl font-black text-primary">Village Trade</h1>
+        <p className="mt-1 text-xl font-bold">村庄 · 开口交易</p>
         <p className="mt-2 text-sm font-semibold text-muted">
-          跟村民说买 / 换：绿宝石、金、钻石。Speak buy or trade keywords.
+          先和村民聊 2～3 句，再说买 / 换：绿宝石、金、钻石。
         </p>
         {chasingDiamond ? (
           <p className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-900/25 px-3 py-2 text-sm font-bold text-emerald-100">
@@ -60,6 +61,8 @@ export function TradePageClient({ initialOfferId }: TradePageClientProps) {
           </p>
         )}
       </section>
+
+      <VillagerDeepChat />
 
       <section className="space-y-3">
         <h2 className="px-1 text-lg font-black">交易摊 Offers</h2>

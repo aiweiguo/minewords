@@ -302,7 +302,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                     ? "mw-hub-trade-primary"
                     : "mw-hub-fixture-secondary"
                 }`}
-                title="开口和村民交易材料"
+                title="和村民深聊，再开口交易材料"
               >
                 <span className="mw-hub-prop-art" aria-hidden>
                   <span className="mw-hub-villager">
@@ -317,7 +317,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                   />
                 </span>
                 <span className="mw-hub-prop-label">
-                  {emphasizeTrade ? "去交易" : "交易"}
+                  {emphasizeTrade ? "找村民" : "村民"}
                 </span>
               </Link>
             </div>
