@@ -21,6 +21,9 @@ type MapZoneCardProps = {
   resources?: Record<ResourceType, number>;
 };
 
+/** Adventure zones: display progress only — no second door to fight (MW-49). */
+const adventureMapAreas = new Set(["forest", "cave", "mines", "crystal"]);
+
 export function MapZoneCard({
   zone,
   index,
@@ -35,6 +38,7 @@ export function MapZoneCard({
 }: MapZoneCardProps) {
   const complete = zoneQuestsTotal > 0 && zoneQuestsCompleted === zoneQuestsTotal;
   const background = mapAreaBackgrounds[zone.mapArea];
+  const isAdventure = adventureMapAreas.has(zone.mapArea);
 
   return (
     <div
@@ -104,25 +108,22 @@ export function MapZoneCard({
 
         {zone.questIds.length > 0 && !locked ? (
           <div className="space-y-3 border-t border-[#d9e2cc] p-4">
-            {zone.mapArea === "forest" ||
-            zone.mapArea === "cave" ||
-            zone.mapArea === "mines" ||
-            zone.mapArea === "crystal" ? (
-              <Link href="/explore" className="mw-btn mw-btn-primary w-full text-sm">
-                出门打怪 Speak Attack →
-              </Link>
+            {isAdventure ? (
+              <p className="text-xs font-semibold text-muted">
+                打怪在「出门」选区进行；这里只列委托进度。
+              </p>
             ) : null}
             {zone.mapArea === "battle" ? (
-              <Link href="/crafting" className="mw-btn mw-btn-primary w-full text-sm">
-                去工作台合成 Craft →
+              <Link href="/crafting" className="mw-btn mw-btn-outline w-full text-sm">
+                去工作台合成 →
               </Link>
             ) : null}
             {zone.mapArea === "village" ? (
               <Link
                 href="/trade?offer=buy-diamonds"
-                className="mw-btn mw-btn-primary w-full text-sm"
+                className="mw-btn mw-btn-outline w-full text-sm"
               >
-                去交易买钻 Trade →
+                去交易买钻 →
               </Link>
             ) : null}
             {zone.questIds.map((questId) => {
@@ -151,7 +152,7 @@ export function MapZoneCard({
         {locked ? null : zone.questIds.length === 0 ? (
           <div className="border-t border-[#d9e2cc] p-4">
             <Link href="/guides" className="mw-btn mw-btn-outline text-sm">
-              去攻略库探索 →
+              去攻略库看看 →
             </Link>
           </div>
         ) : null}
