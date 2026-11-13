@@ -67,6 +67,40 @@ export const MONSTER_DECOR_SPEAK: Partial<Record<string, DecorSpeakWeave>> = {
       hintEn: "Say a full sentence: I craft a plank stick near the pig",
     },
   },
+  // MW-67: forest sheep → shears verb for wool place / bed craft.
+  sheep: {
+    zoneId: "forest",
+    learnWordIds: ["shears", "wool"],
+    phrase: {
+      expectedText: "Shear sheep",
+      keywords: ["shear", "shears", "sheep", "wool"],
+      hintCn: "说短句：Shear sheep",
+      hintEn: "Say a short phrase: Shear sheep",
+    },
+    sentence: {
+      expectedText: "I use shears on the sheep for wool",
+      keywords: ["shears", "sheep", "wool"],
+      hintCn: "说完整句：I use shears on the sheep for wool",
+      hintEn: "Say a full sentence: I use shears on the sheep for wool",
+    },
+  },
+  // MW-67: forest cat → tame/friend home track (parallel to wolf).
+  cat: {
+    zoneId: "forest",
+    learnWordIds: ["tame", "friend"],
+    phrase: {
+      expectedText: "Tame cat",
+      keywords: ["tame", "cat"],
+      hintCn: "说短句：Tame cat",
+      hintEn: "Say a short phrase: Tame cat",
+    },
+    sentence: {
+      expectedText: "I tame the cat as a friend",
+      keywords: ["tame", "cat", "friend"],
+      hintCn: "说完整句：I tame the cat as a friend",
+      hintEn: "Say a full sentence: I tame the cat as a friend",
+    },
+  },
   witch: {
     zoneId: "cave",
     learnWordIds: ["torch", "light"],

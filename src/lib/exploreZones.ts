@@ -104,6 +104,13 @@ function buildMaterialBias(
   focus: ResourceType,
 ): Reward[] {
   if (focus === "wood") {
+    // MW-55/67: sheep keep wool inventory for hub placeables (not pure wood bias).
+    if (wordId === "sheep") {
+      return [
+        { type: "resource", resource: "wool", amount: 2 },
+        { type: "resource", resource: "wood", amount: 1 },
+      ];
+    }
     return [
       { type: "resource", resource: "wood", amount: focusAmount(wordId, "wood") },
       { type: "resource", resource: "stone", amount: 1 },
@@ -162,14 +169,18 @@ function focusAmount(wordId: string, focus: ResourceType): number {
     if (wordId === "zombie") return 3;
     if (wordId === "wolf") return 3;
     if (wordId === "pig") return 3;
+    if (wordId === "cow") return 3;
     if (wordId === "sheep") return 2;
     if (wordId === "spider") return 2;
+    if (wordId === "chicken") return 2;
+    if (wordId === "cat") return 2;
     return 2;
   }
   if (focus === "stone") {
     if (wordId === "skeleton") return 3;
     if (wordId === "witch") return 3;
     if (wordId === "creeper") return 4;
+    if (wordId === "slime") return 2;
     return 3;
   }
   if (focus === "iron") {

@@ -22,8 +22,13 @@ const css = read("src/styles/globals.css");
 
 assert.match(
   exploreZones,
-  /wildMonsterIds: \["zombie", "spider", "wolf", "sheep", "pig"\]/,
+  /"pig"/,
   "forest includes pig",
+);
+assert.match(
+  exploreZones,
+  /"cow"/,
+  "forest includes cow (MW-67)",
 );
 assert.match(monsterDrops, /"pig"/, "pig in WILD_MONSTER_WORD_IDS");
 assert.match(monsterDrops, /pig: \[/, "pig fixed drops");

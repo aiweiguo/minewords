@@ -135,6 +135,10 @@ const vocabularyRarity: Record<string, Rarity> = {
   pearl: "epic",
   crystal: "epic",
   void: "epic",
+  // MW-67 / Ship C — speak-serving adds only.
+  slime: "uncommon",
+  cat: "uncommon",
+  shears: "uncommon",
 };
 
 const vocabularyData: VocabularyItem[] = [
@@ -1728,6 +1732,40 @@ const vocabularyData: VocabularyItem[] = [
     example: "The End has a small central island.",
     exampleCn: "末地有一个小小的中央岛。",
     tags: ["end", "explore"],
+  },
+  // MW-67 / Ship C: speak-loop adds (wired into wild/craft — not encyclopedia dump).
+  {
+    id: "slime",
+    english: "Slime",
+    chinese: "史莱姆",
+    phonetic: "/slaɪm/",
+    category: "mob",
+    difficulty: 1,
+    example: "A cute slime bounces in the cave.",
+    exampleCn: "可爱的史莱姆在洞穴里跳来跳去。",
+    tags: ["mob", "cave", "fight"],
+  },
+  {
+    id: "cat",
+    english: "Cat",
+    chinese: "猫",
+    phonetic: "/kæt/",
+    category: "mob",
+    difficulty: 1,
+    example: "I tame the cat as a friend.",
+    exampleCn: "我把猫驯服成朋友。",
+    tags: ["mob", "farm", "friend", "tame"],
+  },
+  {
+    id: "shears",
+    english: "Shears",
+    chinese: "剪刀",
+    phonetic: "/ʃɪərz/",
+    category: "tool",
+    difficulty: 1,
+    example: "Use shears to get wool from sheep.",
+    exampleCn: "用剪刀从羊身上剪羊毛。",
+    tags: ["tool", "sheep", "wool", "craft"],
   },
 ];
 
