@@ -55,8 +55,15 @@ export function useFollowConfirmRitual(demoText: string) {
     setPhase("playing");
     setSecondsLeft(0);
 
-    await speakAndWait(demoText, { rate: 0.85 });
+    const { ok } = await speakAndWait(demoText, { rate: 0.85 });
     if (runId !== runIdRef.current) return;
+
+    // TTS failed / missing — don't fake a follow window; nudge「再听一遍」.
+    if (!ok) {
+      setPhase("failed");
+      setSecondsLeft(0);
+      return;
+    }
 
     let left = followCountdownSeconds(demoText);
     setPhase("following");

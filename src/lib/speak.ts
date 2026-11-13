@@ -16,53 +16,63 @@ export function speak(
   window.speechSynthesis.speak(utterance);
 }
 
+export type SpeakWaitResult = {
+  /** False when TTS errored or speechSynthesis is missing (soft-path retry). */
+  ok: boolean;
+};
+
 /**
  * Play TTS and resolve when the utterance ends (or on a safe fallback timeout).
- * Used by the no-mic follow-then-confirm soft path (MW-42).
+ * Used by the no-mic follow-then-confirm soft path (MW-42 / MW-61).
  */
 export function speakAndWait(
   text: string,
   options?: {
     rate?: number;
   },
-): Promise<void> {
+): Promise<SpeakWaitResult> {
   return new Promise((resolve) => {
     if (typeof window === "undefined") {
-      resolve();
+      resolve({ ok: true });
       return;
     }
 
     const trimmed = text.trim();
     if (!trimmed) {
-      resolve();
+      resolve({ ok: true });
       return;
     }
 
     if (!window.speechSynthesis) {
-      window.setTimeout(resolve, 600);
+      // No engine: still allow soft-path countdown (don't soft-lock confirm).
+      window.setTimeout(() => resolve({ ok: true }), 600);
       return;
     }
 
     let settled = false;
-    const finish = () => {
+    const finish = (ok: boolean) => {
       if (settled) return;
       settled = true;
       window.clearTimeout(fallbackTimer);
-      resolve();
+      resolve({ ok });
     };
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(trimmed);
     utterance.lang = "en-US";
     utterance.rate = options?.rate ?? 0.85;
-    utterance.onend = finish;
-    utterance.onerror = finish;
+    utterance.onend = () => finish(true);
+    utterance.onerror = () => finish(false);
 
     // Some browsers never fire onend; cover with word-length fallback.
     const wordCount = Math.max(1, trimmed.split(/\s+/).filter(Boolean).length);
     const fallbackMs = Math.min(8000, Math.max(1800, wordCount * 550 + 1200));
-    const fallbackTimer = window.setTimeout(finish, fallbackMs);
+    const fallbackTimer = window.setTimeout(() => finish(true), fallbackMs);
 
-    window.speechSynthesis.speak(utterance);
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      finish(false);
+    }
   });
 }

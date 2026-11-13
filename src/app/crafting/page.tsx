@@ -104,28 +104,33 @@ export default function CraftingPage() {
           </button>
 
           {practiceOpen ? (
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              {otherResults.map((recipe) => (
-                <CraftingRecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  practice
-                />
-              ))}
-            </div>
+            otherResults.length > 0 ? (
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                {otherResults.map((recipe) => (
+                  <CraftingRecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    practice
+                  />
+                ))}
+              </div>
+            ) : (
+              <p
+                className="mw-craft-practice-empty mt-3 text-sm font-semibold text-muted"
+                role="status"
+              >
+                {searching
+                  ? "没找到配方 — 试试 bed / 床 / torch，或清掉搜索看全部。"
+                  : "这里暂时没有练习配方。试试在上面搜 bed。"}
+              </p>
+            )
           ) : (
-            <p className="mt-2 text-xs font-semibold text-muted">
-              默认收起 — 点开可查百科配方；武器目标在上面。
+            <p className="mw-craft-practice-empty mt-2 text-sm font-semibold text-muted">
+              点 + 展开 / 搜 bed — 百科配方在这里，不是坏了。
             </p>
           )}
         </div>
       </section>
-
-      {practiceOpen && otherResults.length === 0 && searching ? (
-        <p className="text-center text-sm font-semibold text-muted">
-          没有找到合成配方。
-        </p>
-      ) : null}
 
       <p className="text-center text-xs text-muted">
         武器线 {weaponTiers.length} · 练习{" "}
