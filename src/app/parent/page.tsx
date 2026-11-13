@@ -13,6 +13,7 @@ import {
   isMostlyConfirmToday,
   isMostlyConfirmWeek,
 } from "@/lib/followConfirm";
+import { ParentSessionSoftTip } from "@/components/ParentSessionSoftTip";
 import { ProgressBackupPanel } from "@/components/ProgressBackupPanel";
 import { SaveSlotsPanel } from "@/components/SaveSlotsPanel";
 import { getTonightThreeThings } from "@/lib/parentTonight";
@@ -216,6 +217,10 @@ export default function ParentPage() {
         </ol>
       </section>
 
+      <section className="mw-card p-5">
+        <ParentSessionSoftTip />
+      </section>
+
       <section className="mw-card p-5" aria-labelledby="mw-parent-speak-ratio">
         <h2 id="mw-parent-speak-ratio" className="text-xl font-black">
           开口占比
@@ -324,50 +329,63 @@ export default function ParentPage() {
         </div>
       </section>
 
-      <section className="mw-card mw-reward-panel p-5">
-        <h2 className="text-xl font-black">一句话总结</h2>
-        <p className="mt-3 text-sm font-semibold">{todaySummary}</p>
-        <p className="mt-2 text-sm font-semibold text-amber-200">{reviewSummary}</p>
-      </section>
-
-      {masteredWords.length > 0 ? (
-        <section className="mw-card p-5">
-          <h2 className="text-xl font-black">已掌握</h2>
-          <p className="mt-2 text-sm font-semibold text-muted">
-            {masteredWords.map((w) => `${w.english} (${w.chinese})`).join("、")}
-          </p>
-        </section>
-      ) : null}
-
-      {learnedNotMastered.length > 0 ? (
-        <section className="mw-card p-5">
-          <h2 className="text-xl font-black">建议复习</h2>
-          <p className="mt-2 text-sm font-semibold text-muted">
-            {learnedNotMastered.slice(0, 10).map((w) => w.english).join("、")}
-            {learnedNotMastered.length > 10 ? "…" : ""}
-          </p>
-        </section>
-      ) : null}
-
-      {reviewWords.length > 0 ? (
-        <section className="mw-card p-5">
-          <h2 className="text-xl font-black">错词怪物</h2>
-          <p className="mt-2 text-sm font-semibold text-muted">
-            {reviewWords.map((w) => `${w!.english} (${w!.chinese})`).join("、")}
-          </p>
-          <Link href="/fight" className="mt-4 inline-flex text-sm font-bold text-primary underline">
-            去打怪 →
-          </Link>
-        </section>
-      ) : null}
-
-      <details className="mw-card p-5">
+      {/* MW-69 / Ship E: lower-half old metrics default-collapsed — quiet parent. */}
+      <details className="mw-card mw-parent-quiet-details p-5">
         <summary className="cursor-pointer text-xl font-black">
           更多进度明细（旧指标）
         </summary>
         <p className="mt-2 text-sm font-semibold text-muted">
-          委托 / 攻略 / 口语场景等岛指标已折叠，需要时再看。
+          总结 / 词表 / 委托等旧指标默认收起，需要时再看——不是第二仪表盘。
         </p>
+
+        <section className="mt-4 mw-reward-panel rounded-xl p-4">
+          <h3 className="text-base font-black">一句话总结</h3>
+          <p className="mt-2 text-sm font-semibold">{todaySummary}</p>
+          <p className="mt-2 text-sm font-semibold text-amber-200">
+            {reviewSummary}
+          </p>
+        </section>
+
+        {masteredWords.length > 0 ? (
+          <section className="mt-4">
+            <h3 className="text-base font-black">已掌握</h3>
+            <p className="mt-2 text-sm font-semibold text-muted">
+              {masteredWords
+                .map((w) => `${w.english} (${w.chinese})`)
+                .join("、")}
+            </p>
+          </section>
+        ) : null}
+
+        {learnedNotMastered.length > 0 ? (
+          <section className="mt-4">
+            <h3 className="text-base font-black">建议复习</h3>
+            <p className="mt-2 text-sm font-semibold text-muted">
+              {learnedNotMastered
+                .slice(0, 10)
+                .map((w) => w.english)
+                .join("、")}
+              {learnedNotMastered.length > 10 ? "…" : ""}
+            </p>
+          </section>
+        ) : null}
+
+        {reviewWords.length > 0 ? (
+          <section className="mt-4">
+            <h3 className="text-base font-black">错词怪物</h3>
+            <p className="mt-2 text-sm font-semibold text-muted">
+              {reviewWords
+                .map((w) => `${w!.english} (${w!.chinese})`)
+                .join("、")}
+            </p>
+            <Link
+              href="/fight"
+              className="mt-3 inline-flex text-sm font-bold text-primary underline"
+            >
+              去打怪 →
+            </Link>
+          </section>
+        ) : null}
 
         <section className="mt-4" aria-labelledby="mw-parent-today-detail">
           <h3 id="mw-parent-today-detail" className="text-base font-black">

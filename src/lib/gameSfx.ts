@@ -3,7 +3,7 @@
  * No asset files — short oscillator blips; silent if AudioContext blocked.
  */
 
-type SfxKind = "hit" | "loot" | "craft";
+type SfxKind = "hit" | "loot" | "craft" | "decor";
 
 let sharedCtx: AudioContext | null = null;
 
@@ -73,8 +73,16 @@ export function playGameSfx(kind: SfxKind): void {
     return;
   }
 
-  // craft success
-  tone(ctx, { freq: 392, start: t0, duration: 0.1, type: "triangle", gain: 0.05 });
-  tone(ctx, { freq: 523, start: t0 + 0.09, duration: 0.12, type: "triangle", gain: 0.045 });
-  tone(ctx, { freq: 659, start: t0 + 0.2, duration: 0.16, type: "sine", gain: 0.04 });
+  if (kind === "craft") {
+    // craft success
+    tone(ctx, { freq: 392, start: t0, duration: 0.1, type: "triangle", gain: 0.05 });
+    tone(ctx, { freq: 523, start: t0 + 0.09, duration: 0.12, type: "triangle", gain: 0.045 });
+    tone(ctx, { freq: 659, start: t0 + 0.2, duration: 0.16, type: "sine", gain: 0.04 });
+    return;
+  }
+
+  // decor light — one soft sparkle (MW-69 / Ship E)
+  tone(ctx, { freq: 587, start: t0, duration: 0.08, type: "sine", gain: 0.04 });
+  tone(ctx, { freq: 784, start: t0 + 0.07, duration: 0.1, type: "triangle", gain: 0.045 });
+  tone(ctx, { freq: 988, start: t0 + 0.15, duration: 0.16, type: "sine", gain: 0.035 });
 }

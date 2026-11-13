@@ -84,5 +84,7 @@ assert.match(
 assert.match(weaponGoal, /再点亮 1 个家装/, "post-weekly decor nudge");
 assert.match(hubRoom, /mw-deco-lit-toast/, "hub celebrate toast");
 assert.match(hubRoom, /点亮了/, "toast copy");
+assert.match(hubRoom, /playGameSfx\("decor"\)/, "Ship E decor sfx");
+assert.match(hubRoom, /mw-weapon-goal-strip-celebrate/, "Ship E goal-bar celebrate");
 
 console.log("smoke-decoration-speak: ok");

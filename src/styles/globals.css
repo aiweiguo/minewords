@@ -1066,6 +1066,79 @@ body {
   }
 }
 
+/* MW-69 / Ship E: one clear celebrate when a decoration newly lights. */
+@keyframes mw-hub-decor-celebrate {
+  0% {
+    filter: brightness(1);
+    box-shadow: 0 2px 0 #1a1208;
+  }
+  35% {
+    filter: brightness(1.25);
+    box-shadow:
+      0 2px 0 #1a1208,
+      0 0 0 3px rgba(107, 175, 24, 0.55);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 2px 0 #1a1208;
+  }
+}
+
+.mw-hub-decor-meter-celebrate {
+  animation: mw-hub-decor-celebrate 1.1s ease-out both;
+  border-color: #6baf18;
+}
+
+@keyframes mw-hub-deco-fresh-pop {
+  0% {
+    transform: scale(0.72);
+    filter: brightness(1.4);
+  }
+  45% {
+    transform: scale(1.12);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.mw-hub-deco-fresh {
+  animation: mw-hub-deco-fresh-pop 0.7s ease-out both;
+  z-index: 5;
+}
+
+.mw-hub-deco-fresh .mw-hub-deco-emoji {
+  filter: drop-shadow(0 0 10px rgba(107, 175, 24, 0.75));
+}
+
+@keyframes mw-weapon-goal-celebrate {
+  0%,
+  100% {
+    background:
+      linear-gradient(90deg, rgba(107, 175, 24, 0.12), transparent 55%),
+      rgba(20, 14, 8, 0.35);
+  }
+  40% {
+    background:
+      linear-gradient(90deg, rgba(107, 175, 24, 0.38), transparent 60%),
+      rgba(30, 42, 14, 0.55);
+  }
+}
+
+.mw-weapon-goal-strip-celebrate {
+  animation: mw-weapon-goal-celebrate 1.15s ease-out both;
+}
+
+.mw-weapon-goal-strip-celebrate .mw-weapon-goal-bar {
+  box-shadow: 0 0 0 2px rgba(107, 175, 24, 0.55);
+}
+
+.mw-weapon-goal-strip-celebrate .mw-weapon-goal-bar-fill {
+  background: linear-gradient(90deg, #8fd12a, #e2c070);
+}
+
 .mw-hub-rack-ready {
   animation: mw-home-cta-pulse 2.4s ease-in-out infinite;
   box-shadow:
@@ -1984,9 +2057,25 @@ body {
   .mw-explore-portal-selected,
   .mw-explore-portal-mob,
   .mw-hub-player-sparse,
-  .mw-hub-decor-meter-empty {
+  .mw-hub-decor-meter-empty,
+  .mw-hub-decor-meter-celebrate,
+  .mw-hub-deco-fresh,
+  .mw-weapon-goal-strip-celebrate {
     animation: none !important;
   }
+}
+
+/* MW-69 / Ship E: parent soft tip — quiet, not a dashboard card stack. */
+.mw-parent-session-tip h2 {
+  margin: 0;
+}
+
+.mw-parent-quiet-details summary {
+  list-style: disclosure-closed;
+}
+
+.mw-parent-quiet-details[open] summary {
+  list-style: disclosure-open;
 }
 
 /* —— Explore zone pick (MW-7) —— */

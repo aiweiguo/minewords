@@ -14,6 +14,7 @@ import { decorationSceneSlots } from "@/data/decorationSlots";
 import { countCompletedVillagerChatTurns } from "@/data/villagerChat";
 import { weaponTiers } from "@/data/weapons";
 import { assetMap } from "@/lib/assets";
+import { playGameSfx } from "@/lib/gameSfx";
 import { getWeaponGoalSnapshot } from "@/lib/weaponGoal";
 import {
   ROOM_BLOCK_COST,
@@ -87,6 +88,9 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
   const [hint, setHint] = useState<string | null>(null);
   const [villagerChatTurnsDone, setVillagerChatTurnsDone] = useState(0);
   const [decorToast, setDecorToast] = useState<string | null>(null);
+  /** MW-69: one-shot goal-bar + meter celebrate when a deco newly lights. */
+  const [decorCelebrate, setDecorCelebrate] = useState(false);
+  const [freshDecorId, setFreshDecorId] = useState<string | null>(null);
   const seenDecorIdsRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
@@ -104,7 +108,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
     litDecorCount === 0 && Object.values(roomBlocks).every((b) => !b);
   const litDecorKey = placedDecorations.map((d) => d.id).join("|");
 
-  // MW-57: short celebrate when a word decoration newly lights (not a card).
+  // MW-57 + MW-69 / Ship E: in-room celebrate once — toast + goal bar + sfx.
   useEffect(() => {
     const litIds = litDecorKey ? litDecorKey.split("|") : [];
     if (seenDecorIdsRef.current === null) {
@@ -118,8 +122,15 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
       (d) => d.id === fresh[fresh.length - 1],
     );
     if (!newest) return;
+    playGameSfx("decor");
+    setFreshDecorId(newest.id);
+    setDecorCelebrate(true);
     setDecorToast(`${newest.emoji} 点亮了 ${newest.nameCn}！`);
-    const timer = window.setTimeout(() => setDecorToast(null), 2800);
+    const timer = window.setTimeout(() => {
+      setDecorToast(null);
+      setDecorCelebrate(false);
+      setFreshDecorId(null);
+    }, 2800);
     return () => window.clearTimeout(timer);
   }, [litDecorKey]);
 
@@ -225,7 +236,12 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
         </span>
       </header>
 
-      <WeaponGoalStrip variant="hub" className="relative z-[2]" />
+      <WeaponGoalStrip
+        variant="hub"
+        className={`relative z-[2] ${
+          decorCelebrate ? "mw-weapon-goal-strip-celebrate" : ""
+        }`}
+      />
       {decorToast ? (
         <p className="mw-deco-lit-toast relative z-[3]" role="status">
           {decorToast}
@@ -267,7 +283,9 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
                 return (
                   <div
                     key={deco.id}
-                    className={`mw-hub-deco ${slot.className}`}
+                    className={`mw-hub-deco ${slot.className} ${
+                      deco.id === freshDecorId ? "mw-hub-deco-fresh" : ""
+                    }`}
                     title={deco.nameCn}
                   >
                     <span className="mw-hub-deco-emoji">{deco.emoji}</span>
@@ -294,7 +312,7 @@ export function HubRoom({ selectedBlock, onSelectBlock }: HubRoomProps) {
               href="#decorate"
               className={`mw-hub-decor-meter ${
                 litDecorCount === 0 ? "mw-hub-decor-meter-empty" : ""
-              }`}
+              } ${decorCelebrate ? "mw-hub-decor-meter-celebrate" : ""}`}
               aria-label={`装扮进度 ${litDecorCount} / ${decorTotal}`}
               title="学词点亮房间装饰"
             >
