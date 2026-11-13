@@ -11,7 +11,7 @@ const FOLLOW_COUNTDOWN_BASE_MS = 1000;
 const FOLLOW_COUNTDOWN_MIN_MS = 2200;
 const FOLLOW_COUNTDOWN_MAX_MS = 6000;
 
-const MIC_CONFIRM_HOLD_MS = 700;
+const MIC_CONFIRM_HOLD_MS = 900;
 
 function followCountdownMs(text) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
@@ -44,7 +44,7 @@ assert.equal(followCountdownMs(long), FOLLOW_COUNTDOWN_MAX_MS);
 assert.equal(followCountdownSeconds(long), 6);
 
 // Soft path polish must not weaken Chrome mic demotion (MW-56).
-assert.equal(MIC_CONFIRM_HOLD_MS, 700);
+assert.equal(MIC_CONFIRM_HOLD_MS, 900);
 
 console.log("MW-61 follow polish smoke OK", {
   minMs: FOLLOW_COUNTDOWN_MIN_MS,

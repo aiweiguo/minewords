@@ -2834,3 +2834,201 @@ body {
     animation: none;
   }
 }
+
+/* MW-65 / Ship A — soft-path follow fail (clearer 再听一遍) */
+.mw-follow-mode-badge-failed {
+  border-color: rgba(251, 191, 36, 0.55);
+  background: rgba(120, 53, 15, 0.55);
+  color: #fde68a;
+}
+
+.mw-follow-failed-callout {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(120, 53, 15, 0.35);
+  color: #fde68a;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.mw-follow-retry {
+  animation: mw-follow-retry-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes mw-follow-retry-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(251, 191, 36, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-follow-retry {
+    animation: none;
+  }
+}
+
+/* MW-65 / Ship A — fight hit flash + loot pop */
+.mw-hit-flash {
+  position: relative;
+}
+
+.mw-hit-flash-burst {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 28% 22%,
+    rgba(255, 248, 220, 0.55),
+    rgba(251, 191, 36, 0.18) 42%,
+    transparent 70%
+  );
+  animation: mw-hit-burst 0.5s ease-out;
+  z-index: 1;
+}
+
+.mw-hit-shake {
+  display: inline-block;
+  animation: mw-hit-shake 0.45s ease;
+}
+
+@keyframes mw-hit-burst {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes mw-hit-shake {
+  0%,
+  100% {
+    transform: translateX(0) scale(1.1);
+  }
+  25% {
+    transform: translateX(-5px) scale(1.14);
+  }
+  50% {
+    transform: translateX(5px) scale(1.12);
+  }
+  75% {
+    transform: translateX(-3px) scale(1.1);
+  }
+}
+
+.mw-loot-pop-layer {
+  pointer-events: none;
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  left: 0.85rem;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.mw-loot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  background: rgba(20, 12, 4, 0.88);
+  color: #fef3c7;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  animation: mw-loot-pop 1.25s ease both;
+  animation-delay: calc(var(--mw-loot-i, 0) * 70ms);
+}
+
+@keyframes mw-loot-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.85);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-hit-flash-burst,
+  .mw-hit-shake,
+  .mw-loot-chip {
+    animation: none;
+  }
+
+  .mw-loot-chip {
+    opacity: 1;
+  }
+}
+
+/* MW-65 / Ship A — craft success flash */
+.mw-craft-success-flash {
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.45),
+    0 0 28px rgba(34, 211, 238, 0.28);
+}
+
+.mw-craft-success-burst {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(165, 243, 252, 0.45),
+    rgba(34, 211, 238, 0.12) 45%,
+    transparent 72%
+  );
+  animation: mw-craft-burst 0.85s ease-out;
+  z-index: 1;
+}
+
+.mw-craft-success-panel {
+  animation: mw-craft-panel-pop 0.55s ease;
+}
+
+@keyframes mw-craft-burst {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes mw-craft-panel-pop {
+  0% {
+    transform: scale(0.97);
+  }
+  40% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-craft-success-burst,
+  .mw-craft-success-panel {
+    animation: none;
+  }
+}

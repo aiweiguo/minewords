@@ -21,6 +21,7 @@ import {
   resolveMissPhonicsWordId,
   scoreSpeechAfterPhonics,
 } from "@/lib/phonics";
+import { playGameSfx } from "@/lib/gameSfx";
 import {
   craftSpeechMinKeywords,
   isSpeechRecognitionSupported,
@@ -52,6 +53,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   const [result, setResult] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
   const [craftResult, setCraftResult] = useState<RewardResult | null>(null);
+  const [craftFlash, setCraftFlash] = useState(false);
   const [supported, setSupported] = useState(false);
   const {
     phonicsWordId,
@@ -103,6 +105,12 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
     weapon.costs.every((cost) => (resources[cost.resource] ?? 0) >= cost.amount);
   const alreadyCrafted = owned || craftResult?.isFirstCompletion;
 
+  function celebrateCraft() {
+    setCraftFlash(true);
+    playGameSfx("craft");
+    window.setTimeout(() => setCraftFlash(false), 900);
+  }
+
   function applyCraft() {
     const loot = craftWeapon(weaponId);
     if (!loot) {
@@ -110,6 +118,7 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
       setResult("材料不够，先去打怪凑齐。");
       return;
     }
+    celebrateCraft();
     setCraftResult(loot);
   }
 
@@ -187,7 +196,12 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
   }
 
   return (
-    <section className="mw-card space-y-4 p-5">
+    <section
+      className={`mw-card relative space-y-4 overflow-hidden p-5 ${
+        craftFlash ? "mw-craft-success-flash" : ""
+      }`}
+    >
+      {craftFlash ? <div className="mw-craft-success-burst" aria-hidden /> : null}
       <div className="flex items-center gap-3">
         <GameIcon src={weapon.icon} alt={weapon.name} size="xl" />
         <div>
@@ -221,9 +235,15 @@ export function SpeakCraftPanel({ weaponId }: SpeakCraftPanelProps) {
       </div>
 
       {alreadyCrafted ? (
-        <div className="rounded-xl border border-cyan-500/30 bg-cyan-900/20 px-4 py-4 text-center">
+        <div
+          className={`rounded-xl border border-cyan-500/30 bg-cyan-900/20 px-4 py-4 text-center ${
+            craftFlash ? "mw-craft-success-panel" : ""
+          }`}
+        >
           <p className="text-lg font-black text-cyan-100">
-            {weapon.nameCn}已挂上武器架！
+            {craftFlash
+              ? `合成成功！${weapon.nameCn}已挂上武器架！`
+              : `${weapon.nameCn}已挂上武器架！`}
           </p>
           <p className="mt-1 text-sm font-semibold text-cyan-200/80">
             {weapon.name} is on your weapon rack.

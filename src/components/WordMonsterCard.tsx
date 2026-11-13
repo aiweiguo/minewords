@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { FollowConfirmControls } from "@/components/FollowConfirmControls";
+import { GameIcon } from "@/components/GameIcon";
 import { PhonicsMoment } from "@/components/PhonicsMoment";
 import { RewardModal } from "@/components/RewardModal";
 import { SpeakButton } from "@/components/SpeakButton";
@@ -12,6 +13,7 @@ import { getVocabularyById } from "@/data/vocabulary";
 import { useFollowConfirmRitual } from "@/hooks/useFollowConfirmRitual";
 import { usePhonicsSession } from "@/hooks/usePhonicsSession";
 import { FluencyRung, FLUENCY_RUNG_ORDER } from "@/lib/attackSpeech";
+import { assetMap, getResourceIcon } from "@/lib/assets";
 import { getMonsterDropRewardsForZone } from "@/lib/exploreZones";
 import {
   applyDamage,
@@ -26,6 +28,7 @@ import {
   rungLabelEn,
   scoreFluencyAttempt,
 } from "@/lib/fluencyLadder";
+import { playGameSfx } from "@/lib/gameSfx";
 import {
   getUnknownAttackWordId,
   listAttackFocusWordIds,
@@ -38,7 +41,13 @@ import {
 } from "@/lib/speechRecognition";
 import { getWordMonsterLabel } from "@/lib/wrongWord";
 import { useGameStore } from "@/store/useGameStore";
-import { RewardResult } from "@/types";
+import { Reward, RewardResult } from "@/types";
+
+type LootChip = {
+  id: string;
+  label: string;
+  iconSrc: string;
+};
 
 type WordMonsterCardProps = {
   wordId: string;
@@ -69,6 +78,7 @@ export function WordMonsterCard({
 
   const [listening, setListening] = useState(false);
   const [hitFlash, setHitFlash] = useState(false);
+  const [lootChips, setLootChips] = useState<LootChip[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     cn: string;
@@ -118,13 +128,44 @@ export function WordMonsterCard({
 
   function flashHit() {
     setHitFlash(true);
-    window.setTimeout(() => setHitFlash(false), 600);
+    window.setTimeout(() => setHitFlash(false), 520);
+  }
+
+  function rewardsToChips(rewards: Reward[]): LootChip[] {
+    return rewards
+      .map((reward, index) => {
+        if (reward.type === "resource" && reward.resource) {
+          return {
+            id: `res-${reward.resource}-${index}`,
+            label: `${reward.resource} x${reward.amount}`,
+            iconSrc: getResourceIcon(reward.resource),
+          };
+        }
+        if (reward.type === "xp") {
+          return {
+            id: `xp-${index}`,
+            label: `XP +${reward.xp}`,
+            iconSrc: assetMap.star,
+          };
+        }
+        return null;
+      })
+      .filter((chip): chip is LootChip => chip != null);
+  }
+
+  function popLoot(rewards: Reward[]) {
+    const chips = rewardsToChips(rewards);
+    if (chips.length === 0) return;
+    setLootChips(chips);
+    playGameSfx("loot");
+    window.setTimeout(() => setLootChips([]), 1400);
   }
 
   function finishEncounter() {
     const loot = defeatMonster(wordId, { zoneId, farmable });
     if (!loot) return;
     flashHit();
+    popLoot(loot.rewards);
     setRewardResult(loot);
   }
 
@@ -136,6 +177,7 @@ export function WordMonsterCard({
     const nextHp = applyDamage(hp, damage);
     setHp(nextHp);
     flashHit();
+    playGameSfx("hit");
     setMissStreak(0);
     setSuggestedRung((current) => raiseSuggestedRung(current, matched));
     if (nextHp <= 0) {
@@ -308,13 +350,28 @@ export function WordMonsterCard({
   return (
     <>
       <section
-        className={`mw-card mw-reward-panel overflow-hidden p-6 transition-shadow ${
-          hitFlash ? "ring-4 ring-amber-300 shadow-[0_0_28px_rgba(251,191,36,0.45)]" : ""
+        className={`mw-card mw-reward-panel relative overflow-hidden p-6 transition-shadow ${
+          hitFlash ? "mw-hit-flash ring-4 ring-amber-300 shadow-[0_0_28px_rgba(251,191,36,0.45)]" : ""
         }`}
       >
+        {hitFlash ? <div className="mw-hit-flash-burst" aria-hidden /> : null}
+        {lootChips.length > 0 ? (
+          <div className="mw-loot-pop-layer" aria-live="polite">
+            {lootChips.map((chip, index) => (
+              <div
+                key={chip.id}
+                className="mw-loot-chip"
+                style={{ ["--mw-loot-i" as string]: String(index) }}
+              >
+                <GameIcon src={chip.iconSrc} alt="" size="sm" />
+                <span>{chip.label}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <div className="flex items-center gap-4">
           <span
-            className={`text-5xl ${hitFlash ? "mw-map-pulse scale-110" : "mw-map-pulse"}`}
+            className={`text-5xl ${hitFlash ? "mw-hit-shake scale-110" : "mw-map-pulse"}`}
           >
             {monster.emoji}
           </span>
