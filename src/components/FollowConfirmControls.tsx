@@ -11,6 +11,7 @@ import {
 import {
   FollowConfirmPhase,
   MIC_CONFIRM_HOLD_MS,
+  MIC_CONFIRM_SPEAK_NUDGE_CN,
   bumpMicConfirmStreak,
   getMicConfirmStreak,
   shouldNudgeSpeakMore,
@@ -32,8 +33,9 @@ type FollowConfirmControlsProps = {
 
 /**
  * No-mic UI: 「跟读模式」 + listen/follow ritual, then unlock confirm.
- * Mic UI (MW-56): confirm demoted — collapsed + long-press; consecutive
- * demoted confirms nudge「今天多开口打」. Never framed as 「跳过」.
+ * Mic UI (MW-56 → MW-65): confirm further demoted — collapsed + longer
+ * long-press; consecutive demoted confirms nudge「今天多开口」.
+ * Never framed as 「跳过」. Soft follow-then-confirm stays for no-mic.
  */
 export function FollowConfirmControls({
   softPath,
@@ -58,8 +60,10 @@ export function FollowConfirmControls({
     );
   }
 
-  const startLabel =
-    phase === "failed" || phase === "ready"
+  const failed = phase === "failed";
+  const startLabel = failed
+    ? "再听一遍 Listen again"
+    : phase === "ready"
       ? "再听一遍 Listen again"
       : phase === "playing"
         ? "播放中… Playing…"
@@ -67,34 +71,42 @@ export function FollowConfirmControls({
           ? `跟读中… Follow ${secondsLeft}s`
           : "听并跟读 Listen & follow";
 
-  const hint =
-    phase === "failed"
-      ? "没听清或播放失败 — 点「再听一遍」，听完再跟读。"
-      : phase === "ready"
-        ? "可以确认了。没听清？再听一遍再确认。"
-        : "先听示范、开口跟读一会儿，再点确认。确认仍可用，但要走完听+跟读。";
+  const hint = failed
+    ? "没听清或播放失败 — 点下面「再听一遍」，听完再跟读。"
+    : phase === "ready"
+      ? "可以确认了。没听清？再听一遍再确认。"
+      : "先听示范、开口跟读一会儿，再点确认。确认仍可用，但要走完听+跟读。";
 
-  const confirmGateLabel =
-    phase === "failed"
-      ? "先再听一遍再确认"
-      : phase === "following"
-        ? `跟读中… ${secondsLeft}s`
-        : "先听并跟读再确认";
+  const confirmGateLabel = failed
+    ? "先再听一遍再确认"
+    : phase === "following"
+      ? `跟读中… ${secondsLeft}s`
+      : "先听并跟读再确认";
 
   return (
-    <div className="mw-follow-confirm space-y-2">
-      <p className="mw-follow-mode-badge" role="status">
-        跟读模式 Follow mode
+    <div
+      className={`mw-follow-confirm space-y-2 ${failed ? "mw-follow-failed" : ""}`}
+    >
+      <p
+        className={`mw-follow-mode-badge ${failed ? "mw-follow-mode-badge-failed" : ""}`}
+        role="status"
+      >
+        {failed ? "跟读失败 — 再听一遍" : "跟读模式 Follow mode"}
       </p>
       <p className="mw-follow-mode-hint" role="status">
         {hint}
       </p>
+      {failed ? (
+        <p className="mw-follow-failed-callout" role="alert">
+          点「再听一遍」重新听示范，跟读完才能确认。
+        </p>
+      ) : null}
       <button
         type="button"
         disabled={disabled || phase === "playing"}
         onClick={onStartRitual}
         className={`mw-btn w-full disabled:opacity-60 ${
-          phase === "failed" ? "mw-btn-primary" : "mw-btn-accent"
+          failed ? "mw-btn-primary mw-follow-retry" : "mw-btn-accent"
         }`}
       >
         {startLabel}
@@ -157,6 +169,8 @@ function MicConfirmDemoted({
     clearHold();
     const streak = bumpMicConfirmStreak();
     setNudge(shouldNudgeSpeakMore(streak));
+    // Stay collapsed after a demoted confirm — speak stays the obvious path.
+    setExpanded(false);
     onConfirm();
   }, [clearHold, disabled, onConfirm]);
 
@@ -202,7 +216,7 @@ function MicConfirmDemoted({
         </button>
         {nudge ? (
           <p className="mw-mic-confirm-nudge" role="status">
-            今天多开口打
+            {MIC_CONFIRM_SPEAK_NUDGE_CN}
           </p>
         ) : null}
       </div>
@@ -210,11 +224,12 @@ function MicConfirmDemoted({
   }
 
   const holdPct = Math.round(holdProgress * 100);
+  const holdSecs = Math.max(1, Math.round(MIC_CONFIRM_HOLD_MS / 100) / 10);
 
   return (
     <div className="mw-mic-confirm-demoted space-y-2">
       <p className="mw-follow-mode-hint">
-        有麦克风时请优先开口。确认已降为次级：按住约 1
+        有麦克风时请优先开口。确认已降为次级：按住约 {holdSecs}{" "}
         秒才过关（不是点一下）。
       </p>
       <button
@@ -247,7 +262,7 @@ function MicConfirmDemoted({
       </button>
       {nudge ? (
         <p className="mw-mic-confirm-nudge" role="status">
-          今天多开口打
+          {MIC_CONFIRM_SPEAK_NUDGE_CN}
         </p>
       ) : null}
     </div>

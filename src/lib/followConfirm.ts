@@ -3,8 +3,9 @@
  * TTS play → follow-along countdown → then allow tap confirm.
  * Confirm still works, but must pass the hear+follow ritual.
  *
- * Mic path (MW-56 / Ship C): tap-confirm is demoted (collapsed + long-press);
- * consecutive mic-path confirms show a light「今天多开口打」nudge.
+ * Mic path (MW-56 → MW-65 / Ship A): tap-confirm further demoted
+ * (collapsed + longer long-press + secondary); consecutive mic-path
+ * confirms nudge「今天多开口」. Soft follow-then-confirm stays for no-mic.
  */
 
 export type FollowConfirmPhase =
@@ -68,11 +69,14 @@ export function confirmSharePercent(
   return Math.round((confirmCompletions / total) * 100);
 }
 
-/** How long to hold the demoted mic-path confirm (MW-56). */
-export const MIC_CONFIRM_HOLD_MS = 700;
+/** How long to hold the demoted mic-path confirm (MW-65: further demote). */
+export const MIC_CONFIRM_HOLD_MS = 900;
 
 /** After this many consecutive mic-path confirms, show the speak nudge. */
 export const MIC_CONFIRM_STREAK_NUDGE_AT = 2;
+
+/** Kid-facing nudge when confirm streak is high (Ship A). */
+export const MIC_CONFIRM_SPEAK_NUDGE_CN = "今天多开口";
 
 export const MIC_CONFIRM_STREAK_STORAGE_KEY = "minewords-mic-confirm-streak";
 

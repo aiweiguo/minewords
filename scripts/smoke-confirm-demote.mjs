@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 
 /** Mirrors src/lib/followConfirm.ts (keep in sync). */
-const MIC_CONFIRM_HOLD_MS = 700;
+const MIC_CONFIRM_HOLD_MS = 900;
 const MIC_CONFIRM_STREAK_NUDGE_AT = 2;
 
 function shouldNudgeSpeakMore(streak) {
